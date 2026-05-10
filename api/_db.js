@@ -1,4 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
+const WebSocket = require("ws");
 
 function getSupabase() {
   const url = process.env.SUPABASE_URL;
@@ -8,7 +9,11 @@ function getSupabase() {
     throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
   }
 
-  return createClient(url, key);
+  return createClient(url, key, {
+    realtime: {
+      transport: WebSocket
+    }
+  });
 }
 
 module.exports = { getSupabase };
