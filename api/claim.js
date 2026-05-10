@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
 
     const { data: user } = await supabase
       .from("profiles")
-      .select("reward_unlocked")
+      .select("id, username, reward_unlocked")
       .eq("id", auth.id)
       .maybeSingle();
 
@@ -22,12 +22,18 @@ module.exports = async function handler(req, res) {
     }
 
     if (!user.reward_unlocked) {
-      return send(res, 403, { error: "Tier 1 is not unlocked yet" });
+      return send(res, 403, { error: "Preview is not unlocked yet" });
     }
+
+    await supabase.from("reward_clicks").insert({
+      user_id: user.id,
+      username: user.username
+    });
 
     return send(res, 200, {
       reward_url: process.env.REWARD_URL || "/tier1.html"
     });
+
   } catch (err) {
     return send(res, 401, { error: err.message || "Unauthorized" });
   }
