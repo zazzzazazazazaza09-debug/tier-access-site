@@ -1,12 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preview Unlocked</title>
 
-  <link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Preview Unlocked
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="/style.css"
+  />
+
 </head>
+
 <body>
 
 <canvas id="bgCanvas"></canvas>
@@ -19,6 +32,48 @@
       PREVIEW UNLOCKED
     </div>
 
+    <!-- TOP BADGES -->
+
+    <div
+      style="
+        display:flex;
+        gap:10px;
+        justify-content:center;
+        flex-wrap:wrap;
+        margin-bottom:18px;
+      "
+    >
+
+      <div
+        style="
+          padding:8px 14px;
+          border-radius:999px;
+          background:rgba(0,255,156,.12);
+          border:1px solid rgba(0,255,156,.2);
+          color:#7dffbf;
+          font-size:.85rem;
+          font-weight:800;
+        "
+      >
+        🔒 Secured Access
+      </div>
+
+      <div
+        style="
+          padding:8px 14px;
+          border-radius:999px;
+          background:rgba(0,245,255,.12);
+          border:1px solid rgba(0,245,255,.2);
+          color:#7eefff;
+          font-size:.85rem;
+          font-weight:800;
+        "
+      >
+        👥 Used by 2.3k+ users
+      </div>
+
+    </div>
+
     <h1>
       Access Granted ✅
     </h1>
@@ -28,34 +83,63 @@
     </p>
 
     <div class="notice">
+
       Preview content is now available below.
+
     </div>
 
+    <!-- PREVIEW BUTTON -->
+
     <button
+
       class="main-btn"
-      onclick="window.open(
-      'https://mega.nz/folder/sdVzxS4Y#XyscuaNdRv6SOgBRq7zDww',
-      '_blank'
-      )"
+
+      onclick="
+        window.open(
+          'https://mega.nz/folder/sdVzxS4Y#XyscuaNdRv6SOgBRq7zDww',
+          '_blank'
+        )
+      "
+
     >
+
       OPEN PREVIEW
+
     </button>
 
+    <!-- TELEGRAM -->
+
     <button
+
       class="ghost-btn"
-      onclick="window.open(
-      'https://t.me/Nonaxionbot',
-      '_blank'
-      )"
+
+      onclick="
+        window.open(
+          'https://t.me/Nonaxionbot',
+          '_blank'
+        )
+      "
+
     >
+
       UNLOCK NEW TIERS HERE
+
     </button>
 
+    <!-- BACK -->
+
     <button
+
       class="ghost-btn"
-      onclick="location.href='/'"
+
+      onclick="
+        location.href='/'
+      "
+
     >
+
       BACK
+
     </button>
 
   </div>
@@ -64,29 +148,58 @@
 
 <script>
 
-const canvas = document.getElementById("bgCanvas");
-const ctx = canvas.getContext("2d");
+const canvas =
+  document.getElementById(
+    "bgCanvas"
+  );
+
+const ctx =
+  canvas.getContext("2d");
 
 function resize(){
 
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  canvas.width =
+    innerWidth;
+
+  canvas.height =
+    innerHeight;
 
 }
 
 resize();
 
-addEventListener("resize", resize);
-
-let stars = Array.from(
-  {length:130},
-  () => ({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    r:Math.random()*1.6,
-    d:Math.random()*0.75+0.1
-  })
+addEventListener(
+  "resize",
+  resize
 );
+
+let stars =
+  Array.from(
+
+    {length:130},
+
+    () => ({
+
+      x:
+        Math.random()
+        * canvas.width,
+
+      y:
+        Math.random()
+        * canvas.height,
+
+      r:
+        Math.random()
+        * 1.6,
+
+      d:
+        Math.random()
+        * 0.75
+        + 0.1
+
+    })
+
+  );
 
 function animate(){
 
@@ -116,16 +229,24 @@ function animate(){
 
     s.y += s.d;
 
-    if(s.y > canvas.height){
+    if(
+      s.y >
+      canvas.height
+    ){
 
       s.y = 0;
-      s.x = Math.random()*canvas.width;
+
+      s.x =
+        Math.random()
+        * canvas.width;
 
     }
 
   });
 
-  requestAnimationFrame(animate);
+  requestAnimationFrame(
+    animate
+  );
 
 }
 
