@@ -11,6 +11,22 @@ function $(id) {
   return document.getElementById(id);
 }
 
+function getDeviceId() {
+  let deviceId = localStorage.getItem("device_id");
+
+  if (!deviceId) {
+    deviceId =
+      "dev_" +
+      Math.random().toString(36).slice(2) +
+      "_" +
+      Date.now().toString(36);
+
+    localStorage.setItem("device_id", deviceId);
+  }
+
+  return deviceId;
+}
+
 function showEntryMessage(text, error = false) {
   $("entryMsg").textContent = text;
   $("entryMsg").style.color = error ? "#ff9aa8" : "#a7f3d0";
@@ -24,6 +40,7 @@ function createCaptcha() {
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
+
   const headers = {
     "Content-Type": "application/json",
     ...(options.headers || {})
@@ -79,6 +96,7 @@ $("entryForm").addEventListener("submit", async (e) => {
         username,
         password,
         ref: refFromUrl,
+        device_id: getDeviceId(),
         captchaA,
         captchaB,
         captchaAnswer,
@@ -88,6 +106,13 @@ $("entryForm").addEventListener("submit", async (e) => {
 
     localStorage.setItem("token", data.token);
     await loadMe();
+
+    if (data.referral_message) {
+      setTimeout(() => {
+        alert(data.referral_message);
+      }, 300);
+    }
+
   } catch (err) {
     showEntryMessage(err.message, true);
     createCaptcha();
@@ -118,14 +143,14 @@ async function loadMe() {
   if (currentUser.reward_unlocked) {
     $("rewardBox").classList.remove("locked");
     $("rewardBox").classList.add("unlocked");
-    $("rewardTitle").textContent = "Tier 1 unlocked";
-    $("rewardText").textContent = "You reached 5 referrals. Your access page is ready.";
+    $("rewardTitle").textContent = "Preview unlocked";
+    $("rewardText").textContent = "You reached 5 referrals. Your preview page is ready.";
     $("rewardBtn").classList.remove("hidden");
   } else {
     $("rewardBox").classList.add("locked");
     $("rewardBox").classList.remove("unlocked");
-    $("rewardTitle").textContent = "Tier 1 locked";
-    $("rewardText").textContent = `You need ${needed} more referral(s) to unlock Tier 1.`;
+    $("rewardTitle").textContent = "Preview locked";
+    $("rewardText").textContent = `You need ${needed} more referral(s) to unlock preview.`;
     $("rewardBtn").classList.add("hidden");
   }
 }
