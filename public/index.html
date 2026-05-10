@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>Nonaxion Access</title>
 
@@ -15,6 +19,8 @@
 
 <main class="app">
 
+  <!-- ================= ENTRY PAGE ================= -->
+
   <section id="entryPage" class="entry-page">
 
     <div class="entry-card">
@@ -24,17 +30,29 @@
       </div>
 
       <div class="top-pills">
-        <div class="pill green">🔒 Secured Access</div>
-        <div class="pill blue">👥 Used by 2.3k+ users</div>
+
+        <div class="pill green">
+          🔒 Secured Access
+        </div>
+
+        <div class="pill blue">
+          👥 Used by 2.3k+ users
+        </div>
+
       </div>
 
-      <h1>Enter Access Portal</h1>
+      <h1>
+        Enter Access Portal
+      </h1>
 
       <p class="sub">
-        Create a simple account to unlock previews and referral rewards.
+        Create a simple account to unlock tiers and premium rewards.
       </p>
 
-      <div id="refNotice" class="notice hidden"></div>
+      <div
+        id="refNotice"
+        class="notice hidden"
+      ></div>
 
       <form id="entryForm">
 
@@ -60,13 +78,18 @@
         <label>Anti-bot verification</label>
 
         <div class="captcha-row">
-          <div id="captchaQuestion" class="captcha"></div>
+
+          <div
+            id="captchaQuestion"
+            class="captcha"
+          ></div>
 
           <input
             id="captchaAnswer"
             inputmode="numeric"
             placeholder="answer"
           />
+
         </div>
 
         <input
@@ -76,19 +99,32 @@
           autocomplete="off"
         />
 
-        <button class="main-btn" type="submit">
+        <button
+          class="main-btn"
+          type="submit"
+        >
           ENTER
         </button>
 
       </form>
 
-      <div id="entryMsg" class="msg"></div>
+      <div
+        id="entryMsg"
+        class="msg"
+      ></div>
 
     </div>
 
   </section>
 
-  <section id="panelPage" class="panel-page hidden">
+  <!-- ================= PANEL ================= -->
+
+  <section
+    id="panelPage"
+    class="panel-page hidden"
+  >
+
+    <!-- ================= SIDEBAR ================= -->
 
     <aside class="tiers">
 
@@ -97,67 +133,100 @@
       </div>
 
       <button class="tier active">
-        <span>Preview</span>
+        <span>Tier 1</span>
         <small>5 referrals</small>
       </button>
 
-      <button class="tier locked" onclick="openTelegram()">
+      <button
+        class="tier locked"
+        onclick="openTelegram()"
+      >
         <span>Tier 2</span>
         <small>Telegram Bot</small>
       </button>
 
-      <button class="tier locked" onclick="openTelegram()">
+      <button
+        class="tier locked"
+        onclick="openTelegram()"
+      >
         <span>Tier 3</span>
         <small>Telegram Bot</small>
       </button>
 
-      <button class="tier locked" onclick="openTelegram()">
+      <button
+        class="tier locked"
+        onclick="openTelegram()"
+      >
         <span>More Packs</span>
         <small>Telegram Bot</small>
       </button>
 
     </aside>
 
+    <!-- ================= MAIN ================= -->
+
     <section class="panel-main">
 
       <header class="panel-top">
 
         <div>
-          <div class="badge">PREVIEW ACCESS</div>
-          <h2 id="welcomeName">Welcome</h2>
+
+          <div class="badge">
+            TIER ACCESS
+          </div>
+
+          <h2 id="welcomeName">
+            Welcome
+          </h2>
+
         </div>
 
-        <button class="logout" onclick="logout()">
+        <button
+          class="logout"
+          onclick="logout()"
+        >
           Reset
         </button>
 
       </header>
 
-      <div class="locked-preview">
+      <!-- ================= HERO ================= -->
 
-        <div class="locked-badge">
-          🔒 LOCKED PREVIEW
+      <div class="hero-card">
+
+        <div class="hero-badge">
+          🔓 TIER SYSTEM
         </div>
 
-        <video autoplay muted loop playsinline>
-          <source src="/preview.mp4" type="video/mp4">
-        </video>
+        <h1>
+          Unlock Tier 1
+        </h1>
 
-        <div class="locked-overlay">
+        <p>
+          Share your referral link with other users.
+          Once 5 people join through your link,
+          Tier 1 unlocks automatically.
+        </p>
 
-          <h2>Preview Locked</h2>
+        <div class="hero-tags">
 
-          <p>
-            Unlock the full preview after 5 referrals.
-          </p>
+          <div class="hero-tag">
+            ⚡ Instant unlock
+          </div>
 
-          <button onclick="openTelegram()">
-            Unlock new tiers here : Telegram Bot
-          </button>
+          <div class="hero-tag">
+            🔒 Secure access
+          </div>
+
+          <div class="hero-tag">
+            👥 Referral based
+          </div>
 
         </div>
 
       </div>
+
+      <!-- ================= PROGRESS ================= -->
 
       <div class="unlock-card">
 
@@ -166,52 +235,68 @@
         </div>
 
         <h1>
-          Referrals needed to unlock preview
+          Referrals needed
         </h1>
 
         <p>
-          Share your personal link. When 5 people enter through it,
-          preview access unlocks automatically.
+          Reach 5 referrals to unlock Tier 1.
+          Once unlocked, you can access the premium preview
+          directly from the Telegram bot.
         </p>
 
         <div class="progress-top">
+
           <span>Progress</span>
-          <strong id="progressText">0 / 5</strong>
+
+          <strong id="progressText">
+            0 / 5
+          </strong>
+
         </div>
 
         <div class="progress">
           <div id="bar"></div>
         </div>
 
-        <div id="rewardBox" class="reward locked">
+        <div
+          id="rewardBox"
+          class="reward locked"
+        >
 
           <strong id="rewardTitle">
-            Preview locked
+            Tier 1 locked
           </strong>
 
           <span id="rewardText">
-            Reach 5 referrals to unlock your preview access.
+            Reach 5 referrals to unlock Tier 1 access.
           </span>
 
           <button
             id="rewardBtn"
             class="main-btn hidden"
-            onclick="claimReward()"
+            onclick="openTelegram()"
           >
-            OPEN PREVIEW
+            OPEN TELEGRAM BOT
           </button>
 
         </div>
 
       </div>
 
+      <!-- ================= SHARE ================= -->
+
       <div class="share-card">
 
-        <h3>Your referral link</h3>
+        <h3>
+          Your referral link
+        </h3>
 
         <div class="link-box">
 
-          <input id="refLink" readonly />
+          <input
+            id="refLink"
+            readonly
+          />
 
           <button onclick="copyLink()">
             COPY
@@ -219,38 +304,66 @@
 
         </div>
 
-        <div id="copyMsg" class="copy-msg"></div>
+        <div
+          id="copyMsg"
+          class="copy-msg"
+        ></div>
 
       </div>
+
+      <!-- ================= STATS ================= -->
 
       <div class="stats-grid">
 
         <div class="mini-card">
+
           <span>Total referrals</span>
-          <strong id="totalRefs">0</strong>
+
+          <strong id="totalRefs">
+            0
+          </strong>
+
         </div>
 
         <div class="mini-card">
-          <span>Current access</span>
-          <strong>Preview</strong>
+
+          <span>Current tier</span>
+
+          <strong>
+            Tier 1
+          </strong>
+
         </div>
 
         <div class="mini-card">
+
           <span>Needed</span>
-          <strong id="neededRefs">5</strong>
+
+          <strong id="neededRefs">
+            5
+          </strong>
+
         </div>
 
       </div>
 
+      <!-- ================= TELEGRAM ================= -->
+
       <div class="telegram-card">
 
-        <h3>Unlock new tiers here</h3>
+        <h3>
+          Unlock new tiers here
+        </h3>
 
         <p>
-          Tier 2 and all premium packs are available through the Telegram bot.
+          Tier 2, Tier 3 and all premium packs
+          are available directly through the Telegram bot.
         </p>
 
-        <button class="main-btn" onclick="openTelegram()">
+        <button
+          class="main-btn"
+          onclick="openTelegram()"
+        >
           OPEN TELEGRAM BOT
         </button>
 
