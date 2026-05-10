@@ -3,50 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tier 1 Unlocked</title>
+  <title>Preview Unlocked</title>
+
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <canvas id="bgCanvas"></canvas>
 
-  <main class="entry-page">
-    <div class="entry-card tier1-card">
-      <div class="badge">TIER 1 UNLOCKED</div>
-      <h1>Access Granted ✅</h1>
-      <p class="sub">
-        You unlocked Tier 1. This page is your first reward area.
-      </p>
+<canvas id="bgCanvas"></canvas>
 
-      <div class="notice">
-        Tier 1 content is unlocked. For more tiers and packs, open the Telegram bot.
-      </div>
+<main class="entry-page">
 
-      <button class="main-btn" onclick="window.open('https://t.me/Nonaxionbot','_blank')">
-        OPEN TELEGRAM BOT
-      </button>
+  <div class="entry-card tier1-card">
 
-      <button class="ghost-btn" onclick="location.href='/'">
-        BACK TO PORTAL
-      </button>
+    <div class="badge">
+      PREVIEW UNLOCKED
     </div>
-  </main>
 
-  <script>
-    const canvas = document.getElementById("bgCanvas");
-    const ctx = canvas.getContext("2d");
-    function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
-    resize(); addEventListener("resize", resize);
-    let stars = Array.from({length:130},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.6,d:Math.random()*0.75+0.1}));
-    function animate(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle="rgba(255,255,255,.75)";
-      stars.forEach(s=>{
-        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
-        s.y+=s.d;if(s.y>canvas.height){s.y=0;s.x=Math.random()*canvas.width}
-      });
-      requestAnimationFrame(animate);
+    <h1>
+      Access Granted ✅
+    </h1>
+
+    <p class="sub">
+      You unlocked the preview access.
+    </p>
+
+    <div class="notice">
+      Preview content is now available below.
+    </div>
+
+    <button
+      class="main-btn"
+      onclick="window.open(
+      'https://mega.nz/folder/sdVzxS4Y#XyscuaNdRv6SOgBRq7zDww',
+      '_blank'
+      )"
+    >
+      OPEN PREVIEW
+    </button>
+
+    <button
+      class="ghost-btn"
+      onclick="window.open(
+      'https://t.me/Nonaxionbot',
+      '_blank'
+      )"
+    >
+      UNLOCK NEW TIERS HERE
+    </button>
+
+    <button
+      class="ghost-btn"
+      onclick="location.href='/'"
+    >
+      BACK
+    </button>
+
+  </div>
+
+</main>
+
+<script>
+
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+
+}
+
+resize();
+
+addEventListener("resize", resize);
+
+let stars = Array.from(
+  {length:130},
+  () => ({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*1.6,
+    d:Math.random()*0.75+0.1
+  })
+);
+
+function animate(){
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  ctx.fillStyle =
+    "rgba(255,255,255,.75)";
+
+  stars.forEach(s => {
+
+    ctx.beginPath();
+
+    ctx.arc(
+      s.x,
+      s.y,
+      s.r,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    s.y += s.d;
+
+    if(s.y > canvas.height){
+
+      s.y = 0;
+      s.x = Math.random()*canvas.width;
+
     }
-    animate();
-  </script>
+
+  });
+
+  requestAnimationFrame(animate);
+
+}
+
+animate();
+
+</script>
+
 </body>
 </html>
