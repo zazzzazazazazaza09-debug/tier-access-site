@@ -1,24 +1,12 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <title>Nonaxion Access</title>
 
-  <title>
-    Nonaxion Access
-  </title>
-
-  <link
-    rel="stylesheet"
-    href="/style.css"
-  />
-
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body>
@@ -27,12 +15,7 @@
 
 <main class="app">
 
-  <!-- ENTRY -->
-
-  <section
-    id="entryPage"
-    class="entry-page"
-  >
+  <section id="entryPage" class="entry-page">
 
     <div class="entry-card">
 
@@ -40,66 +23,22 @@
         PRIVATE ACCESS SYSTEM
       </div>
 
-      <!-- TOP STATS -->
-
-      <div
-        style="
-          display:flex;
-          gap:10px;
-          justify-content:center;
-          flex-wrap:wrap;
-          margin-bottom:18px;
-        "
-      >
-
-        <div
-          style="
-            padding:8px 14px;
-            border-radius:999px;
-            background:rgba(0,255,156,.12);
-            border:1px solid rgba(0,255,156,.2);
-            color:#7dffbf;
-            font-size:.85rem;
-            font-weight:800;
-          "
-        >
-          🔒 Secured Access
-        </div>
-
-        <div
-          style="
-            padding:8px 14px;
-            border-radius:999px;
-            background:rgba(0,245,255,.12);
-            border:1px solid rgba(0,245,255,.2);
-            color:#7eefff;
-            font-size:.85rem;
-            font-weight:800;
-          "
-        >
-          👥 Used by 2.3k+ users
-        </div>
-
+      <div class="top-pills">
+        <div class="pill green">🔒 Secured Access</div>
+        <div class="pill blue">👥 Used by 2.3k+ users</div>
       </div>
 
-      <h1>
-        Enter Access Portal
-      </h1>
+      <h1>Enter Access Portal</h1>
 
       <p class="sub">
         Create a simple account to unlock previews and referral rewards.
       </p>
 
-      <div
-        id="refNotice"
-        class="notice hidden"
-      ></div>
+      <div id="refNotice" class="notice hidden"></div>
 
       <form id="entryForm">
 
-        <label>
-          Name
-        </label>
+        <label>Name</label>
 
         <input
           id="username"
@@ -108,9 +47,7 @@
           maxlength="24"
         />
 
-        <label>
-          Password
-        </label>
+        <label>Password</label>
 
         <input
           id="password"
@@ -120,23 +57,16 @@
           maxlength="60"
         />
 
-        <label>
-          Anti-bot verification
-        </label>
+        <label>Anti-bot verification</label>
 
         <div class="captcha-row">
-
-          <div
-            id="captchaQuestion"
-            class="captcha"
-          ></div>
+          <div id="captchaQuestion" class="captcha"></div>
 
           <input
             id="captchaAnswer"
             inputmode="numeric"
             placeholder="answer"
           />
-
         </div>
 
         <input
@@ -146,30 +76,19 @@
           autocomplete="off"
         />
 
-        <button
-          class="main-btn"
-          type="submit"
-        >
+        <button class="main-btn" type="submit">
           ENTER
         </button>
 
       </form>
 
-      <div
-        id="entryMsg"
-        class="msg"
-      ></div>
+      <div id="entryMsg" class="msg"></div>
 
     </div>
 
   </section>
 
-  <!-- DASHBOARD -->
-
-  <section
-    id="panelPage"
-    class="panel-page hidden"
-  >
+  <section id="panelPage" class="panel-page hidden">
 
     <aside class="tiers">
 
@@ -178,45 +97,23 @@
       </div>
 
       <button class="tier active">
-
-        <span>
-          Preview
-        </span>
-
-        <small>
-          5 referrals
-        </small>
-
+        <span>Preview</span>
+        <small>5 referrals</small>
       </button>
 
-      <button
-        class="tier locked"
-        onclick="openTelegram()"
-      >
-
-        <span>
-          Tier 2
-        </span>
-
-        <small>
-          Telegram Bot
-        </small>
-
+      <button class="tier locked" onclick="openTelegram()">
+        <span>Tier 2</span>
+        <small>Telegram Bot</small>
       </button>
 
-      <button
-        class="tier locked"
-        onclick="openTelegram()"
-      >
+      <button class="tier locked" onclick="openTelegram()">
+        <span>Tier 3</span>
+        <small>Telegram Bot</small>
+      </button>
 
-        <span>
-          Tier 3
-        </span>
-
-        <small>
-          Telegram Bot
-        </small>
-
+      <button class="tier locked" onclick="openTelegram()">
+        <span>More Packs</span>
+        <small>Telegram Bot</small>
       </button>
 
     </aside>
@@ -226,25 +123,41 @@
       <header class="panel-top">
 
         <div>
-
-          <div class="badge">
-            PREVIEW ACCESS
-          </div>
-
-          <h2 id="welcomeName">
-            Welcome
-          </h2>
-
+          <div class="badge">PREVIEW ACCESS</div>
+          <h2 id="welcomeName">Welcome</h2>
         </div>
 
-        <button
-          class="logout"
-          onclick="logout()"
-        >
+        <button class="logout" onclick="logout()">
           Reset
         </button>
 
       </header>
+
+      <div class="locked-preview">
+
+        <div class="locked-badge">
+          🔒 LOCKED PREVIEW
+        </div>
+
+        <video autoplay muted loop playsinline>
+          <source src="/preview.mp4" type="video/mp4">
+        </video>
+
+        <div class="locked-overlay">
+
+          <h2>Preview Locked</h2>
+
+          <p>
+            Unlock the full preview after 5 referrals.
+          </p>
+
+          <button onclick="openTelegram()">
+            Unlock new tiers here : Telegram Bot
+          </button>
+
+        </div>
+
+      </div>
 
       <div class="unlock-card">
 
@@ -262,25 +175,15 @@
         </p>
 
         <div class="progress-top">
-
-          <span>
-            Progress
-          </span>
-
-          <strong id="progressText">
-            0 / 5
-          </strong>
-
+          <span>Progress</span>
+          <strong id="progressText">0 / 5</strong>
         </div>
 
         <div class="progress">
           <div id="bar"></div>
         </div>
 
-        <div
-          id="rewardBox"
-          class="reward locked"
-        >
+        <div id="rewardBox" class="reward locked">
 
           <strong id="rewardTitle">
             Preview locked
@@ -304,16 +207,11 @@
 
       <div class="share-card">
 
-        <h3>
-          Your referral link
-        </h3>
+        <h3>Your referral link</h3>
 
         <div class="link-box">
 
-          <input
-            id="refLink"
-            readonly
-          />
+          <input id="refLink" readonly />
 
           <button onclick="copyLink()">
             COPY
@@ -321,67 +219,38 @@
 
         </div>
 
-        <div
-          id="copyMsg"
-          class="copy-msg"
-        ></div>
+        <div id="copyMsg" class="copy-msg"></div>
 
       </div>
 
       <div class="stats-grid">
 
         <div class="mini-card">
-
-          <span>
-            Total referrals
-          </span>
-
-          <strong id="totalRefs">
-            0
-          </strong>
-
+          <span>Total referrals</span>
+          <strong id="totalRefs">0</strong>
         </div>
 
         <div class="mini-card">
-
-          <span>
-            Current access
-          </span>
-
-          <strong>
-            Preview
-          </strong>
-
+          <span>Current access</span>
+          <strong>Preview</strong>
         </div>
 
         <div class="mini-card">
-
-          <span>
-            Needed
-          </span>
-
-          <strong id="neededRefs">
-            5
-          </strong>
-
+          <span>Needed</span>
+          <strong id="neededRefs">5</strong>
         </div>
 
       </div>
 
       <div class="telegram-card">
 
-        <h3>
-          Unlock new tiers here
-        </h3>
+        <h3>Unlock new tiers here</h3>
 
         <p>
           Tier 2 and all premium packs are available through the Telegram bot.
         </p>
 
-        <button
-          class="main-btn"
-          onclick="openTelegram()"
-        >
+        <button class="main-btn" onclick="openTelegram()">
           OPEN TELEGRAM BOT
         </button>
 
@@ -397,4 +266,3 @@
 
 </body>
 </html>
-```
