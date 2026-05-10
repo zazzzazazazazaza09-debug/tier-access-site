@@ -38,6 +38,7 @@
         <input id="password" type="password" autocomplete="new-password" placeholder="choose a password" maxlength="60" />
 
         <label>Anti-bot verification</label>
+
         <div class="captcha-row">
           <div id="captchaQuestion" class="captcha"></div>
           <input id="captchaAnswer" inputmode="numeric" placeholder="answer" />
@@ -91,20 +92,30 @@
       </header>
 
       <div class="locked-preview">
-        <div class="locked-badge">🔒 LOCKED VIDEO</div>
 
         <video autoplay muted loop playsinline>
           <source src="https://files.catbox.moe/97niew.mp4" type="video/mp4">
         </video>
 
-        <div class="locked-overlay">
-          <h2>Tier 1 Video Locked</h2>
-          <p>Reach 5 referrals to unlock Tier 1, then open the Telegram bot to view the video.</p>
+        <div class="video-dark"></div>
+
+        <div class="locked-pill">
+          🔒 TIER 1 LOCKED
+        </div>
+
+        <div class="locked-center">
+          <h2>Premium Preview</h2>
+
+          <p>
+            Reach 5 referrals to unlock Tier 1 access.
+            Premium content is available inside the Telegram bot.
+          </p>
 
           <button onclick="openTelegram()">
-            Unlock new tiers here : Telegram Bot
+            OPEN TELEGRAM BOT
           </button>
         </div>
+
       </div>
 
       <div class="unlock-card">
