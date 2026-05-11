@@ -9,6 +9,7 @@ This is the Vercel version.
 - `public/app.js`
 - `public/tier1.html`
 - `api/enter.js`
+- `api/login.js`
 - `api/me.js`
 - `api/claim.js`
 - `database/supabase.sql`
@@ -47,3 +48,10 @@ REWARD_URL=/tier1.html
 ## Supabase
 
 Run `database/supabase.sql` in Supabase SQL Editor.
+
+If you already created the database before this update, run the latest
+`database/supabase.sql` again. It adds the login index, anti-abuse columns,
+referral claim table, and reward click table.
+
+The username index is intentionally not unique because older databases may
+already contain duplicate usernames. New duplicates are blocked by the API.

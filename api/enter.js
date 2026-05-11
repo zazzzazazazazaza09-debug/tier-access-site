@@ -66,6 +66,19 @@ module.exports = async function handler(req, res) {
 
     const supabase = getSupabase();
 
+    const { data: existingUser, error: existingUserError } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("username", username)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingUserError) throw existingUserError;
+
+    if (existingUser) {
+      return send(res, 409, { error: "This username already exists. Log in instead." });
+    }
+
     let referrer = null;
 
     if (ref) {

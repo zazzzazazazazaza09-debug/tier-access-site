@@ -4,6 +4,9 @@ add column if not exists signup_ip_hash text;
 alter table profiles
 add column if not exists signup_device_hash text;
 
+create index if not exists profiles_username_lower_idx
+on profiles(lower(username));
+
 create table if not exists referral_claims (
   id uuid primary key default gen_random_uuid(),
   referrer_id uuid not null references profiles(id) on delete cascade,
@@ -31,3 +34,10 @@ where counted = true;
 create unique index if not exists referral_claims_unique_device_per_referrer
 on referral_claims(referrer_id, device_hash)
 where counted = true;
+
+create table if not exists reward_clicks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id) on delete set null,
+  username text,
+  created_at timestamptz not null default now()
+);
