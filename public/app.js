@@ -96,14 +96,20 @@ async function loadMe() {
 
   $("bar").style.width = `${pct}%`;
   $("progressText").textContent = `${count} / 5`;
+  $("totalRefs").textContent = count;
+  $("neededRefs").textContent = needed;
 
   if (currentUser.reward_unlocked) {
     $("rewardTitle").textContent = "Tier 1 unlocked";
     $("rewardText").textContent = "Access is live. Open your Tier 1 content now.";
+    $("rewardBox").classList.remove("locked");
+    $("rewardBox").classList.add("unlocked");
     $("rewardBtn").classList.remove("hidden");
   } else {
-    $("rewardTitle").textContent = "Referral lock active";
+    $("rewardTitle").textContent = "Tier 1 locked";
     $("rewardText").textContent = `You need ${needed} more referral${needed > 1 ? "s" : ""} to unlock Tier 1.`;
+    $("rewardBox").classList.add("locked");
+    $("rewardBox").classList.remove("unlocked");
     $("rewardBtn").classList.add("hidden");
   }
 }
@@ -210,59 +216,37 @@ function initBackground() {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let width = 0;
   let height = 0;
-  let points = [];
+  let stars = [];
 
   function resize() {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
-    const count = Math.min(90, Math.max(42, Math.floor((width * height) / 18000)));
+    const count = Math.min(130, Math.max(70, Math.floor((width * height) / 9000)));
 
-    points = Array.from({ length: count }, () => ({
+    stars = Array.from({ length: count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - .5) * .32,
-      vy: (Math.random() - .5) * .32,
-      r: Math.random() * 1.6 + .6
+      r: Math.random() * 1.6 + .35,
+      d: Math.random() * .75 + .1
     }));
   }
 
   function draw() {
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "rgba(99, 244, 255, .72)";
-    ctx.strokeStyle = "rgba(99, 244, 255, .12)";
-    ctx.lineWidth = 1;
+    ctx.fillStyle = "rgba(255,255,255,.72)";
 
-    for (const point of points) {
-      point.x += point.vx;
-      point.y += point.vy;
-
-      if (point.x < 0 || point.x > width) point.vx *= -1;
-      if (point.y < 0 || point.y > height) point.vy *= -1;
-
+    for (const star of stars) {
       ctx.beginPath();
-      ctx.arc(point.x, point.y, point.r, 0, Math.PI * 2);
+      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
       ctx.fill();
-    }
 
-    for (let i = 0; i < points.length; i++) {
-      for (let j = i + 1; j < points.length; j++) {
-        const a = points[i];
-        const b = points[j];
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      star.y += star.d;
 
-        if (distance < 125) {
-          ctx.globalAlpha = 1 - distance / 125;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
+      if (star.y > height) {
+        star.y = 0;
+        star.x = Math.random() * width;
       }
     }
-
-    ctx.globalAlpha = 1;
 
     if (!prefersReducedMotion) {
       requestAnimationFrame(draw);
