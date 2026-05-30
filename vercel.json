@@ -1,5 +1,1 @@
-{
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "public"
-}
+{"version":2,"buildCommand":"npm run build","outputDirectory":"public"}

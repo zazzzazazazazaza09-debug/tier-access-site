@@ -1,262 +1,123 @@
 const API = "/api";
-
 let captchaA = 0;
 let captchaB = 0;
 let currentUser = null;
-let authMode = "login";
-
 const params = new URLSearchParams(window.location.search);
 const refFromUrl = params.get("ref");
-
-function $(id) {
-  return document.getElementById(id);
-}
-
+function $(id) { return document.getElementById(id); }
 function getDeviceId() {
   let deviceId = localStorage.getItem("device_id");
-
   if (!deviceId) {
-    deviceId = `dev_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
+    deviceId = "dev_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
     localStorage.setItem("device_id", deviceId);
   }
-
   return deviceId;
 }
-
-function setEntryMessage(text, error = false) {
+function showEntryMessage(text, error = false) {
   $("entryMsg").textContent = text;
-  $("entryMsg").className = error ? "msg error" : "msg success";
+  $("entryMsg").style.color = error ? "#ff9aa8" : "#a7f3d0";
 }
-
 function createCaptcha() {
   captchaA = Math.floor(Math.random() * 8) + 2;
   captchaB = Math.floor(Math.random() * 8) + 2;
   $("captchaQuestion").textContent = `${captchaA} + ${captchaB}`;
 }
-
-function setMode(mode) {
-  authMode = mode;
-  const isSignup = mode === "signup";
-
-  $("loginTab").classList.toggle("active", !isSignup);
-  $("signupTab").classList.toggle("active", isSignup);
-  $("captchaBlock").classList.toggle("hidden", !isSignup);
-  $("submitBtn").textContent = isSignup ? "Create account" : "Log in";
-  $("password").autocomplete = isSignup ? "new-password" : "current-password";
-  $("entryMsg").textContent = "";
-
-  if (isSignup) {
-    createCaptcha();
-  }
-}
-
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {})
-  };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API}/${path}`, {
-    ...options,
-    headers
-  });
-
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${API}/${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(data.error || "Server error");
-  }
-
+  if (!res.ok) throw new Error(data.error || "Request failed");
   return data;
 }
-
-function openTelegram() {
-  window.open("https://t.me/Nonaxionbot", "_blank");
+function openTelegram() { window.open("https://t.me/Nonaxionbot", "_blank"); }
+if (refFromUrl) {
+  $("refNotice").classList.remove("hidden");
+  $("refNotice").textContent = `Referral detected: ${refFromUrl}`;
 }
-
+$("entryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    const username = $("username").value.trim();
+    const password = $("password").value;
+    const captchaAnswer = $("captchaAnswer").value.trim();
+    const honeypot = $("website").value;
+    if (username.length < 3) throw new Error("Name must be at least 3 letters.");
+    if (password.length < 4) throw new Error("Password must be at least 4 characters.");
+    const data = await request("enter", {
+      method: "POST",
+      body: JSON.stringify({ username, password, ref: refFromUrl, device_id: getDeviceId(), captchaA, captchaB, captchaAnswer, honeypot })
+    });
+    localStorage.setItem("token", data.token);
+    await loadMe();
+    if (data.referral_message) setTimeout(() => alert(data.referral_message), 300);
+  } catch (err) {
+    showEntryMessage(err.message, true);
+    createCaptcha();
+  }
+});
 async function loadMe() {
   const data = await request("me");
   currentUser = data.user;
-
   $("entryPage").classList.add("hidden");
   $("panelPage").classList.remove("hidden");
-  $("welcomeName").textContent = `Welcome, ${currentUser.username}`;
-
+  $("welcomeName").textContent = currentUser.username;
   const link = `${window.location.origin}${window.location.pathname}?ref=${currentUser.referral_code}`;
   $("refLink").value = link;
-
   const count = Number(currentUser.referrals_count || 0);
   const needed = Math.max(0, 5 - count);
   const pct = Math.min(100, (count / 5) * 100);
-
   $("bar").style.width = `${pct}%`;
   $("progressText").textContent = `${count} / 5`;
   $("totalRefs").textContent = count;
   $("neededRefs").textContent = needed;
-
   if (currentUser.reward_unlocked) {
-    $("rewardTitle").textContent = "Tier 1 unlocked";
-    $("rewardText").textContent = "Access is live. Open your Tier 1 content now.";
     $("rewardBox").classList.remove("locked");
     $("rewardBox").classList.add("unlocked");
+    $("rewardTitle").textContent = "Tier 1 unlocked";
+    $("rewardText").textContent = "You reached 5 referrals. Open Telegram Bot to access Tier 1.";
     $("rewardBtn").classList.remove("hidden");
   } else {
-    $("rewardTitle").textContent = "Tier 1 locked";
-    $("rewardText").textContent = `You need ${needed} more referral${needed > 1 ? "s" : ""} to unlock Tier 1.`;
     $("rewardBox").classList.add("locked");
     $("rewardBox").classList.remove("unlocked");
+    $("rewardTitle").textContent = "Tier 1 locked";
+    $("rewardText").textContent = `You need ${needed} more referral(s) to unlock Tier 1.`;
     $("rewardBtn").classList.add("hidden");
   }
 }
-
 async function copyLink() {
   await navigator.clipboard.writeText($("refLink").value);
-  $("copyMsg").textContent = "Link copied.";
-  setTimeout(() => {
-    $("copyMsg").textContent = "";
-  }, 1500);
+  $("copyMsg").textContent = "Copied!";
+  setTimeout(() => $("copyMsg").textContent = "", 1500);
 }
-
 async function claimReward() {
   try {
     const data = await request("claim", { method: "POST" });
     window.open(data.reward_url, "_blank");
-  } catch (err) {
-    alert(err.message);
-  }
+  } catch (err) { alert(err.message); }
 }
-
-function logout() {
-  localStorage.removeItem("token");
-  window.location.reload();
-}
-
-function initAuth() {
-  if (!$("entryForm")) {
-    return;
-  }
-
-  if (refFromUrl) {
-    $("refNotice").classList.remove("hidden");
-    $("refNotice").textContent = "Referral link detected. Create an account to validate it.";
-    setMode("signup");
-  }
-
-  $("loginTab").addEventListener("click", () => setMode("login"));
-  $("signupTab").addEventListener("click", () => setMode("signup"));
-
-  $("entryForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    try {
-      const username = $("username").value.trim();
-      const password = $("password").value;
-
-      if (username.length < 3) {
-        throw new Error("Username must be at least 3 characters.");
-      }
-
-      if (password.length < 4) {
-        throw new Error("Password must be at least 4 characters.");
-      }
-
-      const body = { username, password };
-
-      if (authMode === "signup") {
-        body.ref = refFromUrl;
-        body.device_id = getDeviceId();
-        body.captchaA = captchaA;
-        body.captchaB = captchaB;
-        body.captchaAnswer = $("captchaAnswer").value.trim();
-        body.honeypot = $("website").value;
-      }
-
-      const data = await request(authMode === "signup" ? "enter" : "login", {
-        method: "POST",
-        body: JSON.stringify(body)
-      });
-
-      localStorage.setItem("token", data.token);
-      await loadMe();
-
-      if (data.referral_message) {
-        alert(data.referral_message);
-      }
-    } catch (err) {
-      setEntryMessage(err.message, true);
-
-      if (authMode === "signup") {
-        createCaptcha();
-      }
-    }
+function logout() { localStorage.removeItem("token"); location.reload(); }
+const canvas = $("bgCanvas");
+const ctx = canvas.getContext("2d");
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener("resize", resize);
+let stars = Array.from({ length: 130 }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.6, d: Math.random() * 0.75 + 0.1 }));
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(255,255,255,.75)";
+  stars.forEach(s => {
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fill();
+    s.y += s.d;
+    if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
   });
-
-  setMode(authMode);
-
-  if (localStorage.getItem("token")) {
-    loadMe().catch(() => {
-      localStorage.removeItem("token");
-    });
-  }
+  requestAnimationFrame(animate);
 }
-
-function initBackground() {
-  const canvas = $("bgCanvas");
-
-  if (!canvas) {
-    return;
-  }
-
-  const ctx = canvas.getContext("2d");
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let width = 0;
-  let height = 0;
-  let stars = [];
-
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-    const count = Math.min(130, Math.max(70, Math.floor((width * height) / 9000)));
-
-    stars = Array.from({ length: count }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 1.6 + .35,
-      d: Math.random() * .75 + .1
-    }));
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "rgba(255,255,255,.72)";
-
-    for (const star of stars) {
-      ctx.beginPath();
-      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-      ctx.fill();
-
-      star.y += star.d;
-
-      if (star.y > height) {
-        star.y = 0;
-        star.x = Math.random() * width;
-      }
-    }
-
-    if (!prefersReducedMotion) {
-      requestAnimationFrame(draw);
-    }
-  }
-
-  resize();
-  window.addEventListener("resize", resize);
-  draw();
+animate();
+createCaptcha();
+if (localStorage.getItem("token")) {
+  loadMe().catch(() => { localStorage.removeItem("token"); });
 }
-
-initBackground();
-initAuth();

@@ -4,162 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=4" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
-
 <body>
-<canvas id="bgCanvas" aria-hidden="true"></canvas>
-
+<canvas id="bgCanvas"></canvas>
 <main class="app">
   <section id="entryPage" class="entry-page">
     <div class="entry-card">
       <div class="badge">PRIVATE ACCESS SYSTEM</div>
-
-      <div class="top-pills">
-        <div class="pill green">Secured Access</div>
-        <div class="pill blue">Used by 2.3k+ users</div>
-      </div>
-
+      <div class="top-pills"><div class="pill green">🔒 Secured Access</div><div class="pill blue">👥 Used by 2.3k+ users</div></div>
       <h1>Enter Access Portal</h1>
-      <p class="sub">Log in or create a simple account to unlock tiers and premium rewards.</p>
-
-      <div class="auth-tabs" role="tablist" aria-label="Choose access mode">
-        <button id="loginTab" class="tab active" type="button">Login</button>
-        <button id="signupTab" class="tab" type="button">Sign up</button>
-      </div>
-
+      <p class="sub">Create a simple account to unlock tiers and premium rewards.</p>
       <div id="refNotice" class="notice hidden"></div>
-
       <form id="entryForm">
-        <label for="username">Username</label>
-        <input id="username" autocomplete="username" placeholder="minimum 3 letters" maxlength="24" />
-
-        <label for="password">Password</label>
-        <input id="password" type="password" autocomplete="current-password" placeholder="your password" maxlength="60" />
-
-        <div id="captchaBlock" class="captcha-block hidden">
-          <label for="captchaAnswer">Anti-bot verification</label>
-          <div class="captcha-row">
-            <div id="captchaQuestion" class="captcha"></div>
-            <input id="captchaAnswer" inputmode="numeric" placeholder="answer" />
-          </div>
-        </div>
-
+        <label>Name</label><input id="username" autocomplete="username" placeholder="minimum 3 letters" maxlength="24" />
+        <label>Password</label><input id="password" type="password" autocomplete="new-password" placeholder="choose a password" maxlength="60" />
+        <label>Anti-bot verification</label><div class="captcha-row"><div id="captchaQuestion" class="captcha"></div><input id="captchaAnswer" inputmode="numeric" placeholder="answer" /></div>
         <input id="website" class="honeypot" tabindex="-1" autocomplete="off" />
-        <button id="submitBtn" class="main-btn" type="submit">Login</button>
+        <button class="main-btn" type="submit">ENTER</button>
       </form>
-
-      <div id="entryMsg" class="msg" aria-live="polite"></div>
+      <div id="entryMsg" class="msg"></div>
     </div>
   </section>
-
   <section id="panelPage" class="panel-page hidden">
     <aside class="tiers">
-      <div class="tier-logo">TIERS</div>
-
-      <button class="tier active" type="button">
-        <span>Tier 1</span>
-        <small>5 referrals</small>
-      </button>
-
-      <button class="tier locked" type="button" onclick="openTelegram()">
-        <span>Tier 2</span>
-        <small>Telegram Bot</small>
-      </button>
-
-      <button class="tier locked" type="button" onclick="openTelegram()">
-        <span>Tier 3</span>
-        <small>Telegram Bot</small>
-      </button>
-
-      <button class="tier locked" type="button" onclick="openTelegram()">
-        <span>More Packs</span>
-        <small>Telegram Bot</small>
-      </button>
+      <div class="tier-logo">⚡ TIERS</div>
+      <button class="tier active"><span>Tier 1</span><small>5 referrals</small></button>
+      <button class="tier locked" onclick="openTelegram()"><span>Tier 2</span><small>Telegram Bot</small></button>
+      <button class="tier locked" onclick="openTelegram()"><span>Tier 3</span><small>Telegram Bot</small></button>
+      <button class="tier locked" onclick="openTelegram()"><span>More Packs</span><small>Telegram Bot</small></button>
     </aside>
-
     <section class="panel-main">
-      <header class="panel-top">
-        <div>
-          <div class="badge">TIER 1 ACCESS</div>
-          <h2 id="welcomeName">Welcome</h2>
-        </div>
-
-        <button class="logout" type="button" onclick="logout()">Logout</button>
-      </header>
-
+      <header class="panel-top"><div><div class="badge">TIER 1 ACCESS</div><h2 id="welcomeName">Welcome</h2></div><button class="logout" onclick="logout()">Reset</button></header>
       <div class="locked-preview">
-        <video autoplay muted loop playsinline>
-          <source src="https://files.catbox.moe/97niew.mp4" type="video/mp4">
-          <source src="/preview.mp4" type="video/mp4">
-        </video>
-
-        <div class="video-dark"></div>
-        <div class="locked-pill">TIER 1 LOCKED</div>
-
-        <div class="locked-center">
-          <h2>Premium Preview</h2>
-          <p>Reach 5 referrals to unlock Tier 1 access. Premium content is available inside the Telegram bot.</p>
-          <button type="button" onclick="openTelegram()">OPEN TELEGRAM BOT</button>
-        </div>
+        <video autoplay muted loop playsinline><source src="https://files.catbox.moe/97niew.mp4" type="video/mp4"></video>
+        <div class="video-dark"></div><div class="locked-pill">🔒 TIER 1 LOCKED</div>
+        <div class="locked-center"><h2>Premium Preview</h2><p>Reach 5 referrals to unlock Tier 1 access. Premium content is available inside the Telegram bot.</p><button onclick="openTelegram()">OPEN TELEGRAM BOT</button></div>
       </div>
-
       <div class="unlock-card">
-        <div class="locked-icon">LOCK</div>
-        <h1>Referrals needed to unlock Tier 1</h1>
+        <div class="locked-icon">🔒</div><h1>Referrals needed to unlock Tier 1</h1>
         <p>Share your personal link. When 5 people enter through it, Tier 1 unlocks automatically.</p>
-
-        <div class="progress-top">
-          <span>Progress</span>
-          <strong id="progressText">0 / 5</strong>
-        </div>
-
-        <div class="progress">
-          <div id="bar"></div>
-        </div>
-
-        <div id="rewardBox" class="reward locked">
-          <strong id="rewardTitle">Tier 1 locked</strong>
-          <span id="rewardText">Reach 5 referrals to unlock Tier 1 access.</span>
-          <button id="rewardBtn" class="main-btn hidden" type="button" onclick="claimReward()">OPEN TIER 1</button>
-        </div>
+        <div class="progress-top"><span>Progress</span><strong id="progressText">0 / 5</strong></div><div class="progress"><div id="bar"></div></div>
+        <div id="rewardBox" class="reward locked"><strong id="rewardTitle">Tier 1 locked</strong><span id="rewardText">Reach 5 referrals to unlock Tier 1 access.</span><button id="rewardBtn" class="main-btn hidden" onclick="openTelegram()">OPEN TELEGRAM BOT</button></div>
       </div>
-
-      <div class="share-card">
-        <h3>Your referral link</h3>
-        <div class="link-box">
-          <input id="refLink" readonly />
-          <button type="button" onclick="copyLink()">COPY</button>
-        </div>
-        <div id="copyMsg" class="copy-msg" aria-live="polite"></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="mini-card">
-          <span>Total referrals</span>
-          <strong id="totalRefs">0</strong>
-        </div>
-
-        <div class="mini-card">
-          <span>Current tier</span>
-          <strong>Tier 1</strong>
-        </div>
-
-        <div class="mini-card">
-          <span>Needed</span>
-          <strong id="neededRefs">5</strong>
-        </div>
-      </div>
-
-      <div class="telegram-card">
-        <h3>Get more tiers with the Telegram bot</h3>
-        <p>Tier 2, Tier 3 and premium packs are available directly through the Telegram bot.</p>
-        <button class="main-btn" type="button" onclick="openTelegram()">OPEN TELEGRAM BOT</button>
-      </div>
+      <div class="share-card"><h3>Your referral link</h3><div class="link-box"><input id="refLink" readonly /><button onclick="copyLink()">COPY</button></div><div id="copyMsg" class="copy-msg"></div></div>
+      <div class="stats-grid"><div class="mini-card"><span>Total referrals</span><strong id="totalRefs">0</strong></div><div class="mini-card"><span>Current tier</span><strong>Tier 1</strong></div><div class="mini-card"><span>Needed</span><strong id="neededRefs">5</strong></div></div>
+      <div class="telegram-card"><h3>Unlock new tiers here</h3><p>Tier 2, Tier 3 and all premium packs are available directly through the Telegram bot.</p><button class="main-btn" onclick="openTelegram()">OPEN TELEGRAM BOT</button></div>
     </section>
   </section>
 </main>
-
-<script src="/app.js?v=4"></script>
+<script src="/app.js"></script>
 </body>
 </html>

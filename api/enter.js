@@ -6,183 +6,88 @@ const { makeReferralCode, send } = require("./_utils");
 
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
-
-  if (forwarded) {
-    return String(forwarded).split(",")[0].trim();
-  }
-
-  return (
-    req.headers["x-real-ip"] ||
-    req.socket?.remoteAddress ||
-    "unknown"
-  );
+  if (forwarded) return String(forwarded).split(",")[0].trim();
+  return req.headers["x-real-ip"] || req.socket?.remoteAddress || "unknown";
 }
-
 function hashValue(value) {
   const secret = process.env.JWT_SECRET || "fallback_secret";
-
-  return crypto
-    .createHmac("sha256", secret)
-    .update(String(value || "unknown"))
-    .digest("hex");
+  return crypto.createHmac("sha256", secret).update(String(value || "unknown")).digest("hex");
+}
+async function makeUniqueReferralCode(supabase) {
+  for (let i = 0; i < 20; i++) {
+    const code = makeReferralCode();
+    const { data, error } = await supabase.from("profiles").select("id").eq("referral_code", code).maybeSingle();
+    if (error) throw error;
+    if (!data) return code;
+  }
+  throw new Error("Could not generate referral code");
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method !== "POST") {
-    return send(res, 405, { error: "Method not allowed" });
-  }
-
+  if (req.method !== "POST") return send(res, 405, { error: "Method not allowed" });
   try {
     const body = req.body || {};
-
     const username = String(body.username || "").trim();
     const password = String(body.password || "");
     const ref = String(body.ref || "").trim();
     const deviceId = String(body.device_id || "").trim();
     const honeypot = String(body.honeypot || "");
 
-    if (honeypot) {
-      return send(res, 400, { error: "Bot detected" });
-    }
-
-    const captchaOk =
-      Number(body.captchaAnswer) === Number(body.captchaA) + Number(body.captchaB);
-
-    if (!captchaOk) {
-      return send(res, 400, { error: "Wrong anti-bot code" });
-    }
-
-    if (username.length < 3) {
-      return send(res, 400, { error: "Name must be at least 3 letters" });
-    }
-
-    if (password.length < 4) {
-      return send(res, 400, { error: "Password must be at least 4 characters" });
-    }
-
-    if (!deviceId || deviceId.length < 10) {
-      return send(res, 400, { error: "Device verification failed. Refresh and try again." });
-    }
+    if (honeypot) return send(res, 400, { error: "Bot detected" });
+    if (Number(body.captchaAnswer) !== Number(body.captchaA) + Number(body.captchaB)) return send(res, 400, { error: "Wrong anti-bot code" });
+    if (username.length < 3) return send(res, 400, { error: "Name must be at least 3 letters" });
+    if (password.length < 4) return send(res, 400, { error: "Password must be at least 4 characters" });
+    if (!deviceId || deviceId.length < 10) return send(res, 400, { error: "Device verification failed. Refresh and try again." });
 
     const supabase = getSupabase();
-
-    const { data: existingUser, error: existingUserError } = await supabase
-      .from("profiles")
-      .select("id")
-      .ilike("username", username)
-      .limit(1)
-      .maybeSingle();
-
-    if (existingUserError) throw existingUserError;
-
-    if (existingUser) {
-      return send(res, 409, { error: "This username already exists. Log in instead." });
-    }
+    const { data: existingUser, error: existingError } = await supabase.from("profiles").select("id").ilike("username", username).limit(1).maybeSingle();
+    if (existingError) throw existingError;
+    if (existingUser) return send(res, 409, { error: "This username already exists. Try another name." });
 
     let referrer = null;
-
     if (ref) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, referrals_count")
-        .eq("referral_code", ref)
-        .maybeSingle();
-
+      const { data, error } = await supabase.from("profiles").select("id, referrals_count").eq("referral_code", ref).maybeSingle();
+      if (error) throw error;
       referrer = data || null;
     }
 
     const password_hash = await bcrypt.hash(password, 12);
-
-    let referral_code = makeReferralCode();
-
-    for (let i = 0; i < 5; i++) {
-      const { data: exists } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("referral_code", referral_code)
-        .maybeSingle();
-
-      if (!exists) break;
-      referral_code = makeReferralCode();
-    }
-
-    const ip = getClientIp(req);
-    const ipHash = hashValue(ip);
+    const referral_code = await makeUniqueReferralCode(supabase);
+    const ipHash = hashValue(getClientIp(req));
     const deviceHash = hashValue(deviceId);
 
-    const { data: created, error: createError } = await supabase
-      .from("profiles")
-      .insert({
-        username,
-        password_hash,
-        referral_code,
-        referred_by: referrer ? referrer.id : null,
-        signup_ip_hash: ipHash,
-        signup_device_hash: deviceHash
-      })
-      .select("id, username, referral_code, referrals_count, reward_unlocked")
-      .single();
-
+    const { data: created, error: createError } = await supabase.from("profiles").insert({
+      username, password_hash, referral_code,
+      referred_by: referrer ? referrer.id : null,
+      signup_ip_hash: ipHash,
+      signup_device_hash: deviceHash
+    }).select("id, username, referral_code, referrals_count, reward_unlocked").single();
     if (createError) throw createError;
 
     let referralMessage = "";
-
     if (referrer && referrer.id !== created.id) {
-      const { data: alreadyUsed } = await supabase
-        .from("referral_claims")
-        .select("id, reason")
-        .eq("referrer_id", referrer.id)
-        .or(`ip_hash.eq.${ipHash},device_hash.eq.${deviceHash}`)
-        .limit(1);
+      const { data: alreadyUsed, error: usedError } = await supabase.from("referral_claims").select("id").eq("referrer_id", referrer.id).or(`ip_hash.eq.${ipHash},device_hash.eq.${deviceHash}`).limit(1);
+      if (usedError) throw usedError;
 
       if (alreadyUsed && alreadyUsed.length > 0) {
-        await supabase.from("referral_claims").insert({
-          referrer_id: referrer.id,
-          referred_id: created.id,
-          ip_hash: ipHash,
-          device_hash: deviceHash,
-          counted: false,
-          reason: "duplicate_ip_or_device"
-        });
-
-        referralMessage =
-          "Account created, but this referral was not counted because this IP/device already used this referral link.";
+        const { error: claimError } = await supabase.from("referral_claims").insert({ referrer_id: referrer.id, referred_id: created.id, ip_hash: ipHash, device_hash: deviceHash, counted: false, reason: "duplicate_ip_or_device" });
+        if (claimError) throw claimError;
+        referralMessage = "Account created, but this referral was not counted because this IP/device already used this referral link.";
       } else {
-        await supabase.from("referrals").insert({
-          referrer_id: referrer.id,
-          referred_id: created.id
-        });
-
-        await supabase.from("referral_claims").insert({
-          referrer_id: referrer.id,
-          referred_id: created.id,
-          ip_hash: ipHash,
-          device_hash: deviceHash,
-          counted: true,
-          reason: "counted"
-        });
-
+        const { error: referralError } = await supabase.from("referrals").insert({ referrer_id: referrer.id, referred_id: created.id });
+        if (referralError) throw referralError;
+        const { error: claimError } = await supabase.from("referral_claims").insert({ referrer_id: referrer.id, referred_id: created.id, ip_hash: ipHash, device_hash: deviceHash, counted: true, reason: "counted" });
+        if (claimError) throw claimError;
         const newCount = Number(referrer.referrals_count || 0) + 1;
-
-        await supabase
-          .from("profiles")
-          .update({
-            referrals_count: newCount,
-            reward_unlocked: newCount >= 5
-          })
-          .eq("id", referrer.id);
-
+        const { error: updateError } = await supabase.from("profiles").update({ referrals_count: newCount, reward_unlocked: newCount >= 5 }).eq("id", referrer.id);
+        if (updateError) throw updateError;
         referralMessage = "Referral counted successfully.";
       }
     }
 
-    return send(res, 200, {
-      token: signToken(created),
-      user: created,
-      referral_counted: referralMessage === "Referral counted successfully.",
-      referral_message: referralMessage
-    });
+    return send(res, 200, { token: signToken(created), user: created, referral_counted: referralMessage === "Referral counted successfully.", referral_message: referralMessage });
   } catch (err) {
+    console.error("ENTER API ERROR:", err);
     return send(res, 500, { error: err.message || "Server error" });
   }
 };
