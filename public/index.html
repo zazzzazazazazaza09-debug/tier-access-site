@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=5" />
+  <link rel="stylesheet" href="/style.css?v=6" />
 </head>
 
 <body>
@@ -17,8 +17,8 @@
       <div class="badge">PRIVATE ACCESS SYSTEM</div>
 
       <div class="top-pills">
-        <div class="pill green">Secured Access</div>
-        <div class="pill blue">Used by 2.3k+ users</div>
+        <div class="pill green">🔒 Secured</div>
+        <div class="pill blue">👥 2.1k users</div>
       </div>
 
       <h1>Create your account</h1>
@@ -61,7 +61,13 @@
       <button id="drawerOpen" class="icon-btn" type="button" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="topbar-title" id="topbarTitle">Nonaxion Access</div>
+      <div class="topbar-center">
+        <div class="topbar-title" id="topbarTitle">Nonaxion Access</div>
+        <div class="topbar-pills">
+          <span class="pill-mini green">🔒 Secured</span>
+          <span class="pill-mini blue">👥 2.1k users</span>
+        </div>
+      </div>
       <button class="icon-btn icon-btn-ghost" type="button" id="adminLinkBtn" title="Admin panel" style="display:none">
         ADMIN
       </button>
@@ -127,7 +133,7 @@
           Click "Buy" on any tier to submit your payment. Your payment will be reviewed within
           5–10 minutes. Once confirmed, you'll get immediate access.
           <br /><br />
-          Payment methods: Crypto (BTC / ETH / LTC / SOL / USDT), Gift Cards, Cash App.
+          Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.
           <br />
           Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.
         </p>
@@ -148,7 +154,6 @@
         <div class="modal-tabs">
           <button class="modal-tab active" type="button" data-tab="giftcard">🎁 Gift Card</button>
           <button class="modal-tab" type="button" data-tab="crypto">₿ Crypto</button>
-          <button class="modal-tab" type="button" data-tab="cashapp">💵 Cash App</button>
         </div>
 
         <!-- Gift card pane -->
@@ -158,7 +163,7 @@
             <p>Purchase a gift card and send us the code. We'll activate your tier instantly!</p>
           </div>
 
-          <h4>Choose a platform to buy:</h4>
+          <h4>Choose a platform to buy <span class="muted" style="font-weight:400;font-size:.85rem">(opens store with PayPal search)</span>:</h4>
           <div id="gcPlatforms" class="platform-list"></div>
 
           <div class="info-box light">
@@ -208,37 +213,6 @@
           <button class="main-btn" type="button" id="cryptoSubmit">Submit transaction</button>
         </div>
 
-        <!-- Cash App pane -->
-        <div class="modal-pane hidden" data-pane="cashapp">
-          <div class="info-box">
-            <strong id="caAmount">💵 Amount: $10 USD in BTC</strong>
-            <div class="crypto-eq">Send exactly: <b id="caBtcAmount">0.00015859 BTC</b></div>
-            <p>Send Bitcoin through Cash App using the tutorial below.</p>
-          </div>
-
-          <div class="info-box light">
-            <strong>📺 Tutorial: How to Send Bitcoin on Cash App</strong>
-            <div class="video-wrap">
-              <iframe id="caTutorial" src="" title="Cash App tutorial" frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen></iframe>
-            </div>
-          </div>
-
-          <label>₿ Send Bitcoin to this address:</label>
-          <div class="addr-row">
-            <input id="caAddr" readonly />
-            <button class="copy-btn" type="button" id="caCopy" title="Copy">📋</button>
-          </div>
-
-          <div class="info-box light">
-            <strong>📝 Enter Transaction ID</strong>
-            <input id="caTxId" placeholder="Paste your BTC transaction ID here" maxlength="200" />
-          </div>
-
-          <button class="main-btn" type="button" id="caSubmit">Submit Cash App payment</button>
-        </div>
-
         <div id="modalMsg" class="msg" aria-live="polite"></div>
       </div>
     </div>
@@ -258,7 +232,7 @@
   </section>
 </main>
 
-<script src="/tiers.config.js?v=5"></script>
-<script src="/app.js?v=5"></script>
+<script src="/tiers.config.js?v=6"></script>
+<script src="/app.js?v=6"></script>
 </body>
 </html>

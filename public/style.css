@@ -186,7 +186,21 @@ input:focus, textarea:focus {
   backdrop-filter: blur(14px);
   position: sticky; top: 0; z-index: 30;
 }
-.topbar-title { font-weight: 900; letter-spacing: .5px; }
+.topbar-center {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; min-width: 0;
+}
+.topbar-title { font-weight: 900; letter-spacing: .5px; font-size: .95rem; }
+.topbar-pills {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+}
+.pill-mini {
+  padding: 3px 8px; border-radius: 999px;
+  font-size: .65rem; font-weight: 800; letter-spacing: .3px;
+  white-space: nowrap;
+}
+.pill-mini.green { color: #7dffbf; background: rgba(0,255,156,.1); border: 1px solid rgba(0,255,156,.18); }
+.pill-mini.blue  { color: #7eefff; background: rgba(0,245,255,.1); border: 1px solid rgba(0,245,255,.18); }
 .icon-btn {
   width: 42px; height: 42px;
   display: inline-flex; flex-direction: column;

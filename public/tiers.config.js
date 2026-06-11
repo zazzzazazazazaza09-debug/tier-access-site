@@ -19,8 +19,7 @@ window.SITE_CONFIG = {
     BTC:  "bc1qrsppgkupuefkf4n562kp0jvus3uk5zmhhvu9t7",
     LTC:  "LMLaJQA9hgz1igXSeL9uQ5NGyViw1gc5TU",
     ETH:  "0x6dd8E61E04b0C52d4DDf84E0ACE55b1d44F3e4dF",
-    SOL:  "5y6XhkYWqoDDVJLXCLAHW7wtEdkV7wvEfJg3XRrtRmhe",
-    USDT: "0x6dd8E61E04b0C52d4DDf84E0ACE55b1d44F3e4dF" // ERC-20
+    SOL:  "5y6XhkYWqoDDVJLXCLAHW7wtEdkV7wvEfJg3XRrtRmhe"
   },
 
   // Indicative USD → crypto conversion rates. Edit when you need a
@@ -30,20 +29,18 @@ window.SITE_CONFIG = {
     BTC:  0.00001586,
     ETH:  0.00060430,
     LTC:  0.02347970,
-    SOL:  0.15260200,
-    USDT: 1.00100000
+    SOL:  0.15260200
   },
 
   // Gift card platforms shown in the modal.
+  // Clicking a platform opens the store with a "paypal" search.
+  // Add or remove entries here — each needs name, note, and url.
   giftCardPlatforms: [
-    { name: "Rewarble (G2A)",     note: "Gift Card" },
-    { name: "Rewarble (Eneba)",   note: "Gift Card" },
-    { name: "Rewarble (Kinguin)", note: "Gift Card" },
-    { name: "Rewarble (Driffle)", note: "Gift Card" }
+    { name: "G2A",     note: "Gift Card", url: "https://www.g2a.com/search?query=paypal" },
+    { name: "Eneba",   note: "Gift Card", url: "https://www.eneba.com/store/all?text=paypal" },
+    { name: "Kinguin", note: "Gift Card", url: "https://www.kinguin.net/catalogsearch/result/?q=paypal" },
+    { name: "Driffle", note: "Gift Card", url: "https://driffle.com/search?q=paypal" }
   ],
-
-  // YouTube video id (the bit after watch?v=) for the Cash App tutorial.
-  cashAppTutorialYouTubeId: "dQw4w9WgXcQ",
 
   // ----- TIERS -----
   // Edit name, priceUSD, invitesRequired, totalSize, color, features,

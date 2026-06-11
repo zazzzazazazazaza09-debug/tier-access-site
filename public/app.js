@@ -366,18 +366,10 @@ function openPurchaseModal(tier) {
   $("cryptoTxId").value = "";
   updateCryptoTxCount();
 
-  // Cash App pane
-  $("caAmount").innerHTML = `💵 Amount: $${tier.priceUSD} USD in BTC`;
-  const btcAmt = (tier.priceUSD * (CFG.cryptoRates.BTC || 0)).toFixed(8);
-  $("caBtcAmount").textContent = `${btcAmt} BTC`;
-  $("caAddr").value = CFG.crypto.BTC;
-  $("caTxId").value = "";
-  $("caTutorial").src = `https://www.youtube.com/embed/${CFG.cashAppTutorialYouTubeId}`;
 }
 
 function closePurchaseModal() {
   $("purchaseModal").classList.add("hidden");
-  $("caTutorial").src = "";  // stop video
   activeTier = null;
 }
 
@@ -398,6 +390,7 @@ function renderGcPlatforms() {
         selectedPlatform = p.name;
         document.querySelectorAll(".platform-item").forEach(x => x.classList.remove("selected"));
         btn.classList.add("selected");
+        if (p.url) window.open(p.url, "_blank", "noopener,noreferrer");
       }
     }, [
       el("div", {}, [
@@ -418,7 +411,7 @@ function updateGcCount() {
 function renderCryptoTickers() {
   const wrap = $("cryptoTickers");
   wrap.innerHTML = "";
-  const tickers = ["BTC", "ETH", "LTC", "SOL", "USDT"];
+  const tickers = ["BTC", "ETH", "LTC", "SOL"];
   for (const t of tickers) {
     const amount = (activeTier.priceUSD * (CFG.cryptoRates[t] || 0)).toFixed(t === "USDT" ? 2 : 8);
     const btn = el("button", {
@@ -480,21 +473,6 @@ async function submitCrypto() {
     tier_id: activeTier.id,
     method: "crypto",
     crypto_currency: activeCrypto,
-    crypto_amount: amount,
-    tx_id: txId
-  });
-}
-
-async function submitCashApp() {
-  if (!activeTier) return;
-  const txId = $("caTxId").value.trim();
-  if (txId.length < 10) return setModalMsg("Transaction ID looks too short.", true);
-
-  const amount = (activeTier.priceUSD * (CFG.cryptoRates.BTC || 0)).toString();
-  await submitPurchase({
-    tier_id: activeTier.id,
-    method: "cashapp",
-    crypto_currency: "BTC",
     crypto_amount: amount,
     tx_id: txId
   });
@@ -593,9 +571,6 @@ function bindStaticUI() {
   $("cryptoCopy").addEventListener("click", () => copyToClipboard($("cryptoAddr").value, $("modalMsg")));
   $("cryptoRefresh").addEventListener("click", () => { renderCryptoTickers(); applyCrypto(activeCrypto); });
   $("cryptoSubmit").addEventListener("click", submitCrypto);
-
-  $("caCopy").addEventListener("click", () => copyToClipboard($("caAddr").value, $("modalMsg")));
-  $("caSubmit").addEventListener("click", submitCashApp);
 
   bindChoiceClose();
 }

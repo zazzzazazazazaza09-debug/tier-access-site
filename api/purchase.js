@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
       return send(res, 400, { error: "Invalid tier" });
     }
 
-    if (!["crypto", "giftcard", "cashapp"].includes(method)) {
+    if (!["crypto", "giftcard"].includes(method)) {
       return send(res, 400, { error: "Invalid payment method" });
     }
 
@@ -48,11 +48,11 @@ module.exports = async function handler(req, res) {
       status: "pending"
     };
 
-    if (method === "crypto" || method === "cashapp") {
-      const currency = String(body.crypto_currency || (method === "cashapp" ? "BTC" : "")).toUpperCase().trim();
+    if (method === "crypto") {
+      const currency = String(body.crypto_currency || "").toUpperCase().trim();
       const txId = String(body.tx_id || "").trim();
 
-      if (!["BTC", "ETH", "LTC", "SOL", "USDT"].includes(currency)) {
+      if (!["BTC", "ETH", "LTC", "SOL"].includes(currency)) {
         return send(res, 400, { error: "Invalid cryptocurrency" });
       }
 
