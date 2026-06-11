@@ -610,9 +610,18 @@ function initBackground() {
 }
 
 /* ================================================================
+   FLOATING TELEGRAM SERVER
+================================================================ */
+function initTelegramFloat() {
+  const link = $("tgServerFloat");
+  if (link && CFG.telegramServer) link.href = CFG.telegramServer;
+}
+
+/* ================================================================
    BOOT
 ================================================================ */
 initBackground();
+initTelegramFloat();
 bindDrawer();
 bindStaticUI();
 initAuth();

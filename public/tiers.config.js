@@ -14,6 +14,9 @@ window.SITE_CONFIG = {
   // on the purchase modal as an alternative.
   telegramBot: "https://t.me/Nonaxionbot",
 
+  // Telegram server/community — floating button on the right side.
+  telegramServer: "https://t.me/+ZQDbceeZVUs0ODA8",
+
   // Crypto deposit addresses (middle-man wallet — edit if needed).
   crypto: {
     BTC:  "bc1qrsppgkupuefkf4n562kp0jvus3uk5zmhhvu9t7",
