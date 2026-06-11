@@ -657,6 +657,15 @@ input:focus, textarea:focus {
 /* =========================================================
    FLOATING TELEGRAM SERVER LINK
    ========================================================= */
+@keyframes tg-glow {
+  0%, 100% { box-shadow: -6px 0 28px rgba(0, 180, 255, .55), 0 0 18px rgba(0, 136, 204, .35); }
+  50%       { box-shadow: -10px 0 40px rgba(0, 220, 255, .75), 0 0 30px rgba(0, 136, 204, .55); }
+}
+@keyframes tg-pulse-ring {
+  0%   { transform: scale(1); opacity: .7; }
+  70%  { transform: scale(1.45); opacity: 0; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
 .tg-float {
   position: fixed;
   right: 0;
@@ -666,36 +675,56 @@ input:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 14px 10px;
-  border-radius: 16px 0 0 16px;
-  background: rgba(0, 136, 204, .14);
-  border: 1px solid rgba(0, 196, 255, .28);
+  gap: 8px;
+  padding: 20px 14px;
+  border-radius: 20px 0 0 20px;
+  background: linear-gradient(160deg, #0099e6 0%, #0077b8 55%, #005f99 100%);
+  border: 2px solid rgba(120, 220, 255, .65);
   border-right: 0;
-  color: #6dd5fa;
+  color: #ffffff;
   text-decoration: none;
-  font-size: .68rem;
+  font-size: .78rem;
   font-weight: 900;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  backdrop-filter: blur(12px);
-  box-shadow: -4px 0 24px rgba(0, 136, 204, .12);
-  transition: background .2s, transform .2s, padding .2s;
+  animation: tg-glow 2.4s ease-in-out infinite;
+  transition: transform .2s, filter .2s;
 }
 .tg-float:hover {
-  background: rgba(0, 136, 204, .26);
-  transform: translateY(-50%) translateX(-3px);
-  color: #a8e8ff;
+  transform: translateY(-50%) translateX(-6px) scale(1.04);
+  filter: brightness(1.12);
+  color: #fff;
+}
+.tg-float-pulse {
+  position: absolute;
+  top: 14px; left: 50%;
+  width: 36px; height: 36px;
+  margin-left: -18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .35);
+  animation: tg-pulse-ring 2s ease-out infinite;
+  pointer-events: none;
 }
 .tg-float-icon {
-  font-size: 1.15rem;
-  line-height: 1;
-  filter: drop-shadow(0 0 6px rgba(0, 196, 255, .4));
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .18);
+  box-shadow: 0 0 16px rgba(255, 255, 255, .25);
 }
+.tg-float-icon svg { display: block; }
 .tg-float-label {
+  position: relative;
+  z-index: 1;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .35);
+  line-height: 1.1;
 }
 
 /* =========================================================
@@ -714,6 +743,7 @@ input:focus, textarea:focus {
   .entry-card { max-width: 100%; padding: 22px; border-radius: 26px; }
   .entry-card h1 { font-size: 2rem; }
   .panel-main { padding: 24px 14px 50px; }
-  .tg-float { padding: 10px 7px; font-size: .6rem; }
-  .tg-float-icon { font-size: 1rem; }
+  .tg-float { padding: 16px 10px; font-size: .7rem; }
+  .tg-float-icon { width: 38px; height: 38px; }
+  .tg-float-icon svg { width: 22px; height: 22px; }
 }
