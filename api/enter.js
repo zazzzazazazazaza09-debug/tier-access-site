@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
 
     const username = String(body.username || "").trim();
     const password = String(body.password || "");
-    const ref = String(body.ref || "").trim();
+    const ref = String(body.ref || body.invite || "").trim();
     const deviceId = String(body.device_id || "").trim();
     const honeypot = String(body.honeypot || "");
 
@@ -120,7 +120,7 @@ module.exports = async function handler(req, res) {
         signup_ip_hash: ipHash,
         signup_device_hash: deviceHash
       })
-      .select("id, username, referral_code, referrals_count, reward_unlocked")
+      .select("id, username, referral_code, referrals_count, reward_unlocked, unlocked_tiers, is_admin")
       .single();
 
     if (createError) throw createError;

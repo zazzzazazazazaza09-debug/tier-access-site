@@ -51,3 +51,37 @@ where counted = true;
 create unique index if not exists referral_claims_unique_device_per_referrer
 on referral_claims(referrer_id, device_hash)
 where counted = true;
+
+-- Multi-tier access + admin flag.
+alter table profiles
+  add column if not exists unlocked_tiers integer[] not null default '{}';
+
+alter table profiles
+  add column if not exists is_admin boolean not null default false;
+
+-- Purchases (manual review).
+create table if not exists purchases (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references profiles(id) on delete cascade,
+  username text,
+  tier_id integer not null,
+  method text not null check (method in ('crypto','giftcard','cashapp')),
+  amount_usd numeric not null,
+  -- crypto / cashapp
+  crypto_currency text,
+  crypto_amount text,
+  tx_id text,
+  -- giftcard
+  giftcard_platform text,
+  giftcard_code text,
+  -- review
+  status text not null default 'pending'
+    check (status in ('pending','approved','rejected')),
+  admin_note text,
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  reviewed_by uuid references profiles(id) on delete set null
+);
+
+create index if not exists purchases_status_idx on purchases(status, created_at desc);
+create index if not exists purchases_user_idx on purchases(user_id);

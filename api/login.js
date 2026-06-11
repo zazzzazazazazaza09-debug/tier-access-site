@@ -19,7 +19,7 @@ module.exports = async function handler(req, res) {
     const supabase = getSupabase();
     const { data: users, error } = await supabase
       .from("profiles")
-      .select("id, username, password_hash, referral_code, referrals_count, reward_unlocked")
+      .select("id, username, password_hash, referral_code, referrals_count, reward_unlocked, unlocked_tiers, is_admin")
       .ilike("username", username)
       .order("created_at", { ascending: true })
       .limit(20);
@@ -46,7 +46,9 @@ module.exports = async function handler(req, res) {
         username: user.username,
         referral_code: user.referral_code,
         referrals_count: user.referrals_count,
-        reward_unlocked: user.reward_unlocked
+        reward_unlocked: user.reward_unlocked,
+        unlocked_tiers: user.unlocked_tiers || [],
+        is_admin: user.is_admin || false
       }
     });
   } catch (err) {

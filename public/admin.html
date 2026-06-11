@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Nonaxion Access</title>
+  <link rel="stylesheet" href="/style.css?v=5" />
+</head>
+<body>
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+<main class="app">
+  <section id="adminLogin" class="entry-page">
+    <div class="entry-card">
+      <div class="badge">ADMIN</div>
+      <h1>Admin Sign In</h1>
+      <form id="adminLoginForm">
+        <label>Username</label>
+        <input id="adminUsername" autocomplete="username" />
+        <label>Password</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" />
+        <button class="main-btn" type="submit">Log in</button>
+      </form>
+      <div id="adminLoginMsg" class="msg"></div>
+    </div>
+  </section>
+
+  <section id="adminPanel" class="hidden">
+    <div class="topbar">
+      <div class="topbar-title">Admin · Purchases</div>
+      <div style="display:flex; gap:8px;">
+        <button class="icon-btn icon-btn-ghost" type="button" id="goSite">SITE</button>
+        <button class="icon-btn icon-btn-ghost" type="button" id="adminLogout" style="color:#ff8a9e">LOGOUT</button>
+      </div>
+    </div>
+
+    <div class="admin-shell">
+      <h1>Pending payments</h1>
+
+      <div class="admin-tabs">
+        <button data-status="pending" class="active">Pending</button>
+        <button data-status="approved">Approved</button>
+        <button data-status="rejected">Rejected</button>
+        <button data-status="all">All</button>
+        <button id="adminRefresh" style="margin-left:auto">🔄 Refresh</button>
+      </div>
+
+      <div id="adminMsg" class="msg"></div>
+
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>User</th>
+              <th>Tier</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Details</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/tiers.config.js?v=5"></script>
+<script src="/admin.js?v=5"></script>
+</body>
+</html>
