@@ -6,12 +6,8 @@ let captchaA = 0, captchaB = 0, captchaOp = "+";
 let currentUser = null;
 let authMode = "signup";          // signup-first
 let serverTiers = [];             // [{id,hasAccess,unlockUrl?}]
-let activeTier = null;            // tier or custom pseudo-tier in modal
+let activeTier = null;            // tier object currently in modal
 let activeCrypto = "BTC";
-let selectedCustomPack = null;    // category id
-let selectedCustomSize = null;    // size id
-let activeChatOrderId = null;
-let chatPollTimer = null;
 
 const params = new URLSearchParams(window.location.search);
 const refFromUrl = params.get("invite") || params.get("ref");
@@ -209,8 +205,6 @@ async function loadMe() {
 
   renderTierGrid();
   renderDrawerTiers();
-  initCustomPack();
-  initNotifications();
 }
 
 function hasAccess(tierId) {
@@ -455,28 +449,18 @@ async function copyToClipboard(text, msgEl) {
   } catch {}
 }
 
-function purchasePayload(method, extra) {
-  const base = { method, ...extra };
-  if (activeTier.isCustom) {
-    base.is_custom = true;
-    base.custom_pack_id = activeTier.packId;
-    base.custom_size_id = activeTier.sizeId;
-  } else {
-    base.tier_id = activeTier.id;
-  }
-  return base;
-}
-
 async function submitGiftCard() {
   if (!activeTier) return;
   if (!selectedPlatform) return setModalMsg("Choose a platform first.", true);
   const code = $("gcCode").value.trim();
   if (code.length < 14) return setModalMsg("Code must be at least 14 characters.", true);
 
-  await submitPurchase(purchasePayload("giftcard", {
+  await submitPurchase({
+    tier_id: activeTier.id,
+    method: "giftcard",
     giftcard_platform: selectedPlatform,
     giftcard_code: code
-  }));
+  });
 }
 
 async function submitCrypto() {
@@ -485,11 +469,13 @@ async function submitCrypto() {
   if (txId.length < 10) return setModalMsg("Transaction ID looks too short.", true);
 
   const amount = (activeTier.priceUSD * (CFG.cryptoRates[activeCrypto] || 0)).toString();
-  await submitPurchase(purchasePayload("crypto", {
+  await submitPurchase({
+    tier_id: activeTier.id,
+    method: "crypto",
     crypto_currency: activeCrypto,
     crypto_amount: amount,
     tx_id: txId
-  }));
+  });
 }
 
 async function submitPurchase(payload) {
@@ -544,10 +530,10 @@ function handleDrawerAction(action) {
       break;
     }
     case "menu":
-      document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.querySelector(".tier-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
       break;
     case "more-videos":
-      document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth" });
+      document.querySelector(".tier-grid")?.scrollIntoView({ behavior: "smooth" });
       break;
     case "invites":
       document.querySelector(".referral-card")?.scrollIntoView({ behavior: "smooth" });
@@ -563,316 +549,6 @@ function handleDrawerAction(action) {
       window.location.reload();
       break;
   }
-}
-
-/* ================================================================
-   CUSTOM PACK BUILDER
-================================================================ */
-function getCustomPriceEntry(packId, sizeId) {
-  const cp = CFG.customPack;
-  if (!cp || !cp.prices) return null;
-  return cp.prices[packId]?.[sizeId] || null;
-}
-
-function updateCustomPriceDisplay() {
-  const origEl = $("customPriceOriginal");
-  const curEl = $("customPriceCurrent");
-  const buyBtn = $("customBuyBtn");
-  if (!selectedCustomPack || !selectedCustomSize) {
-    origEl.textContent = "";
-    curEl.textContent = "$—";
-    buyBtn.disabled = true;
-    return;
-  }
-  const entry = getCustomPriceEntry(selectedCustomPack, selectedCustomSize);
-  if (!entry) {
-    origEl.textContent = "";
-    curEl.textContent = "$—";
-    buyBtn.disabled = true;
-    return;
-  }
-  origEl.textContent = entry.original > entry.price ? `$${entry.original}` : "";
-  curEl.textContent = `$${entry.price}`;
-  buyBtn.disabled = false;
-  buyBtn.textContent = `💳 Buy custom pack · $${entry.price}`;
-}
-
-function initCustomPack() {
-  const cp = CFG.customPack;
-  if (!cp || !$("customPackSection")) return;
-
-  $("customPackTitle").textContent = cp.title || "Custom Pack";
-  $("customPackSub").textContent = cp.subtitle || "";
-
-  selectedCustomPack = cp.categories[0]?.id || null;
-  selectedCustomSize = cp.sizes.find(s => s.popular)?.id || cp.sizes[0]?.id || null;
-
-  renderCustomCategories();
-  renderCustomSizes();
-  updateCustomPriceDisplay();
-
-  $("customBuyBtn").addEventListener("click", () => {
-    if (!selectedCustomPack || !selectedCustomSize) return;
-    const entry = getCustomPriceEntry(selectedCustomPack, selectedCustomSize);
-    const cat = cp.categories.find(c => c.id === selectedCustomPack);
-    const size = cp.sizes.find(s => s.id === selectedCustomSize);
-    if (!entry || !cat || !size) return;
-    openPurchaseModal({
-      isCustom: true,
-      packId: cat.id,
-      sizeId: size.id,
-      name: `Custom · ${cat.name} · ${size.label}`,
-      priceUSD: entry.price
-    });
-  });
-
-  $("customRequestBtn").addEventListener("click", openCustomOrderModal);
-  $("customOrderClose").addEventListener("click", () => $("customOrderModal").classList.add("hidden"));
-  $("customOrderSubmit").addEventListener("click", submitCustomOrder);
-  $("chatClose").addEventListener("click", closeChatModal);
-  $("chatSend").addEventListener("click", sendChatMessage);
-  $("chatInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendChatMessage();
-  });
-}
-
-function renderCustomCategories() {
-  const wrap = $("customCategories");
-  const cp = CFG.customPack;
-  if (!wrap || !cp) return;
-  wrap.innerHTML = "";
-  for (const c of cp.categories) {
-    const btn = el("button", {
-      class: "custom-cat-btn" + (selectedCustomPack === c.id ? " active" : ""),
-      type: "button",
-      onclick: () => {
-        selectedCustomPack = c.id;
-        renderCustomCategories();
-        updateCustomPriceDisplay();
-      }
-    }, [
-      el("strong", {}, c.name),
-      el("small", {}, c.desc || "")
-    ]);
-    if (c.color) btn.dataset.color = c.color;
-    wrap.appendChild(btn);
-  }
-}
-
-function renderCustomSizes() {
-  const wrap = $("customSizes");
-  const cp = CFG.customPack;
-  if (!wrap || !cp) return;
-  wrap.innerHTML = "";
-  for (const s of cp.sizes) {
-    const btn = el("button", {
-      class: "custom-size-btn" + (selectedCustomSize === s.id ? " active" : ""),
-      type: "button",
-      onclick: () => {
-        selectedCustomSize = s.id;
-        renderCustomSizes();
-        updateCustomPriceDisplay();
-      }
-    }, s.label);
-    if (s.popular) {
-      const tag = el("span", { class: "size-tag popular" }, "Most popular");
-      btn.appendChild(tag);
-    }
-    if (s.mega) {
-      const tag = el("span", { class: "size-tag mega" }, "MEGA");
-      btn.appendChild(tag);
-    }
-    wrap.appendChild(btn);
-  }
-}
-
-/* ================================================================
-   CUSTOM ORDER + CHAT
-================================================================ */
-async function openCustomOrderModal() {
-  $("customOrderModal").classList.remove("hidden");
-  $("customOrderMsg").textContent = "";
-  $("customOrderText").value = "";
-  await loadMyCustomOrders();
-}
-
-async function submitCustomOrder() {
-  const message = $("customOrderText").value.trim();
-  if (message.length < 10) {
-    $("customOrderMsg").textContent = "Please write at least 10 characters.";
-    $("customOrderMsg").className = "msg error";
-    return;
-  }
-  $("customOrderMsg").textContent = "Sending…";
-  try {
-    const data = await request("custom-order", {
-      method: "POST",
-      body: JSON.stringify({ message })
-    });
-    $("customOrderMsg").textContent = data.message || "Sent!";
-    $("customOrderMsg").className = "msg success";
-    $("customOrderText").value = "";
-    await loadMyCustomOrders();
-    if (data.order?.id) openChatModal(data.order.id);
-  } catch (err) {
-    $("customOrderMsg").textContent = err.message;
-    $("customOrderMsg").className = "msg error";
-  }
-}
-
-async function loadMyCustomOrders() {
-  const wrap = $("myCustomOrders");
-  if (!wrap) return;
-  wrap.innerHTML = "<p class='muted'>Loading…</p>";
-  try {
-    const data = await request("custom-orders");
-    const orders = data.orders || [];
-    if (!orders.length) {
-      wrap.innerHTML = "<p class='muted'>No conversations yet.</p>";
-      return;
-    }
-    wrap.innerHTML = "";
-    for (const o of orders) {
-      const btn = el("button", {
-        class: "custom-order-item", type: "button",
-        onclick: () => openChatModal(o.id)
-      }, [
-        el("span", { class: "co-status " + o.status }, o.status),
-        el("span", { class: "co-preview" }, (o.initial_message || "").slice(0, 80))
-      ]);
-      wrap.appendChild(btn);
-    }
-  } catch (err) {
-    wrap.innerHTML = `<p class='msg error'>${err.message}</p>`;
-  }
-}
-
-async function openChatModal(orderId) {
-  activeChatOrderId = orderId;
-  $("chatModal").classList.remove("hidden");
-  $("chatMsg").textContent = "";
-  $("chatInput").value = "";
-  $("chatTitle").textContent = "Custom order";
-  $("chatSub").textContent = "Reply here — we usually answer within minutes.";
-  await loadChatMessages();
-  if (chatPollTimer) clearInterval(chatPollTimer);
-  chatPollTimer = setInterval(() => loadChatMessages(true), 8000);
-}
-
-function closeChatModal() {
-  $("chatModal").classList.add("hidden");
-  activeChatOrderId = null;
-  if (chatPollTimer) {
-    clearInterval(chatPollTimer);
-    chatPollTimer = null;
-  }
-}
-
-async function loadChatMessages(silent) {
-  if (!activeChatOrderId) return;
-  try {
-    const data = await request(`custom-messages?order_id=${encodeURIComponent(activeChatOrderId)}`);
-    const box = $("chatMessages");
-    box.innerHTML = "";
-    for (const m of data.messages || []) {
-      const bubble = el("div", {
-        class: "chat-bubble " + (m.is_admin ? "admin" : "user")
-      }, m.content);
-      const time = el("div", { class: "chat-time" }, formatTime(m.created_at));
-      const wrap = el("div", { class: "chat-line " + (m.is_admin ? "admin" : "user") }, [bubble, time]);
-      box.appendChild(wrap);
-    }
-    box.scrollTop = box.scrollHeight;
-  } catch (err) {
-    if (!silent) $("chatMsg").textContent = err.message;
-  }
-}
-
-async function sendChatMessage() {
-  if (!activeChatOrderId) return;
-  const content = $("chatInput").value.trim();
-  if (!content) return;
-  try {
-    await request("custom-message", {
-      method: "POST",
-      body: JSON.stringify({ order_id: activeChatOrderId, content })
-    });
-    $("chatInput").value = "";
-    await loadChatMessages();
-  } catch (err) {
-    $("chatMsg").textContent = err.message;
-    $("chatMsg").className = "msg error";
-  }
-}
-
-function formatTime(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-}
-
-/* ================================================================
-   NOTIFICATIONS (activity feed)
-================================================================ */
-const FAKE_NAMES = [
-  "mike92", "sarah_k", "joshT", "emma.w", "liam_x", "nina_07", "alexM", "zoey99",
-  "carlos_r", "mia_b", "noah_22", "lilyrose", "tylerJ", "ava_s", "ethan_p", "chloe_v"
-];
-const PACK_LABELS = ["Pack 1", "Pack 2", "Pack 3", "Pack 4", "Pack 5", "Pack 6", "Tier 2", "Tier 4"];
-const SIZE_LABELS = ["25 GB", "50 GB", "100 GB", "250 GB", "500 GB", "1 TB", "5 TB"];
-
-function randomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-function generateFakeNotifications(count) {
-  const types = ["purchase", "invite", "custom"];
-  const list = [];
-  for (let i = 0; i < count; i++) {
-    const name = randomItem(FAKE_NAMES);
-    const type = randomItem(types);
-    const mins = Math.floor(Math.random() * 55) + 1;
-    let text = "";
-    if (type === "purchase") {
-      const pack = randomItem(PACK_LABELS);
-      const size = randomItem(SIZE_LABELS);
-      text = `<b>${name}</b> purchased ${pack} · ${size}`;
-    } else if (type === "invite") {
-      const n = Math.floor(Math.random() * 8) + 3;
-      text = `<b>${name}</b> invited ${n} friends today`;
-    } else {
-      text = `<b>${name}</b> started a custom order`;
-    }
-    list.push({ text, mins, icon: type === "purchase" ? "💳" : type === "invite" ? "👥" : "✏️" });
-  }
-  return list.sort((a, b) => a.mins - b.mins);
-}
-
-function initNotifications() {
-  const btn = $("notifBtn");
-  const panel = $("notifPanel");
-  const list = $("notifList");
-  if (!btn || !panel || !list) return;
-
-  const notifs = generateFakeNotifications(12);
-  list.innerHTML = "";
-  for (const n of notifs) {
-    const item = el("div", { class: "notif-item" }, [
-      el("span", { class: "notif-icon" }, n.icon),
-      el("div", { class: "notif-body" }, [
-        el("div", { html: n.text }),
-        el("small", { class: "muted" }, `${n.mins} min ago`)
-      ])
-    ]);
-    list.appendChild(item);
-  }
-
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    panel.classList.toggle("hidden");
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!$("notifWrap").contains(e.target)) panel.classList.add("hidden");
-  });
 }
 
 /* ================================================================

@@ -60,23 +60,7 @@ module.exports = async function handler(req, res) {
       return send(res, 200, { ok: true, status: "rejected" });
     }
 
-    // Custom pack purchases — approve without unlocking a tier
-    if (purchase.is_custom) {
-      const { error: pErr } = await supabase
-        .from("purchases")
-        .update({
-          status: "approved",
-          admin_note: note,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: me.id
-        })
-        .eq("id", purchaseId);
-
-      if (pErr) throw pErr;
-      return send(res, 200, { ok: true, status: "approved" });
-    }
-
-    // Standard tier purchase → unlock tier on profile
+    // approve → unlock the tier on the user's profile
     const tier = getTier(purchase.tier_id);
     if (!tier) return send(res, 400, { error: "Tier no longer exists" });
 

@@ -2,9 +2,6 @@
 const API = "/api";
 const $ = (id) => document.getElementById(id);
 let currentStatus = "pending";
-let currentView = "purchases";
-let activeOrderId = null;
-let orderPollTimer = null;
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
@@ -65,21 +62,6 @@ $("adminLogout").addEventListener("click", () => {
 });
 $("goSite").addEventListener("click", () => { window.location.href = "/"; });
 
-document.querySelectorAll(".admin-tabs button[data-view]").forEach(b => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".admin-tabs button[data-view]").forEach(x => x.classList.remove("active"));
-    b.classList.add("active");
-    currentView = b.dataset.view;
-    const isPurchases = currentView === "purchases";
-    $("purchasesView").classList.toggle("hidden", !isPurchases);
-    $("ordersView").classList.toggle("hidden", isPurchases);
-    document.querySelectorAll(".purchase-tab").forEach(x => {
-      x.style.display = isPurchases ? "" : "none";
-    });
-    refresh();
-  });
-});
-
 document.querySelectorAll(".admin-tabs button[data-status]").forEach(b => {
   b.addEventListener("click", () => {
     document.querySelectorAll(".admin-tabs button[data-status]").forEach(x => x.classList.remove("active"));
@@ -89,34 +71,18 @@ document.querySelectorAll(".admin-tabs button[data-status]").forEach(b => {
   });
 });
 $("adminRefresh").addEventListener("click", refresh);
-$("adminChatSend").addEventListener("click", sendAdminChat);
-$("adminChatInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendAdminChat();
-});
 
 async function refresh() {
   $("adminMsg").textContent = "Loading…";
   $("adminMsg").className = "msg";
   try {
-    if (currentView === "purchases") {
-      const data = await request(`purchases?status=${encodeURIComponent(currentStatus)}`);
-      renderRows(data.purchases || []);
-      $("adminMsg").textContent = `${data.purchases.length} record(s).`;
-    } else {
-      const data = await request("custom-orders");
-      renderOrders(data.orders || []);
-      $("adminMsg").textContent = `${data.orders.length} conversation(s).`;
-    }
+    const data = await request(`purchases?status=${encodeURIComponent(currentStatus)}`);
+    renderRows(data.purchases || []);
+    $("adminMsg").textContent = `${data.purchases.length} record(s).`;
   } catch (err) {
     $("adminMsg").textContent = err.message;
     $("adminMsg").className = "msg error";
   }
-}
-
-function productName(r) {
-  if (r.is_custom && r.custom_label) return r.custom_label;
-  if (r.is_custom) return `Custom Pack ${r.custom_pack_id || ""} · ${r.custom_size_id || ""}`;
-  return tierName(r.tier_id);
 }
 
 function tierName(id) {
@@ -161,7 +127,7 @@ function renderRows(rows) {
     tr.innerHTML = `
       <td>${fmtDate(r.created_at)}</td>
       <td>${escapeHtml(r.username || r.user_id || "")}</td>
-      <td>${escapeHtml(productName(r))}</td>
+      <td>${escapeHtml(tierName(r.tier_id))}</td>
       <td>${escapeHtml(r.method)}</td>
       <td>$${Number(r.amount_usd).toFixed(2)}</td>
       <td>${details}</td>
@@ -174,79 +140,6 @@ function renderRows(rows) {
   tb.querySelectorAll("button[data-id]").forEach(btn => {
     btn.addEventListener("click", () => onAction(btn.dataset.id, btn.dataset.action));
   });
-}
-
-function renderOrders(orders) {
-  const wrap = $("adminOrdersList");
-  wrap.innerHTML = "";
-  if (!orders.length) {
-    wrap.innerHTML = "<p class='muted'>No custom orders yet.</p>";
-    return;
-  }
-  for (const o of orders) {
-    const btn = document.createElement("button");
-    btn.className = "custom-order-item" + (activeOrderId === o.id ? " active-order" : "");
-    btn.type = "button";
-    btn.innerHTML = `
-      <span class="co-status ${o.status}">${o.status}</span>
-      <strong>${escapeHtml(o.username || "")}</strong>
-      <span class="co-preview">${escapeHtml((o.initial_message || "").slice(0, 100))}</span>
-      <small class="muted">${fmtDate(o.updated_at)}</small>
-    `;
-    btn.addEventListener("click", () => openAdminChat(o));
-    wrap.appendChild(btn);
-  }
-}
-
-async function openAdminChat(order) {
-  activeOrderId = order.id;
-  $("adminChatPanel").classList.remove("hidden");
-  $("adminChatTitle").textContent = `Chat with ${order.username || "user"}`;
-  renderOrders((await request("custom-orders")).orders || []);
-  await loadAdminChat();
-  if (orderPollTimer) clearInterval(orderPollTimer);
-  orderPollTimer = setInterval(() => loadAdminChat(true), 6000);
-}
-
-async function loadAdminChat(silent) {
-  if (!activeOrderId) return;
-  try {
-    const data = await request(`custom-messages?order_id=${encodeURIComponent(activeOrderId)}`);
-    const box = $("adminChatMessages");
-    box.innerHTML = "";
-    for (const m of data.messages || []) {
-      const bubble = document.createElement("div");
-      bubble.className = "chat-bubble " + (m.is_admin ? "admin" : "user");
-      bubble.textContent = m.content;
-      const time = document.createElement("div");
-      time.className = "chat-time";
-      time.textContent = fmtDate(m.created_at);
-      const line = document.createElement("div");
-      line.className = "chat-line " + (m.is_admin ? "admin" : "user");
-      line.appendChild(bubble);
-      line.appendChild(time);
-      box.appendChild(line);
-    }
-    box.scrollTop = box.scrollHeight;
-  } catch (err) {
-    if (!silent) $("adminMsg").textContent = err.message;
-  }
-}
-
-async function sendAdminChat() {
-  if (!activeOrderId) return;
-  const content = $("adminChatInput").value.trim();
-  if (!content) return;
-  try {
-    await request("custom-message", {
-      method: "POST",
-      body: JSON.stringify({ order_id: activeOrderId, content })
-    });
-    $("adminChatInput").value = "";
-    await loadAdminChat();
-  } catch (err) {
-    alert(err.message);
-  }
 }
 
 async function onAction(id, action) {

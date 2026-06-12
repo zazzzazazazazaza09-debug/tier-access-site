@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin — Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=9" />
+  <link rel="stylesheet" href="/style.css?v=5" />
 </head>
 <body>
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
@@ -38,53 +38,37 @@
       <h1>Pending payments</h1>
 
       <div class="admin-tabs">
-        <button data-view="purchases" class="active">Purchases</button>
-        <button data-view="orders">Custom orders</button>
-        <button data-status="pending" class="purchase-tab active">Pending</button>
-        <button data-status="approved" class="purchase-tab">Approved</button>
-        <button data-status="rejected" class="purchase-tab">Rejected</button>
-        <button data-status="all" class="purchase-tab">All</button>
+        <button data-status="pending" class="active">Pending</button>
+        <button data-status="approved">Approved</button>
+        <button data-status="rejected">Rejected</button>
+        <button data-status="all">All</button>
         <button id="adminRefresh" style="margin-left:auto">🔄 Refresh</button>
       </div>
 
       <div id="adminMsg" class="msg"></div>
 
-      <div id="purchasesView">
-        <div style="overflow-x:auto">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>User</th>
-                <th>Product</th>
-                <th>Method</th>
-                <th>Amount</th>
-                <th>Details</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminTbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="ordersView" class="hidden">
-        <div id="adminOrdersList" class="admin-orders-list"></div>
-        <div id="adminChatPanel" class="admin-chat-panel hidden">
-          <h3 id="adminChatTitle">Conversation</h3>
-          <div id="adminChatMessages" class="chat-messages"></div>
-          <div class="chat-input-row">
-            <input id="adminChatInput" placeholder="Reply to user…" maxlength="2000" />
-            <button type="button" class="main-btn chat-send-btn" id="adminChatSend">Send</button>
-          </div>
-        </div>
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>User</th>
+              <th>Tier</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Details</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTbody"></tbody>
+        </table>
       </div>
     </div>
   </section>
 </main>
 
-<script src="/tiers.config.js?v=9"></script>
-<script src="/admin.js?v=9"></script>
+<script src="/tiers.config.js?v=5"></script>
+<script src="/admin.js?v=5"></script>
 </body>
 </html>
