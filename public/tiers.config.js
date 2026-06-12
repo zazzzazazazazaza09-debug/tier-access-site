@@ -50,12 +50,12 @@ window.SITE_CONFIG = {
     title: "Custom Pack",
     subtitle: "Pick a category, choose your size, pay instantly.",
     categories: [
-      { id: 1, name: "Pack 1",  desc: "Essential collection",  color: "gold" },
-      { id: 2, name: "Pack 2",  desc: "Premium selection",     color: "amber" },
-      { id: 3, name: "Pack 3",  desc: "Elite vault",           color: "orange" },
-      { id: 4, name: "Pack 4",  desc: "Ultra archive",         color: "coral" },
-      { id: 5, name: "Pack 5",  desc: "VIP exclusive",         color: "rose" },
-      { id: 6, name: "Pack 6",  desc: "Mega ultimate",         color: "crimson" }
+      { id: 1, name: "RANDOM",  desc: "Essential collection",  color: "gold" },
+      { id: 2, name: "GAY",  desc: "Premium selection",     color: "amber" },
+      { id: 3, name: "LESBIAN",  desc: "Elite vault",           color: "orange" },
+      { id: 4, name: "INC3ST",  desc: "Ultra archive",         color: "coral" },
+      { id: 5, name: "BLACKMAIL",  desc: "VIP exclusive",         color: "rose" },
+      { id: 6, name: "R3PE",  desc: "Mega ultimate",         color: "crimson" }
     ],
     sizes: [
       { id: "25gb",  label: "25 GB",  popular: false, mega: false },
