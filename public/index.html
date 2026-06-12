@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=8" />
+  <link rel="stylesheet" href="/style.css?v=9" />
 </head>
 
 <body>
@@ -76,9 +76,21 @@
           <span class="pill-mini blue">👥 2.1k users</span>
         </div>
       </div>
-      <button class="icon-btn icon-btn-ghost" type="button" id="adminLinkBtn" title="Admin panel" style="display:none">
-        ADMIN
-      </button>
+      <div class="topbar-actions">
+        <div class="notif-wrap" id="notifWrap">
+          <button id="notifBtn" class="icon-btn notif-btn" type="button" aria-label="Notifications" title="Activity">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            <span class="notif-dot" id="notifDot" aria-hidden="true"></span>
+          </button>
+          <div id="notifPanel" class="notif-panel hidden" role="dialog" aria-label="Notifications">
+            <div class="notif-head">Recent activity</div>
+            <div id="notifList" class="notif-list"></div>
+          </div>
+        </div>
+        <button class="icon-btn icon-btn-ghost" type="button" id="adminLinkBtn" title="Admin panel" style="display:none">
+          ADMIN
+        </button>
+      </div>
     </header>
 
     <!-- Drawer (sidebar) -->
@@ -89,8 +101,8 @@
 
       <nav class="drawer-nav">
         <button class="drawer-item" type="button" data-action="home">Home</button>
+        <button class="drawer-item" type="button" data-action="menu">Custom Packs</button>
         <button class="drawer-item" type="button" data-action="preview">Preview</button>
-        <button class="drawer-item" type="button" data-action="menu">Menu</button>
         <button class="drawer-item" type="button" data-action="more-videos">Get More Videos</button>
         <button class="drawer-item" type="button" data-action="invites">Earn With Invites</button>
         <button class="drawer-item" type="button" data-action="reviews">Reviews</button>
@@ -131,7 +143,38 @@
         </div>
       </div>
 
+      <!-- Custom Pack builder -->
+      <div id="customPackSection" class="custom-pack-section">
+        <div class="custom-pack-header">
+          <div>
+            <span class="custom-pack-badge">BUILD YOUR OWN</span>
+            <h2 id="customPackTitle">Custom Pack</h2>
+            <p class="muted" id="customPackSub">Pick a category, choose your size, pay instantly.</p>
+          </div>
+          <div class="custom-price-display" id="customPriceDisplay">
+            <span class="price-original" id="customPriceOriginal"></span>
+            <span class="price-current" id="customPriceCurrent">$—</span>
+          </div>
+        </div>
+
+        <div class="custom-step">
+          <h4>1 · Choose category</h4>
+          <div id="customCategories" class="custom-categories"></div>
+        </div>
+
+        <div class="custom-step">
+          <h4>2 · Choose size</h4>
+          <div id="customSizes" class="custom-sizes"></div>
+        </div>
+
+        <div class="custom-actions">
+          <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
+          <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
+        </div>
+      </div>
+
       <!-- Tier grid -->
+      <div class="drawer-section-inline">STANDARD TIERS</div>
       <div id="tierGrid" class="tier-grid"></div>
 
       <!-- How to Purchase -->
@@ -225,6 +268,45 @@
       </div>
     </div>
 
+    <!-- Custom order request modal -->
+    <div id="customOrderModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <header class="modal-head">
+          <div>
+            <h2>Custom order</h2>
+            <p class="muted">Describe exactly what you want — we'll reply on the site.</p>
+          </div>
+          <button class="modal-close" type="button" id="customOrderClose" aria-label="Close">×</button>
+        </header>
+        <textarea id="customOrderText" rows="5" placeholder="Example: I want Pack 3 with specific content, 500 GB, delivered via Mega…" maxlength="2000"></textarea>
+        <button class="main-btn" type="button" id="customOrderSubmit">Send request</button>
+        <div id="customOrderMsg" class="msg" aria-live="polite"></div>
+        <div class="custom-orders-list-wrap">
+          <h4>Your conversations</h4>
+          <div id="myCustomOrders" class="custom-orders-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat modal -->
+    <div id="chatModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card chat-modal-card">
+        <header class="modal-head">
+          <div>
+            <h2 id="chatTitle">Conversation</h2>
+            <p class="muted" id="chatSub">Chat with support</p>
+          </div>
+          <button class="modal-close" type="button" id="chatClose" aria-label="Close">×</button>
+        </header>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="Type your message…" maxlength="2000" />
+          <button type="button" class="main-btn chat-send-btn" id="chatSend">Send</button>
+        </div>
+        <div id="chatMsg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+
     <!-- Choice modal: when referral threshold is reached -->
     <div id="choiceModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card small">
@@ -240,7 +322,7 @@
   </section>
 </main>
 
-<script src="/tiers.config.js?v=7"></script>
-<script src="/app.js?v=7"></script>
+<script src="/tiers.config.js?v=9"></script>
+<script src="/app.js?v=9"></script>
 </body>
 </html>
