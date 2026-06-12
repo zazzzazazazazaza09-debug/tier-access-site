@@ -817,7 +817,7 @@ async function sendChatMessage() {
   const content = $("chatInput").value.trim();
   if (!content) return;
   try {
-    await request("custom-message", {
+    await request("custom-messages", {
       method: "POST",
       body: JSON.stringify({ order_id: activeChatOrderId, content })
     });

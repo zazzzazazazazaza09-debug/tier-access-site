@@ -261,9 +261,9 @@ async function adminSetPrice() {
     return;
   }
   try {
-    await request("custom-set-price", {
+    await request("custom-orders", {
       method: "POST",
-      body: JSON.stringify({ order_id: activeOrderId, price })
+      body: JSON.stringify({ action: "set_price", order_id: activeOrderId, price })
     });
     input.value = "";
     $("adminPriceMsg").textContent = "Price set!";
@@ -280,7 +280,7 @@ async function sendAdminChat() {
   const content = $("adminChatInput").value.trim();
   if (!content) return;
   try {
-    await request("custom-message", {
+    await request("custom-messages", {
       method: "POST",
       body: JSON.stringify({ order_id: activeOrderId, content })
     });
