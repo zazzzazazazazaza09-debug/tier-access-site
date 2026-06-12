@@ -2,6 +2,7 @@ const { getSupabase } = require("./_db");
 const { verifyAuth } = require("./_auth");
 const { send } = require("./_utils");
 const { getTier } = require("./_tiers");
+const { getCustomPrice } = require("./_custom");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -12,16 +13,38 @@ module.exports = async function handler(req, res) {
     const auth = verifyAuth(req);
     const body = req.body || {};
 
-    const tierId = Number(body.tier_id);
     const method = String(body.method || "").trim();
-    const tier = getTier(tierId);
-
-    if (!tier) {
-      return send(res, 400, { error: "Invalid tier" });
-    }
+    const isCustom = Boolean(body.is_custom);
 
     if (!["crypto", "giftcard"].includes(method)) {
       return send(res, 400, { error: "Invalid payment method" });
+    }
+
+    let tierId = 0;
+    let amountUSD = 0;
+    let customPackId = null;
+    let customSizeId = null;
+    let customLabel = null;
+
+    if (isCustom) {
+      const packId = Number(body.custom_pack_id);
+      const sizeId = String(body.custom_size_id || "").trim();
+      const custom = getCustomPrice(packId, sizeId);
+      if (!custom) {
+        return send(res, 400, { error: "Invalid custom pack selection" });
+      }
+      tierId = 0;
+      amountUSD = custom.priceUSD;
+      customPackId = custom.packId;
+      customSizeId = custom.sizeId;
+      customLabel = custom.label;
+    } else {
+      tierId = Number(body.tier_id);
+      const tier = getTier(tierId);
+      if (!tier) {
+        return send(res, 400, { error: "Invalid tier" });
+      }
+      amountUSD = tier.priceUSD;
     }
 
     const supabase = getSupabase();
@@ -35,8 +58,10 @@ module.exports = async function handler(req, res) {
     if (userErr) throw userErr;
     if (!user) return send(res, 404, { error: "User not found" });
 
-    if (Array.isArray(user.unlocked_tiers) && user.unlocked_tiers.includes(tierId)) {
-      return send(res, 400, { error: "You already have access to this tier." });
+    if (!isCustom) {
+      if (Array.isArray(user.unlocked_tiers) && user.unlocked_tiers.includes(tierId)) {
+        return send(res, 400, { error: "You already have access to this tier." });
+      }
     }
 
     const insert = {
@@ -44,8 +69,12 @@ module.exports = async function handler(req, res) {
       username: user.username,
       tier_id: tierId,
       method,
-      amount_usd: tier.priceUSD,
-      status: "pending"
+      amount_usd: amountUSD,
+      status: "pending",
+      is_custom: isCustom,
+      custom_pack_id: customPackId,
+      custom_size_id: customSizeId,
+      custom_label: customLabel
     };
 
     if (method === "crypto") {

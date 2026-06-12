@@ -45,6 +45,38 @@ window.SITE_CONFIG = {
     { name: "Driffle", note: "Gift Card", url: "https://driffle.com/search?q=paypal" }
   ],
 
+  // ----- CUSTOM PACK (build your own — not a tier) -----
+  customPack: {
+    title: "Custom Pack",
+    subtitle: "Pick a category, choose your size, pay instantly.",
+    categories: [
+      { id: 1, name: "Pack 1",  desc: "Essential collection",  color: "gold" },
+      { id: 2, name: "Pack 2",  desc: "Premium selection",     color: "amber" },
+      { id: 3, name: "Pack 3",  desc: "Elite vault",           color: "orange" },
+      { id: 4, name: "Pack 4",  desc: "Ultra archive",         color: "coral" },
+      { id: 5, name: "Pack 5",  desc: "VIP exclusive",         color: "rose" },
+      { id: 6, name: "Pack 6",  desc: "Mega ultimate",         color: "crimson" }
+    ],
+    sizes: [
+      { id: "25gb",  label: "25 GB",  popular: false, mega: false },
+      { id: "50gb",  label: "50 GB",  popular: false, mega: false },
+      { id: "100gb", label: "100 GB", popular: false, mega: false },
+      { id: "250gb", label: "250 GB", popular: true,  mega: false },
+      { id: "500gb", label: "500 GB", popular: false, mega: false },
+      { id: "1tb",   label: "1 TB",   popular: false, mega: false },
+      { id: "5tb",   label: "5 TB",   popular: false, mega: true  }
+    ],
+    // priceUSD + originalUSD per category × size (keep in sync with api/_custom.js)
+    prices: {
+      1: { "25gb":  { price: 12,  original: 18  }, "50gb":  { price: 30,  original: 45  }, "100gb": { price: 58,  original: 85  }, "250gb": { price: 95,  original: 140 }, "500gb": { price: 145, original: 210 }, "1tb":   { price: 185, original: 270 }, "5tb":   { price: 250, original: 350 } },
+      2: { "25gb":  { price: 14,  original: 20  }, "50gb":  { price: 34,  original: 50  }, "100gb": { price: 62,  original: 90  }, "250gb": { price: 105, original: 155 }, "500gb": { price: 155, original: 225 }, "1tb":   { price: 200, original: 290 }, "5tb":   { price: 260, original: 370 } },
+      3: { "25gb":  { price: 14,  original: 20  }, "50gb":  { price: 34,  original: 50  }, "100gb": { price: 62,  original: 90  }, "250gb": { price: 105, original: 155 }, "500gb": { price: 155, original: 225 }, "1tb":   { price: 200, original: 290 }, "5tb":   { price: 260, original: 370 } },
+      4: { "25gb":  { price: 15,  original: 22  }, "50gb":  { price: 36,  original: 54  }, "100gb": { price: 66,  original: 96  }, "250gb": { price: 115, original: 168 }, "500gb": { price: 165, original: 240 }, "1tb":   { price: 215, original: 310 }, "5tb":   { price: 270, original: 380 } },
+      5: { "25gb":  { price: 20,  original: 30  }, "50gb":  { price: 48,  original: 70  }, "100gb": { price: 82,  original: 118 }, "250gb": { price: 135, original: 195 }, "500gb": { price: 190, original: 275 }, "1tb":   { price: 245, original: 355 }, "5tb":   { price: 300, original: 420 } },
+      6: { "25gb":  { price: 25,  original: 38  }, "50gb":  { price: 58,  original: 85  }, "100gb": { price: 105, original: 150 }, "250gb": { price: 170, original: 245 }, "500gb": { price: 245, original: 350 }, "1tb":   { price: 320, original: 460 }, "5tb":   { price: 400, original: 550 } }
+    }
+  },
+
   // ----- TIERS -----
   // Edit name, priceUSD, invitesRequired, totalSize, color, features,
   // and unlockUrl freely.
