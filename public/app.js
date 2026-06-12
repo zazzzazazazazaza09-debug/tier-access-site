@@ -12,6 +12,8 @@ let selectedCustomPack = null;    // category id
 let selectedCustomSize = null;    // size id
 let activeChatOrderId = null;
 let chatPollTimer = null;
+let myOpenOrders = [];
+let orderPollTimer = null;
 
 const params = new URLSearchParams(window.location.search);
 const refFromUrl = params.get("invite") || params.get("ref");
@@ -211,6 +213,7 @@ async function loadMe() {
   renderDrawerTiers();
   initCustomPack();
   initNotifications();
+  startOrderPoll();
 }
 
 function hasAccess(tierId) {
@@ -712,8 +715,12 @@ async function submitCustomOrder() {
     $("customOrderMsg").textContent = data.message || "Sent!";
     $("customOrderMsg").className = "msg success";
     $("customOrderText").value = "";
+    // Close the modal after submission
+    setTimeout(() => {
+      $("customOrderModal").classList.add("hidden");
+    }, 1200);
     await loadMyCustomOrders();
-    if (data.order?.id) openChatModal(data.order.id);
+    startOrderPoll();
   } catch (err) {
     $("customOrderMsg").textContent = err.message;
     $("customOrderMsg").className = "msg error";
@@ -747,18 +754,6 @@ async function loadMyCustomOrders() {
   }
 }
 
-async function openChatModal(orderId) {
-  activeChatOrderId = orderId;
-  $("chatModal").classList.remove("hidden");
-  $("chatMsg").textContent = "";
-  $("chatInput").value = "";
-  $("chatTitle").textContent = "Custom order";
-  $("chatSub").textContent = "Reply here — we usually answer within minutes.";
-  await loadChatMessages();
-  if (chatPollTimer) clearInterval(chatPollTimer);
-  chatPollTimer = setInterval(() => loadChatMessages(true), 8000);
-}
-
 function closeChatModal() {
   $("chatModal").classList.add("hidden");
   activeChatOrderId = null;
@@ -782,6 +777,35 @@ async function loadChatMessages(silent) {
       const wrap = el("div", { class: "chat-line " + (m.is_admin ? "admin" : "user") }, [bubble, time]);
       box.appendChild(wrap);
     }
+
+    // Show agreed price + pay button if admin set a price
+    const agreedPrice = data.agreed_price;
+    const payBar = $("chatPayBar");
+    if (payBar) payBar.remove();
+
+    if (agreedPrice && agreedPrice > 0) {
+      const bar = el("div", { class: "chat-pay-bar", id: "chatPayBar" }, [
+        el("div", { class: "chat-pay-info" }, [
+          el("strong", {}, `Agreed price: $${agreedPrice}`),
+          el("span", { class: "muted" }, "Click below to proceed with payment")
+        ]),
+        el("button", {
+          class: "main-btn chat-pay-btn", type: "button",
+          onclick: () => {
+            closeChatModal();
+            openPurchaseModal({
+              isCustom: true,
+              packId: 0,
+              sizeId: "custom_order",
+              name: "Custom Order",
+              priceUSD: agreedPrice
+            });
+          }
+        }, `💳 Pay $${agreedPrice}`)
+      ]);
+      box.parentElement.insertBefore(bar, box.nextSibling);
+    }
+
     box.scrollTop = box.scrollHeight;
   } catch (err) {
     if (!silent) $("chatMsg").textContent = err.message;
@@ -809,6 +833,62 @@ function formatTime(iso) {
   if (!iso) return "";
   const d = new Date(iso);
   return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+/* ================================================================
+   FLOATING CHAT INDICATOR + ORDER POLLING
+================================================================ */
+function startOrderPoll() {
+  if (orderPollTimer) clearInterval(orderPollTimer);
+  pollMyOrders();
+  orderPollTimer = setInterval(pollMyOrders, 10000);
+}
+
+async function pollMyOrders() {
+  if (!currentUser) return;
+  try {
+    const data = await request("custom-orders");
+    myOpenOrders = data.orders || [];
+    renderChatFloat();
+  } catch (_) {}
+}
+
+function renderChatFloat() {
+  let wrap = $("chatFloatWrap");
+  if (!wrap) {
+    wrap = document.createElement("div");
+    wrap.id = "chatFloatWrap";
+    document.body.appendChild(wrap);
+  }
+  wrap.innerHTML = "";
+  const openOrders = myOpenOrders.filter(o => o.status === "open");
+  if (!openOrders.length) return;
+
+  for (const o of openOrders) {
+    const hasPrice = o.agreed_price && o.agreed_price > 0;
+    const btn = el("button", {
+      class: "chat-float-btn" + (hasPrice ? " has-price" : ""),
+      type: "button",
+      onclick: () => openChatModal(o.id)
+    }, [
+      el("span", { class: "chat-float-icon" }, hasPrice ? "💳" : "💬"),
+      el("span", { class: "chat-float-text" }, hasPrice ? `Pay $${o.agreed_price}` : "Chat"),
+      el("span", { class: "chat-float-dot" })
+    ]);
+    wrap.appendChild(btn);
+  }
+}
+
+async function openChatModal(orderId) {
+  activeChatOrderId = orderId;
+  $("chatModal").classList.remove("hidden");
+  $("chatMsg").textContent = "";
+  $("chatInput").value = "";
+  $("chatTitle").textContent = "Custom order";
+  $("chatSub").textContent = "Reply here — we usually answer within minutes.";
+  await loadChatMessages();
+  if (chatPollTimer) clearInterval(chatPollTimer);
+  chatPollTimer = setInterval(() => loadChatMessages(true), 8000);
 }
 
 /* ================================================================

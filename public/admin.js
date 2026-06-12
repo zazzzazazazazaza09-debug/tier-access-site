@@ -93,6 +93,10 @@ $("adminChatSend").addEventListener("click", sendAdminChat);
 $("adminChatInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") sendAdminChat();
 });
+$("adminSetPriceBtn").addEventListener("click", adminSetPrice);
+$("adminPriceInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") adminSetPrice();
+});
 
 async function refresh() {
   $("adminMsg").textContent = "Loading…";
@@ -228,8 +232,46 @@ async function loadAdminChat(silent) {
       box.appendChild(line);
     }
     box.scrollTop = box.scrollHeight;
+
+    // Update price display
+    const agreedPrice = data.agreed_price;
+    const priceDisplay = $("adminAgreedPrice");
+    const priceSetBtn = $("adminSetPriceBtn");
+    if (priceDisplay) {
+      if (agreedPrice && agreedPrice > 0) {
+        priceDisplay.textContent = `Agreed price: $${agreedPrice}`;
+        priceDisplay.className = "admin-price-set";
+      } else {
+        priceDisplay.textContent = "No price set yet";
+        priceDisplay.className = "muted";
+      }
+    }
   } catch (err) {
     if (!silent) $("adminMsg").textContent = err.message;
+  }
+}
+
+async function adminSetPrice() {
+  if (!activeOrderId) return;
+  const input = $("adminPriceInput");
+  const price = Number(input.value);
+  if (!price || price < 1) {
+    $("adminPriceMsg").textContent = "Enter a valid price (min $1)";
+    $("adminPriceMsg").className = "msg error";
+    return;
+  }
+  try {
+    await request("custom-set-price", {
+      method: "POST",
+      body: JSON.stringify({ order_id: activeOrderId, price })
+    });
+    input.value = "";
+    $("adminPriceMsg").textContent = "Price set!";
+    $("adminPriceMsg").className = "msg success";
+    await loadAdminChat();
+  } catch (err) {
+    $("adminPriceMsg").textContent = err.message;
+    $("adminPriceMsg").className = "msg error";
   }
 }
 

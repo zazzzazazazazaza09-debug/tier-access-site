@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
 
     let query = supabase
       .from("custom_orders")
-      .select("id, user_id, username, initial_message, status, created_at, updated_at")
+      .select("id, user_id, username, initial_message, status, agreed_price, created_at, updated_at")
       .order("updated_at", { ascending: false })
       .limit(200);
 

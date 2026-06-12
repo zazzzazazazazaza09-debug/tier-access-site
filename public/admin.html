@@ -74,6 +74,12 @@
         <div id="adminChatPanel" class="admin-chat-panel hidden">
           <h3 id="adminChatTitle">Conversation</h3>
           <div id="adminChatMessages" class="chat-messages"></div>
+          <div class="admin-price-row">
+            <span id="adminAgreedPrice" class="muted">No price set yet</span>
+            <input id="adminPriceInput" type="number" min="1" max="10000" placeholder="Price ($)" style="width:120px" />
+            <button type="button" class="ghost-mini" id="adminSetPriceBtn">Set Price</button>
+            <div id="adminPriceMsg" class="msg" style="flex:100%;margin-top:4px"></div>
+          </div>
           <div class="chat-input-row">
             <input id="adminChatInput" placeholder="Reply to user…" maxlength="2000" />
             <button type="button" class="main-btn chat-send-btn" id="adminChatSend">Send</button>

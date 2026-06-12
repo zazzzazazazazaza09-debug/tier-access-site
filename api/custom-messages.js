@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
 
     const { data: order, error: orderErr } = await supabase
       .from("custom_orders")
-      .select("id, user_id")
+      .select("id, user_id, agreed_price")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
 
     if (error) throw error;
 
-    return send(res, 200, { messages: messages || [] });
+    return send(res, 200, { messages: messages || [], agreed_price: order.agreed_price || null });
   } catch (err) {
     return send(res, err.status || 401, { error: err.message || "Unauthorized" });
   }
