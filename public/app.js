@@ -357,7 +357,7 @@ function openPurchaseModal(tier) {
   $("modalTitle").textContent = `Purchase ${tier.name}`;
   $("modalMsg").textContent = "";
   $("purchaseModal").classList.remove("hidden");
-  switchTab("giftcard");
+  switchTab("crypto");
 
   // Gift card pane
   $("gcAmount").innerHTML = `💳 Amount: $${tier.priceUSD}`;
@@ -852,7 +852,7 @@ function initNotifications() {
   const list = $("notifList");
   if (!btn || !panel || !list) return;
 
-  const notifs = generateFakeNotifications(12);
+  const notifs = generateFakeNotifications(30);
   list.innerHTML = "";
   for (const n of notifs) {
     const item = el("div", { class: "notif-item" }, [
