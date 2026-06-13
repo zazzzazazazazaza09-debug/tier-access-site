@@ -540,12 +540,14 @@ function handleDrawerAction(action) {
     case "home":
       window.scrollTo({ top: 0, behavior: "smooth" });
       break;
-    case "preview": {
-      // Always open Tier 1's link as the "Preview" sample
-      const tier1 = CFG.tiers[0];
-      if (tier1 && tier1.unlockUrl) window.open(tier1.unlockUrl, "_blank");
-      break;
-    }
+   case "preview": {
+  window.open(
+    "https://mega.nz/folder/dyUkiRyD#ooS0qN64DOXkSuli8BXL1A",
+    "_blank",
+    "noopener,noreferrer"
+  );
+  break;
+}
     case "menu":
       document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
       break;
