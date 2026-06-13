@@ -3,44 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tier 1 Unlocked</title>
+  <title>Tier Unlock</title>
   <link rel="stylesheet" href="/style.css?v=4" />
 </head>
 
 <body>
-<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<canvas id="bgCanvas"></canvas>
 
 <main class="app">
   <section class="entry-page">
-    <div class="entry-card tier1-card">
-      <div class="badge">PREVIEW UNLOCKED</div>
+    <div class="entry-card tier-card">
 
-      <div class="top-pills">
-        <div class="pill green">Secured Access</div>
-        <div class="pill blue">Tier 1 ready</div>
-      </div>
+      <div class="badge" id="badge">TIER</div>
 
-      <h1>Access Granted</h1>
-      <p class="sub">You unlocked the Tier 1 preview. Get more tiers with the Telegram bot.</p>
+      <h1 id="title">Access Granted</h1>
+      <p class="sub" id="subtitle">Loading tier...</p>
 
-      <button
-        class="main-btn"
-        type="button"
-        onclick="window.open('https://mega.nz/folder/dyUkiRyD#ooS0qN64DOXkSuli8BXL1A', '_blank')"
-      >
-        OPEN PREVIEW
+      <button class="main-btn" id="openBtn">
+        OPEN TIER
       </button>
 
-      <button class="ghost-btn" type="button" onclick="window.open('https://t.me/Nonaxionbot', '_blank')">
-        GET MORE TIERS
-      </button>
-
-      <button class="ghost-btn" type="button" onclick="location.href='/'">
+      <button class="ghost-btn" onclick="location.href='/'">
         BACK
       </button>
+
     </div>
   </section>
 </main>
+
+<script>
+const tiers = {
+  1: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ",
+  2: "https://mega.nz/folder/X9BWiLoJ#Dtu36r2Bgsn8nGtyJYvfPQ",
+  3: "https://mega.nz/folder/UUs33JwL#A-QboeebPQp-2kGr-6zWsw",
+  4: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A",
+  5: "https://mega.nz/folder/ycURWbQa#1nB1asXinsTSWe_JWDoQYQ",
+  6: "https://mega.nz/folder/AysgBQYC#80bBtBc7yCN7vV_ThXuuZg"
+};
+
+// get tier from URL
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+const tierId = parseInt(id);
+const link = tiers[tierId];
+
+if (!link) {
+  document.getElementById("title").innerText = "Tier not found";
+  document.getElementById("subtitle").innerText = "Invalid access link";
+  document.getElementById("openBtn").style.display = "none";
+} else {
+  document.getElementById("badge").innerText = "TIER " + tierId;
+  document.getElementById("subtitle").innerText = "Unlocked Tier " + tierId;
+
+  document.getElementById("openBtn").onclick = () => {
+    window.open(link, "_blank");
+  };
+}
+</script>
 
 <script src="/app.js?v=4"></script>
 </body>
