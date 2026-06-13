@@ -112,7 +112,7 @@ window.SITE_CONFIG = {
         "Permanent/Instant Access",
         "Exclusive Content"
       ],
-      unlockUrl: "PLACEHOLDER_TIER2_LINK"
+      unlockUrl: "https://mega.nz/folder/X9BWiLoJ#Dtu36r2Bgsn8nGtyJYvfPQ"
     },
     {
       id: 3,
@@ -129,7 +129,7 @@ window.SITE_CONFIG = {
         "Rare Collections",
         "Priority Updates"
       ],
-      unlockUrl: "PLACEHOLDER_TIER3_LINK"
+      unlockUrl: "https://mega.nz/folder/UUs33JwL#A-QboeebPQp-2kGr-6zWsw"
     },
     {
       id: 4,
@@ -147,7 +147,7 @@ window.SITE_CONFIG = {
         "VIP Early Access",
         "Special Editions"
       ],
-      unlockUrl: "PLACEHOLDER_TIER4_LINK"
+      unlockUrl: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A"
     },
     {
       id: 5,
@@ -166,7 +166,7 @@ window.SITE_CONFIG = {
         "Lifetime Updates",
         "All Previous Tiers"
       ],
-      unlockUrl: "PLACEHOLDER_TIER5_LINK"
+      unlockUrl: "https://mega.nz/folder/ycURWbQa#1nB1asXinsTSWe_JWDoQYQ"
     },
     {
       id: 6,
@@ -185,7 +185,7 @@ window.SITE_CONFIG = {
         "Lifetime Updates",
         "All Tiers Included"
       ],
-      unlockUrl: "PLACEHOLDER_TIER6_LINK"
+      unlockUrl: "https://mega.nz/folder/AysgBQYC#80bBtBc7yCN7vV_ThXuuZg"
     }
   ]
 };
