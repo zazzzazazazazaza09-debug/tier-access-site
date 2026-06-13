@@ -87,7 +87,7 @@ window.SITE_CONFIG = {
       id: 1,
       name: "Tier 1",
       priceUSD: 10,
-      invitesRequired: 10,
+      invitesRequired: 15,
       totalSize: "60 GB",
       color: "blue",
       features: [
@@ -102,7 +102,7 @@ window.SITE_CONFIG = {
       id: 2,
       name: "Tier 2",
       priceUSD: 20,
-      invitesRequired: 20,
+      invitesRequired: 30,
       totalSize: "150 GB",
       color: "purple",
       features: [
@@ -118,7 +118,7 @@ window.SITE_CONFIG = {
       id: 3,
       name: "Tier 3",
       priceUSD: 40,
-      invitesRequired: 40,
+      invitesRequired: 50,
       totalSize: "300 GB",
       color: "pink",
       features: [
@@ -135,7 +135,7 @@ window.SITE_CONFIG = {
       id: 4,
       name: "Tier 4",
       priceUSD: 80,
-      invitesRequired: 80,
+      invitesRequired: 100,
       totalSize: "500 GB",
       color: "cyan",
       features: [
@@ -152,7 +152,7 @@ window.SITE_CONFIG = {
     {
       id: 5,
       name: "Tier 5",
-      priceUSD: 120,
+      priceUSD: 180,
       invitesRequired: 120,
       totalSize: "800 GB",
       color: "green",
@@ -171,7 +171,7 @@ window.SITE_CONFIG = {
     {
       id: 6,
       name: "Tier 6",
-      priceUSD: 200,
+      priceUSD: 350,
       invitesRequired: 200,
       totalSize: "1.2 TB",
       color: "red",
