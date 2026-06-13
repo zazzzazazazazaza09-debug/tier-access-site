@@ -112,7 +112,7 @@ window.SITE_CONFIG = {
         "Permanent/Instant Access",
         "Exclusive Content"
       ],
-      unlockUrl: "https://mega.nz/folder/X9BWiLoJ#Dtu36r2Bgsn8nGtyJYvfPQ"
+      unlockUrl: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A"
     },
     {
       id: 3,
@@ -147,7 +147,7 @@ window.SITE_CONFIG = {
         "VIP Early Access",
         "Special Editions"
       ],
-      unlockUrl: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A"
+      unlockUrl: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ"
     },
     {
       id: 5,
