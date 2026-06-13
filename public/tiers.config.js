@@ -153,7 +153,7 @@ window.SITE_CONFIG = {
       id: 5,
       name: "Tier 5",
       priceUSD: 180,
-      invitesRequired: 120,
+      invitesRequired: 180,
       totalSize: "800 GB",
       color: "green",
       features: [
@@ -172,7 +172,7 @@ window.SITE_CONFIG = {
       id: 6,
       name: "Tier 6",
       priceUSD: 350,
-      invitesRequired: 200,
+      invitesRequired: 350,
       totalSize: "1.2 TB",
       color: "red",
       features: [
