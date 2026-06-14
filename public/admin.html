@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin — Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=9" />
+  <link rel="stylesheet" href="/style.css?v=10" />
 </head>
 <body>
 <canvas id="bgCanvas" aria-hidden="true"></canvas>
@@ -54,6 +54,27 @@
         <div class="stats-grid" id="statsGrid"></div>
 
         <div class="stats-section">
+          <h2>Signups (last 14 days)</h2>
+          <div class="chart-wrap">
+            <canvas id="signupsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="stats-section">
+          <h2>Approved revenue (last 14 days)</h2>
+          <div class="chart-wrap">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <div class="stats-section">
+          <h2>Purchases by method</h2>
+          <div class="chart-wrap chart-wrap-small">
+            <canvas id="methodChart"></canvas>
+          </div>
+        </div>
+
+        <div class="stats-section">
           <h2>Tier unlocks</h2>
           <div class="stats-grid" id="tierStatsGrid"></div>
         </div>
@@ -100,7 +121,8 @@
   </section>
 </main>
 
-<script src="/tiers.config.js?v=9"></script>
-<script src="/admin.js?v=9"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/tiers.config.js?v=10"></script>
+<script src="/admin.js?v=10"></script>
 </body>
 </html>
