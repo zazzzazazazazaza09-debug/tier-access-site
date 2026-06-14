@@ -1,5 +1,4 @@
 create extension if not exists pgcrypto;
-
 create table if not exists profiles (
   id uuid primary key default gen_random_uuid(),
   username text not null,
@@ -58,6 +57,12 @@ alter table profiles
 
 alter table profiles
   add column if not exists is_admin boolean not null default false;
+
+-- Presence tracking (for "online now" admin stat).
+alter table profiles
+  add column if not exists last_seen timestamptz;
+
+create index if not exists profiles_last_seen_idx on profiles(last_seen);
 
 -- Purchases (manual review).
 create table if not exists purchases (
