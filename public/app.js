@@ -14,6 +14,7 @@ let activeChatOrderId = null;
 let chatPollTimer = null;
 let myOpenOrders = [];
 let orderPollTimer = null;
+let heartbeatTimer = null;
 
 // ── Notification / unread tracking ──────────────────────────────
 let notifQueue = [];              // fake notifs waiting to be shown
@@ -213,6 +214,7 @@ async function loadMe() {
   initCustomPack();
   initNotifications();
   startOrderPoll();
+  startHeartbeat();
 }
 
 function hasAccess(tierId) {
@@ -307,18 +309,28 @@ async function onInviteButton(tier) {
 }
 
 async function openTier(tier) {
+  // Open a blank tab synchronously (still inside the click gesture) so mobile
+  // browsers (iOS Safari / Chrome Android) don't block the popup. We redirect
+  // this tab to the real reward URL once the claim request resolves.
+  const win = window.open("", "_blank");
   try {
     const data = await request("claim", {
       method: "POST",
       body: JSON.stringify({ tier_id: tier.id })
     });
-    window.open(data.reward_url, "_blank");
+    if (win && !win.closed) {
+      win.location.href = data.reward_url;
+    } else {
+      // Popup got blocked anyway — fall back to same-tab navigation.
+      window.location.href = data.reward_url;
+    }
     if (!currentUser.unlocked_tiers.includes(tier.id)) {
       currentUser.unlocked_tiers = [...currentUser.unlocked_tiers, tier.id];
     }
     renderTierGrid();
     renderDrawerTiers();
   } catch (err) {
+    if (win && !win.closed) win.close();
     alert(err.message);
   }
 }
@@ -949,6 +961,24 @@ async function openChatModal(orderId) {
   await loadChatMessages();
   if (chatPollTimer) clearInterval(chatPollTimer);
   chatPollTimer = setInterval(() => loadChatMessages(true), 8000);
+}
+
+/* ================================================================
+   PRESENCE HEARTBEAT (admin "online now" stat)
+================================================================ */
+function startHeartbeat() {
+  sendHeartbeat();
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  heartbeatTimer = setInterval(sendHeartbeat, 60000);
+
+  // Send one extra heartbeat when the tab becomes visible again.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") sendHeartbeat();
+  });
+}
+
+async function sendHeartbeat() {
+  try { await request("heartbeat", { method: "POST" }); } catch (_) {}
 }
 
 /* ================================================================
