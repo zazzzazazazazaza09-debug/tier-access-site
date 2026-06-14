@@ -21,6 +21,15 @@ module.exports = async function handler(req, res) {
       return send(res, 404, { error: "User not found" });
     }
 
+    // Presence ping for the admin "online now" stat. Fire-and-forget;
+    // if the last_seen column doesn't exist yet (migration not run),
+    // this fails silently and the rest of the response is unaffected.
+    supabase
+      .from("profiles")
+      .update({ last_seen: new Date().toISOString() })
+      .eq("id", auth.id)
+      .then(() => {}, () => {});
+
     return send(res, 200, { user });
   } catch (err) {
     return send(res, 401, { error: err.message || "Unauthorized" });
