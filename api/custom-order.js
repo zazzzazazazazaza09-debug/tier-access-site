@@ -1,6 +1,7 @@
 const { getSupabase } = require("./_db");
 const { verifyAuth } = require("./_auth");
-const { send } = require("./_utils");
+const { send, escapeHtml } = require("./_utils");
+const { notifyAdmin } = require("./_telegram");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -51,6 +52,13 @@ module.exports = async function handler(req, res) {
     });
 
     if (msgErr) throw msgErr;
+
+    const preview = message.length > 300 ? `${message.slice(0, 300)}…` : message;
+    notifyAdmin(
+      `💬 <b>New custom order request</b>\n` +
+      `User: <b>${escapeHtml(user.username)}</b>\n` +
+      `Message: ${escapeHtml(preview)}`
+    ).catch(() => {});
 
     return send(res, 200, {
       ok: true,

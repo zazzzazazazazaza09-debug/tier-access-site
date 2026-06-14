@@ -1,8 +1,9 @@
 const { getSupabase } = require("./_db");
 const { verifyAuth } = require("./_auth");
-const { send } = require("./_utils");
+const { send, escapeHtml } = require("./_utils");
 const { getTier } = require("./_tiers");
 const { getCustomPrice } = require("./_custom");
+const { notifyAdmin } = require("./_telegram");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -115,6 +116,26 @@ module.exports = async function handler(req, res) {
       .single();
 
     if (error) throw error;
+
+    const productLabel = isCustom
+      ? (customLabel || `Custom Pack ${customPackId || ""} · ${customSizeId || ""}`)
+      : (getTier(tierId)?.name || `Tier ${tierId}`);
+
+    let methodLine = `Method: ${escapeHtml(method)}`;
+    if (method === "crypto") {
+      methodLine += ` (${escapeHtml(insert.crypto_currency)} ${escapeHtml(insert.crypto_amount)})`;
+    } else if (method === "giftcard") {
+      methodLine += ` (${escapeHtml(insert.giftcard_platform)})`;
+    }
+
+    notifyAdmin(
+      `🛒 <b>New purchase</b>\n` +
+      `User: <b>${escapeHtml(user.username)}</b>\n` +
+      `Item: ${escapeHtml(productLabel)}\n` +
+      `Amount: $${Number(amountUSD).toFixed(2)}\n` +
+      `${methodLine}\n` +
+      `Status: pending review`
+    ).catch(() => {});
 
     return send(res, 200, {
       ok: true,
