@@ -24,6 +24,7 @@ api/
   purchases.js     # (admin) list purchases
   purchase-approve.js  # (admin) approve/reject
   admin-stats.js   # (admin) dashboard stats
+  heartbeat.js     # Presence ping (updates profiles.last_seen)
   _tiers.js        # Server-side tier config (must mirror public/tiers.config.js)
   _telegram.js     # Telegram admin notification helper
   _auth.js / _db.js / _utils.js
@@ -86,8 +87,8 @@ TELEGRAM_CHAT_ID=your-telegram-chat-id       # optional, for admin notifications
 
 Run `database/supabase.sql` in the SQL Editor. If you already
 created the database before, run it again — it adds the
-`unlocked_tiers` and `is_admin` columns and the `purchases` table
-idempotently.
+`unlocked_tiers`, `is_admin` and `last_seen` columns and the
+`purchases` table idempotently.
 
 ## How payments work
 
@@ -143,7 +144,33 @@ someone submits a payment or a custom order request.
 
 ## Admin dashboard
 
-`/admin.html` has a **Dashboard** tab showing live stats: total
-accounts, new signups (today / 7 days), total referrals, revenue
-(today / 7 days / month / all time), purchase counts by status, open
-custom orders, and how many users have unlocked each tier.
+`/admin.html` has a **Dashboard** tab showing live stats and graphs:
+
+- **Online now** — number of users active in the last 5 minutes
+  (based on a heartbeat ping sent every 60s by logged-in users via
+  `api/heartbeat.js`, stored in `profiles.last_seen`).
+- Total accounts, new signups (today / 7 days), admins, total
+  referrals, referred users, reward-unlocked count.
+- Revenue (today / 7 days / month / all time).
+- Purchase counts by status (pending / approved / rejected / total),
+  approved custom packs, open and total custom orders.
+- How many users have unlocked each tier.
+- **Charts** (powered by Chart.js, loaded from CDN):
+  - Line chart of new signups over the last 14 days.
+  - Bar chart of approved revenue over the last 14 days.
+  - Doughnut chart of purchases by payment method.
+
+If the `last_seen` column hasn't been added yet (i.e. you haven't
+re-run `database/supabase.sql`), "Online now" simply shows `0` and
+the heartbeat endpoint fails silently — nothing else is affected.
+
+## Mobile fixes
+
+- Tapping a tier's reward button now opens the destination reliably
+  on mobile browsers (the tab is opened synchronously inside the tap
+  gesture, then redirected once the unlock request completes, with a
+  same-tab fallback if the popup is blocked).
+- The notifications panel now renders as a fixed sheet under the top
+  bar on small screens instead of overflowing off-screen.
+- General responsive tightening of the top bar and modals on screens
+  under 700px wide.
