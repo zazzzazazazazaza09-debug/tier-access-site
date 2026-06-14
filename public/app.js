@@ -978,7 +978,7 @@ function startHeartbeat() {
 }
 
 async function sendHeartbeat() {
-  try { await request("heartbeat", { method: "POST" }); } catch (_) {}
+  try { await request("me"); } catch (_) {}
 }
 
 /* ================================================================
