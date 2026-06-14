@@ -1134,6 +1134,24 @@ input:focus, textarea:focus {
   .chat-float-btn { padding: 10px 14px; font-size: .82rem; }
   .chat-pay-bar { flex-direction: column; align-items: stretch; }
   .chat-pay-btn { width: 100% !important; }
+
+  /* --- Topbar / modal tightening on small screens --- */
+  .topbar { padding: 12px 14px; }
+  .topbar-title { font-size: .85rem; }
+  .modal-card { padding: 18px; border-radius: 18px; }
+  .modal-card.small { padding: 18px; }
+
+  /* --- Notifications panel: fixed full-width sheet under topbar --- */
+  .notif-panel {
+    position: fixed;
+    top: 64px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    max-height: 70vh;
+  }
+  .notif-list { max-height: calc(70vh - 46px); }
 }
 
 /* =========================================================
@@ -1249,4 +1267,20 @@ input:focus, textarea:focus {
 }
 .chat-float-btn {
   position: relative; /* needed for absolute badge */
+}
+
+/* =========================================================
+   ADMIN DASHBOARD — CHARTS
+   ========================================================= */
+.chart-wrap {
+  position: relative;
+  height: 260px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+.chart-wrap-small { max-width: 360px; margin: 0 auto; }
+@media (max-width: 700px) {
+  .chart-wrap { height: 220px; padding: 10px; }
 }
