@@ -24,7 +24,6 @@ api/
   purchases.js     # (admin) list purchases
   purchase-approve.js  # (admin) approve/reject
   admin-stats.js   # (admin) dashboard stats
-  heartbeat.js     # Presence ping (updates profiles.last_seen)
   _tiers.js        # Server-side tier config (must mirror public/tiers.config.js)
   _telegram.js     # Telegram admin notification helper
   _auth.js / _db.js / _utils.js
@@ -147,8 +146,8 @@ someone submits a payment or a custom order request.
 `/admin.html` has a **Dashboard** tab showing live stats and graphs:
 
 - **Online now** — number of users active in the last 5 minutes
-  (based on a heartbeat ping sent every 60s by logged-in users via
-  `api/heartbeat.js`, stored in `profiles.last_seen`).
+  (based on a presence ping sent every 60s by logged-in users via
+  `/api/me`, stored in `profiles.last_seen`).
 - Total accounts, new signups (today / 7 days), admins, total
   referrals, referred users, reward-unlocked count.
 - Revenue (today / 7 days / month / all time).
@@ -162,7 +161,7 @@ someone submits a payment or a custom order request.
 
 If the `last_seen` column hasn't been added yet (i.e. you haven't
 re-run `database/supabase.sql`), "Online now" simply shows `0` and
-the heartbeat endpoint fails silently — nothing else is affected.
+the presence ping fails silently — nothing else is affected.
 
 ## Mobile fixes
 
