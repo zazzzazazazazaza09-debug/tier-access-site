@@ -1,17 +1,5 @@
-{
-  "name": "vercel-tier-referral-site",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "node -e \"console.log('Vercel build ready')\""
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "ws": "^8.18.0"
-  },
-  "engines": {
-    "node": "20.x"
-  }
-}
+ALTER TABLE custom_orders
+  ADD COLUMN IF NOT EXISTS agreed_price numeric;
+
+ALTER TABLE custom_orders
+  ADD COLUMN IF NOT EXISTS price_set_by uuid REFERENCES profiles(id) ON DELETE SET NULL;
