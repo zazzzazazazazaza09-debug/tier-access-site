@@ -38,6 +38,7 @@
       <h1>Pending payments</h1>
 
       <div class="admin-tabs">
+        <button data-view="dashboard">Dashboard</button>
         <button data-view="purchases" class="active">Purchases</button>
         <button data-view="orders">Custom orders</button>
         <button data-status="pending" class="purchase-tab active">Pending</button>
@@ -48,6 +49,15 @@
       </div>
 
       <div id="adminMsg" class="msg"></div>
+
+      <div id="dashboardView" class="hidden">
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="stats-section">
+          <h2>Tier unlocks</h2>
+          <div class="stats-grid" id="tierStatsGrid"></div>
+        </div>
+      </div>
 
       <div id="purchasesView">
         <div style="overflow-x:auto">

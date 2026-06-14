@@ -71,8 +71,11 @@ document.querySelectorAll(".admin-tabs button[data-view]").forEach(b => {
     b.classList.add("active");
     currentView = b.dataset.view;
     const isPurchases = currentView === "purchases";
+    const isDashboard = currentView === "dashboard";
+    const isOrders = currentView === "orders";
+    $("dashboardView").classList.toggle("hidden", !isDashboard);
     $("purchasesView").classList.toggle("hidden", !isPurchases);
-    $("ordersView").classList.toggle("hidden", isPurchases);
+    $("ordersView").classList.toggle("hidden", !isOrders);
     document.querySelectorAll(".purchase-tab").forEach(x => {
       x.style.display = isPurchases ? "" : "none";
     });
@@ -102,7 +105,10 @@ async function refresh() {
   $("adminMsg").textContent = "Loading…";
   $("adminMsg").className = "msg";
   try {
-    if (currentView === "purchases") {
+    if (currentView === "dashboard") {
+      await loadDashboard();
+      $("adminMsg").textContent = "";
+    } else if (currentView === "purchases") {
       const data = await request(`purchases?status=${encodeURIComponent(currentStatus)}`);
       renderRows(data.purchases || []);
       $("adminMsg").textContent = `${data.purchases.length} record(s).`;
@@ -115,6 +121,51 @@ async function refresh() {
     $("adminMsg").textContent = err.message;
     $("adminMsg").className = "msg error";
   }
+}
+
+async function loadDashboard() {
+  const data = await request("admin-stats");
+  const s = data.stats || {};
+  const u = s.users || {};
+  const r = s.revenue || {};
+  const p = s.purchases || {};
+  const c = s.customOrders || {};
+
+  const cards = [
+    { label: "Total accounts", value: u.total ?? 0 },
+    { label: "New users today", value: u.newToday ?? 0 },
+    { label: "New users (7d)", value: u.newThisWeek ?? 0 },
+    { label: "Admins", value: u.admins ?? 0 },
+    { label: "Total referrals", value: u.totalReferrals ?? 0 },
+    { label: "Referred users", value: u.referredUsers ?? 0 },
+    { label: "Reward unlocked", value: u.rewardUnlocked ?? 0 },
+    { label: "Revenue today", value: `$${(r.today ?? 0).toFixed(2)}` },
+    { label: "Revenue (7d)", value: `$${(r.thisWeek ?? 0).toFixed(2)}` },
+    { label: "Revenue (month)", value: `$${(r.thisMonth ?? 0).toFixed(2)}` },
+    { label: "Revenue (all time)", value: `$${(r.allTime ?? 0).toFixed(2)}` },
+    { label: "Pending purchases", value: p.pending ?? 0, accent: "yellow" },
+    { label: "Approved purchases", value: p.approved ?? 0, accent: "green" },
+    { label: "Rejected purchases", value: p.rejected ?? 0, accent: "red" },
+    { label: "Total purchases", value: p.total ?? 0 },
+    { label: "Approved custom packs", value: p.approvedCustom ?? 0 },
+    { label: "Open custom orders", value: c.open ?? 0, accent: "cyan" },
+    { label: "Total custom orders", value: c.total ?? 0 }
+  ];
+
+  $("statsGrid").innerHTML = cards.map(card => `
+    <div class="stat-card${card.accent ? " accent-" + card.accent : ""}">
+      <div class="stat-value">${escapeHtml(String(card.value))}</div>
+      <div class="stat-label">${escapeHtml(card.label)}</div>
+    </div>
+  `).join("");
+
+  const tiers = s.tiers || [];
+  $("tierStatsGrid").innerHTML = tiers.map(t => `
+    <div class="stat-card">
+      <div class="stat-value">${escapeHtml(String(t.unlockedCount))}</div>
+      <div class="stat-label">${escapeHtml(t.name)} unlocked ($${t.priceUSD})</div>
+    </div>
+  `).join("");
 }
 
 function productName(r) {
