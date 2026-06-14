@@ -6,6 +6,10 @@ let currentView = "purchases";
 let activeOrderId = null;
 let orderPollTimer = null;
 
+let signupsChartInstance = null;
+let revenueChartInstance = null;
+let methodChartInstance = null;
+
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
@@ -132,6 +136,7 @@ async function loadDashboard() {
   const c = s.customOrders || {};
 
   const cards = [
+    { label: "Online now", value: u.onlineNow ?? 0, accent: "green" },
     { label: "Total accounts", value: u.total ?? 0 },
     { label: "New users today", value: u.newToday ?? 0 },
     { label: "New users (7d)", value: u.newThisWeek ?? 0 },
@@ -166,6 +171,115 @@ async function loadDashboard() {
       <div class="stat-label">${escapeHtml(t.name)} unlocked ($${t.priceUSD})</div>
     </div>
   `).join("");
+
+  renderCharts(s);
+}
+
+function fmtDateLabel(iso) {
+  return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function chartOptions(extra = {}) {
+  return Object.assign({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: { color: "#a1a1c2" }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: "#a1a1c2" },
+        grid: { color: "rgba(255,255,255,.05)" }
+      },
+      y: {
+        ticks: { color: "#a1a1c2" },
+        grid: { color: "rgba(255,255,255,.05)" },
+        beginAtZero: true
+      }
+    }
+  }, extra);
+}
+
+function renderCharts(s) {
+  if (typeof Chart === "undefined") return;
+  const series = s.series || {};
+  const labels = (series.labels || []).map(fmtDateLabel);
+
+  // --- Signups line chart ---
+  const signupsCanvas = $("signupsChart");
+  if (signupsCanvas) {
+    if (signupsChartInstance) signupsChartInstance.destroy();
+    signupsChartInstance = new Chart(signupsCanvas.getContext("2d"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "New signups",
+          data: series.signups || [],
+          borderColor: "#00f5ff",
+          backgroundColor: "rgba(0,245,255,.15)",
+          tension: 0.3,
+          fill: true,
+          pointRadius: 3
+        }]
+      },
+      options: chartOptions({
+        scales: {
+          x: { ticks: { color: "#a1a1c2" }, grid: { color: "rgba(255,255,255,.05)" } },
+          y: { ticks: { color: "#a1a1c2", precision: 0 }, grid: { color: "rgba(255,255,255,.05)" }, beginAtZero: true }
+        }
+      })
+    });
+  }
+
+  // --- Revenue bar chart ---
+  const revenueCanvas = $("revenueChart");
+  if (revenueCanvas) {
+    if (revenueChartInstance) revenueChartInstance.destroy();
+    revenueChartInstance = new Chart(revenueCanvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Approved revenue ($)",
+          data: series.revenue || [],
+          backgroundColor: "rgba(123,47,247,.55)",
+          borderRadius: 6
+        }]
+      },
+      options: chartOptions()
+    });
+  }
+
+  // --- Purchase methods doughnut chart ---
+  const methodCanvas = $("methodChart");
+  if (methodCanvas) {
+    if (methodChartInstance) methodChartInstance.destroy();
+    const byMethod = (s.purchases && s.purchases.byMethod) || {};
+    const methodLabels = Object.keys(byMethod);
+    const methodColors = ["#00f5ff", "#7b2ff7", "#00ff9c", "#ff5fb3", "#ffd166"];
+    methodChartInstance = new Chart(methodCanvas.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: methodLabels,
+        datasets: [{
+          data: methodLabels.map(k => byMethod[k]),
+          backgroundColor: methodLabels.map((_, i) => methodColors[i % methodColors.length]),
+          borderColor: "rgba(8,10,28,.8)",
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: "#a1a1c2" } }
+        }
+      }
+    });
+  }
 }
 
 function productName(r) {
