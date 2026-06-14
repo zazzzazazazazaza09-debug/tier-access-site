@@ -3,6 +3,8 @@ const { verifyAuth } = require("./_auth");
 const { send } = require("./_utils");
 const { TIERS } = require("./_tiers");
 
+const SERIES_DAYS = 14;
+
 async function requireAdmin(supabase, authId) {
   const { data: me } = await supabase
     .from("profiles")
@@ -15,6 +17,10 @@ async function requireAdmin(supabase, authId) {
     err.status = 403;
     throw err;
   }
+}
+
+function dateKey(d) {
+  return d.toISOString().slice(0, 10);
 }
 
 module.exports = async function handler(req, res) {
@@ -33,6 +39,9 @@ module.exports = async function handler(req, res) {
     const startOfWeek = new Date(startOfToday);
     startOfWeek.setDate(startOfWeek.getDate() - 6); // last 7 days incl. today
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const seriesStart = new Date(startOfToday);
+    seriesStart.setDate(seriesStart.getDate() - (SERIES_DAYS - 1));
 
     // --- Users ---
     const { count: totalUsers } = await supabase
@@ -54,10 +63,23 @@ module.exports = async function handler(req, res) {
       .select("id", { count: "exact", head: true })
       .eq("is_admin", true);
 
-    // --- Referrals & unlocked tiers (need per-row data) ---
+    // --- Online now (best-effort — column may not exist yet) ---
+    let onlineNow = 0;
+    try {
+      const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("last_seen", fiveMinAgo.toISOString());
+      if (!error) onlineNow = count || 0;
+    } catch (_) {
+      onlineNow = 0;
+    }
+
+    // --- Referrals, unlocked tiers & signup series (need per-row data) ---
     const { data: profiles, error: profilesErr } = await supabase
       .from("profiles")
-      .select("referrals_count, reward_unlocked, unlocked_tiers, referred_by");
+      .select("referrals_count, reward_unlocked, unlocked_tiers, referred_by, created_at");
 
     if (profilesErr) throw profilesErr;
 
@@ -67,6 +89,13 @@ module.exports = async function handler(req, res) {
     const tierCounts = {};
     for (const t of TIERS) tierCounts[t.id] = 0;
 
+    const signupSeries = {};
+    for (let i = 0; i < SERIES_DAYS; i++) {
+      const d = new Date(seriesStart);
+      d.setDate(d.getDate() + i);
+      signupSeries[dateKey(d)] = 0;
+    }
+
     for (const p of profiles || []) {
       totalReferrals += Number(p.referrals_count || 0);
       if (p.referred_by) referredUsers += 1;
@@ -74,6 +103,13 @@ module.exports = async function handler(req, res) {
       if (Array.isArray(p.unlocked_tiers)) {
         for (const tid of p.unlocked_tiers) {
           if (tierCounts[tid] !== undefined) tierCounts[tid] += 1;
+        }
+      }
+      if (p.created_at) {
+        const created = new Date(p.created_at);
+        if (created >= seriesStart) {
+          const key = dateKey(created);
+          if (signupSeries[key] !== undefined) signupSeries[key] += 1;
         }
       }
     }
@@ -95,6 +131,15 @@ module.exports = async function handler(req, res) {
     let approvedCustomCount = 0;
     const methodCounts = {};
 
+    const revenueSeries = {};
+    const purchaseCountSeries = {};
+    for (let i = 0; i < SERIES_DAYS; i++) {
+      const d = new Date(seriesStart);
+      d.setDate(d.getDate() + i);
+      revenueSeries[dateKey(d)] = 0;
+      purchaseCountSeries[dateKey(d)] = 0;
+    }
+
     for (const p of purchases || []) {
       if (p.status === "pending") pendingCount += 1;
       else if (p.status === "approved") approvedCount += 1;
@@ -102,15 +147,30 @@ module.exports = async function handler(req, res) {
 
       methodCounts[p.method] = (methodCounts[p.method] || 0) + 1;
 
+      const created = p.created_at ? new Date(p.created_at) : null;
+      if (created && created >= seriesStart) {
+        const key = dateKey(created);
+        if (purchaseCountSeries[key] !== undefined) purchaseCountSeries[key] += 1;
+      }
+
       if (p.status === "approved") {
         const amount = Number(p.amount_usd || 0);
-        const created = new Date(p.created_at);
         revenueAll += amount;
-        if (created >= startOfMonth) revenueMonth += amount;
-        if (created >= startOfWeek) revenueWeek += amount;
-        if (created >= startOfToday) revenueToday += amount;
+        if (created) {
+          if (created >= startOfMonth) revenueMonth += amount;
+          if (created >= startOfWeek) revenueWeek += amount;
+          if (created >= startOfToday) revenueToday += amount;
+          if (created >= seriesStart) {
+            const key = dateKey(created);
+            if (revenueSeries[key] !== undefined) revenueSeries[key] += amount;
+          }
+        }
         if (p.is_custom) approvedCustomCount += 1;
       }
+    }
+
+    for (const key of Object.keys(revenueSeries)) {
+      revenueSeries[key] = round2(revenueSeries[key]);
     }
 
     // --- Custom orders ---
@@ -130,6 +190,8 @@ module.exports = async function handler(req, res) {
       unlockedCount: tierCounts[t.id] || 0
     }));
 
+    const labels = Object.keys(signupSeries).sort();
+
     return send(res, 200, {
       ok: true,
       stats: {
@@ -140,7 +202,8 @@ module.exports = async function handler(req, res) {
           admins: adminCount || 0,
           referredUsers,
           totalReferrals,
-          rewardUnlocked: rewardUnlockedCount
+          rewardUnlocked: rewardUnlockedCount,
+          onlineNow
         },
         revenue: {
           today: round2(revenueToday),
@@ -160,7 +223,13 @@ module.exports = async function handler(req, res) {
           open: openOrders || 0,
           total: totalOrders || 0
         },
-        tiers: tierBreakdown
+        tiers: tierBreakdown,
+        series: {
+          labels,
+          signups: labels.map((k) => signupSeries[k] || 0),
+          revenue: labels.map((k) => revenueSeries[k] || 0),
+          purchaseCounts: labels.map((k) => purchaseCountSeries[k] || 0)
+        }
       }
     });
   } catch (err) {
