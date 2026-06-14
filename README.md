@@ -23,7 +23,9 @@ api/
   purchase.js      # User submits a payment for review
   purchases.js     # (admin) list purchases
   purchase-approve.js  # (admin) approve/reject
+  admin-stats.js   # (admin) dashboard stats
   _tiers.js        # Server-side tier config (must mirror public/tiers.config.js)
+  _telegram.js     # Telegram admin notification helper
   _auth.js / _db.js / _utils.js
 database/
   supabase.sql     # Run this in Supabase SQL Editor
@@ -73,6 +75,8 @@ Install Command: `npm install`
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 JWT_SECRET=make_a_long_random_secret
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token   # optional, for admin notifications
+TELEGRAM_CHAT_ID=your-telegram-chat-id       # optional, for admin notifications
 ```
 
 `REWARD_URL` is no longer used (the unlock URL now comes from
@@ -107,3 +111,39 @@ change is needed.
 `SITE_CONFIG.telegramBot` (in `tiers.config.js`) controls the link.
 It appears in the sidebar (Support) and as an alternative on the
 "How to Purchase" footer.
+
+## Admin notifications on Telegram (new purchases & custom orders)
+
+You (the admin) can get a Telegram message on your phone every time
+someone submits a payment or a custom order request.
+
+1. **Create a bot:**
+   - Open Telegram, search for **@BotFather**, start a chat.
+   - Send `/newbot`, give it a name and a username (must end in `bot`).
+   - BotFather replies with a token like `123456789:AAH...` — this is
+     your `TELEGRAM_BOT_TOKEN`.
+
+2. **Get your chat id:**
+   - Search for **@userinfobot** (or **@getidsbot**) on Telegram,
+     start a chat with it, and it will reply with your numeric user
+     id — this is your `TELEGRAM_CHAT_ID`.
+   - Then open a chat with **your new bot** (search its username) and
+     send it any message (e.g. `/start`), so it's allowed to message
+     you back.
+
+3. **Add the env vars on Vercel:**
+   - Project → Settings → Environment Variables.
+   - Add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` with the values
+     above, then redeploy.
+
+4. **That's it.** New purchase submissions and new custom order
+   requests will now ping your bot's chat with the user, item, amount
+   and method. If the env vars aren't set, this is silently skipped —
+   nothing else is affected.
+
+## Admin dashboard
+
+`/admin.html` has a **Dashboard** tab showing live stats: total
+accounts, new signups (today / 7 days), total referrals, revenue
+(today / 7 days / month / all time), purchase counts by status, open
+custom orders, and how many users have unlocked each tier.
