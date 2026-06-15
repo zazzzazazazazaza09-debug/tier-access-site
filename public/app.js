@@ -64,6 +64,110 @@ async function request(path, options = {}) {
 }
 
 /* ================================================================
+   USER COUNT BADGE
+================================================================ */
+function formatUserCount(n) {
+  n = Number(n) || 0;
+  if (n >= 1000) {
+    const k = n / 1000;
+    return (k >= 10 ? k.toFixed(0) : k.toFixed(1).replace(/\.0$/, "")) + "k";
+  }
+  return String(n);
+}
+
+async function loadUserCount() {
+  try {
+    const data = await request("stats");
+    const label = `👥 ${formatUserCount(data.users)} users`;
+    const a = $("userCountPill");
+    const b = $("userCountPillMini");
+    if (a) a.textContent = label;
+    if (b) b.textContent = label;
+  } catch (_) {}
+}
+
+/* ================================================================
+   MICRO-INTERACTIONS — 3D tilt + click ripple
+================================================================ */
+function initTiltEffect() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.matchMedia("(hover: none)").matches) return;
+
+  const SEL = ".main-btn,.ghost-btn,.btn-buy,.btn-invites,.tier-card,.icon-btn,.tab,.modal-tab," +
+    ".custom-cat-btn,.custom-size-btn,.ticker-btn,.platform-item,.share-platform," +
+    ".share-action-btn,.share-guide-btn,.chat-float-btn,.drawer-item,.pill,.pill-mini,.panel-tab";
+
+  let current = null;
+
+  document.addEventListener("mousemove", (e) => {
+    const target = e.target.closest(SEL);
+    if (target !== current) {
+      if (current) {
+        current.style.removeProperty("--tiltX");
+        current.style.removeProperty("--tiltY");
+      }
+      current = target;
+    }
+    if (!target) return;
+    const r = target.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    target.style.setProperty("--tiltX", `${(-py * 10).toFixed(2)}deg`);
+    target.style.setProperty("--tiltY", `${(px * 10).toFixed(2)}deg`);
+  });
+
+  document.addEventListener("mouseleave", () => {
+    if (current) {
+      current.style.removeProperty("--tiltX");
+      current.style.removeProperty("--tiltY");
+      current = null;
+    }
+  }, true);
+}
+
+function initClickRipple() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn || btn.disabled) return;
+
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 1.6;
+    const ripple = document.createElement("span");
+    ripple.className = "click-ripple";
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - size / 2}px`;
+    ripple.style.top = `${e.clientY - size / 2}px`;
+    document.body.appendChild(ripple);
+    ripple.addEventListener("animationend", () => ripple.remove());
+  });
+}
+
+/* ================================================================
+   PANEL TABS (declutter — group sections)
+================================================================ */
+function switchPanelTab(name) {
+  document.querySelectorAll(".panel-tab").forEach(b =>
+    b.classList.toggle("active", b.dataset.section === name)
+  );
+  document.querySelectorAll(".panel-section").forEach(s => {
+    const match = s.dataset.section === name;
+    s.classList.toggle("hidden", !match);
+    if (match) {
+      s.classList.remove("panel-section-in");
+      requestAnimationFrame(() => s.classList.add("panel-section-in"));
+    }
+  });
+}
+
+function initPanelTabs() {
+  document.querySelectorAll(".panel-tab").forEach(btn => {
+    btn.addEventListener("click", () => switchPanelTab(btn.dataset.section));
+  });
+}
+
+/* ================================================================
    AUTH
 ================================================================ */
 function setEntryMessage(text, error = false) {
@@ -279,6 +383,7 @@ function renderDrawerTiers() {
         if (access) {
           openTier(t);
         } else {
+          switchPanelTab("tiers");
           const card = document.querySelector(`.tier-card[data-tier-id="${t.id}"]`);
           if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
           openPurchaseModal(t);
@@ -535,6 +640,7 @@ function handleDrawerAction(action) {
   closeDrawer();
   switch (action) {
     case "home":
+      switchPanelTab("tiers");
       window.scrollTo({ top: 0, behavior: "smooth" });
       break;
     case "preview": {
@@ -546,12 +652,15 @@ function handleDrawerAction(action) {
       break;
     }
     case "menu":
+      switchPanelTab("custom");
       document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
       break;
     case "more-videos":
+      switchPanelTab("custom");
       document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth" });
       break;
     case "invites":
+      switchPanelTab("invites");
       document.querySelector(".referral-card")?.scrollIntoView({ behavior: "smooth" });
       break;
     case "reviews":
@@ -973,7 +1082,7 @@ function startHeartbeat() {
 }
 
 async function sendHeartbeat() {
-  try { await request("me"); } catch (_) {}
+  try { await request("heartbeat", { method: "POST" }); } catch (_) {}
 }
 
 /* ================================================================
@@ -1392,3 +1501,7 @@ initTelegramFloat();
 bindDrawer();
 bindStaticUI();
 initAuth();
+loadUserCount();
+initTiltEffect();
+initClickRipple();
+initPanelTabs();
