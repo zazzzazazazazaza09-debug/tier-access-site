@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=11" />
+  <link rel="stylesheet" href="/style.css?v=12" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -136,7 +137,11 @@
             <button type="button" id="copyLinkBtn">Copy Link</button>
           </div>
           <div id="copyMsg" class="copy-msg" aria-live="polite"></div>
-          <button type="button" id="howToShareBtn" class="ghost-btn share-guide-btn">📤 How to share &amp; get more invites</button>
+          <button type="button" id="howToShareBtn" class="share-guide-btn">
+            <span class="share-guide-icon"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i></span>
+            <span class="share-guide-text">How to share &amp; get more invites</span>
+            <span class="share-guide-arrow" aria-hidden="true">→</span>
+          </button>
         </div>
         <div class="referral-right">
           <div class="ref-count" id="totalRefs">0</div>
@@ -338,7 +343,7 @@
   </section>
 </main>
 
-<script src="/tiers.config.js?v=11"></script>
-<script src="/app.js?v=11"></script>
+<script src="/tiers.config.js?v=12"></script>
+<script src="/app.js?v=12"></script>
 </body>
 </html>
