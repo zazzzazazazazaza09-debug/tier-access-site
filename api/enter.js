@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
       if (error) throw error;
       return send(res, 200, { users: count || 0 });
     } catch (err) {
-      return send(res, 500, { error: err.message || "Server error" });
+      return send(res, 500, { error: "Server error" });
     }
   }
 
@@ -118,6 +118,6 @@ module.exports = async function handler(req, res) {
       referral_message: referralMessage
     });
   } catch (err) {
-    return send(res, 500, { error: err.message || "Server error" });
+    return send(res, 500, { error: "Server error" });
   }
 };

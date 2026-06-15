@@ -62,17 +62,20 @@
      PHASE 7 — Dashboard redesign + mobile button
      ================================================================= */
 
-  /* Mobile: compact pill, keeps label, constrained width */
+  /* Mobile: shrink button to hug its content only */
   @media (max-width: 600px) {
     .tg-float {
+      display: inline-flex !important;
+      align-items: center !important;
       padding: 6px 11px !important;
       border-radius: 100px !important;
       gap: 4px !important;
+      width: auto !important;
       min-width: 0 !important;
-      width: fit-content !important;
-      max-width: fit-content !important;
-      bottom: 16px !important;
+      max-width: none !important;
+      left: auto !important;
       right: 12px !important;
+      bottom: 16px !important;
       font-size: 10px !important;
     }
     .tg-float-label { display: inline !important; font-size: 9.5px !important; white-space: nowrap; }
