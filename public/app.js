@@ -1107,45 +1107,45 @@ function initNotifications() {
 ================================================================ */
 const SHARE_PLATFORMS = [
   {
-    id: "x", name: "X (Twitter)", icon: "🐦", type: "intent",
+    id: "x", name: "X (Twitter)", icon: "fa-brands fa-x-twitter", type: "intent",
     url: (link, msg) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}&url=${encodeURIComponent(link)}`,
     tip: "Opens a ready-made post — just hit \"Post\"."
   },
   {
-    id: "telegram", name: "Telegram", icon: "✈️", type: "intent",
+    id: "telegram", name: "Telegram", icon: "fa-brands fa-telegram", type: "intent",
     url: (link, msg) => `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`,
     tip: "Pick a friend, group or channel to send it to."
   },
   {
-    id: "reddit", name: "Reddit", icon: "👽", type: "intent",
+    id: "reddit", name: "Reddit", icon: "fa-brands fa-reddit-alien", type: "intent",
     url: (link, msg) => `https://www.reddit.com/submit?url=${encodeURIComponent(link)}&title=${encodeURIComponent(msg)}`,
     tip: "Post it in a relevant subreddit (check the rules first)."
   },
   {
-    id: "facebook", name: "Facebook", icon: "📘", type: "intent",
+    id: "facebook", name: "Facebook", icon: "fa-brands fa-facebook-f", type: "intent",
     url: (link) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
     tip: "Share to your feed, a group, or send it in Messenger."
   },
   {
-    id: "whatsapp", name: "WhatsApp", icon: "💬", type: "intent",
+    id: "whatsapp", name: "WhatsApp", icon: "fa-brands fa-whatsapp", type: "intent",
     url: (link, msg) => `https://wa.me/?text=${encodeURIComponent(`${msg} ${link}`)}`,
     tip: "Send it to a contact, a group, or post it to your status."
   },
   {
-    id: "tumblr", name: "Tumblr", icon: "📝", type: "intent",
+    id: "tumblr", name: "Tumblr", icon: "fa-brands fa-tumblr", type: "intent",
     url: (link, msg) => `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(link)}&caption=${encodeURIComponent(msg)}`,
     tip: "Reblog it or post it straight to your blog."
   },
   {
-    id: "discord", name: "Discord", icon: "🎮", type: "copy",
+    id: "discord", name: "Discord", icon: "fa-brands fa-discord", type: "copy",
     tip: "Paste your link in a server, your DMs, or set it as your custom status."
   },
   {
-    id: "tiktok", name: "TikTok", icon: "🎵", type: "copy",
+    id: "tiktok", name: "TikTok", icon: "fa-brands fa-tiktok", type: "copy",
     tip: "Add it to your bio, or mention it in your video caption / comments."
   },
   {
-    id: "instagram", name: "Instagram", icon: "📸", type: "copy",
+    id: "instagram", name: "Instagram", icon: "fa-brands fa-instagram", type: "copy",
     tip: "Add it to your bio, or share it in your Story with the link sticker."
   }
 ];
@@ -1164,9 +1164,11 @@ function renderSharePlatforms() {
   const msg = shareMessage();
 
   for (const p of SHARE_PLATFORMS) {
-    const card = el("div", { class: "share-platform" }, [
+    const card = el("div", { class: "share-platform", data: { platform: p.id } }, [
       el("div", { class: "share-platform-head" }, [
-        el("span", { class: "share-platform-icon" }, p.icon),
+        el("span", { class: "share-platform-icon" }, [
+          el("i", { class: p.icon, "aria-hidden": "true" })
+        ]),
         el("strong", {}, p.name)
       ]),
       el("p", { class: "muted share-platform-tip" }, p.tip)
