@@ -8,42 +8,33 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <style>
-  /* =========================================================
-     PHASE 6 — Mobile compact tg-float + enhanced 3D visuals
-     ========================================================= */
+  /* =================================================================
+     PHASE 6 — 3D effects, holo, glow
+     ================================================================= */
 
-  /* Deeper / more dramatic 3D tilt (overrides phase 5) */
   .main-btn:hover, .ghost-btn:hover, .btn-buy:hover, .btn-invites:hover,
   .tier-card:hover, .icon-btn:hover, .tab:hover, .modal-tab:hover,
   .panel-tab:hover, .pill:hover, .pill-mini:hover {
-    transform: perspective(500px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg)) translateY(-5px) translateZ(10px);
+    transform: perspective(500px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) translateY(-5px) translateZ(10px);
     transition: transform .05s linear;
   }
   .main-btn:active, .ghost-btn:active, .btn-buy:active, .btn-invites:active,
   .tier-card:active, .icon-btn:active, .tab:active, .modal-tab:active,
   .panel-tab:active, .pill:active, .pill-mini:active {
-    transform: perspective(500px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg)) scale(.96) translateZ(0);
+    transform: perspective(500px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) scale(.96) translateZ(0);
     transition: transform .05s linear;
   }
 
-  /* Mouse-follow shine overlay (injected by JS) */
   .p6-shine {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: 9;
-    opacity: 0;
-    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 35%, transparent 60%);
+    position: absolute; inset: 0; border-radius: inherit;
+    pointer-events: none; z-index: 9; opacity: 0;
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 35%, transparent 60%);
     transition: opacity .2s;
   }
-  .tier-card:hover .p6-shine,
-  .entry-card:hover .p6-shine,
-  .referral-card:hover .p6-shine,
-  .howto-card:hover .p6-shine,
+  .tier-card:hover .p6-shine, .entry-card:hover .p6-shine,
+  .referral-card:hover .p6-shine, .howto-card:hover .p6-shine,
   .modal-card:hover .p6-shine { opacity: 1; }
 
-  /* Holographic box-shadow cycle on tier card hover */
   @keyframes holo-shift {
     0%   { box-shadow: 0 24px 64px rgba(123,47,247,.5),  0 0 0 1px rgba(123,47,247,.45); }
     33%  { box-shadow: 0 24px 64px rgba(0,245,255,.45),  0 0 0 1px rgba(0,245,255,.45); }
@@ -53,33 +44,25 @@
   .tier-card:hover { animation: holo-shift 3s linear infinite; }
   .tier-card { transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease; }
 
-  /* Hero title glow pulse */
   @keyframes title-glow {
     0%, 100% { filter: drop-shadow(0 0 10px rgba(123,47,247,.5)) drop-shadow(0 0 28px rgba(0,245,255,.12)); }
     50%       { filter: drop-shadow(0 0 22px rgba(123,47,247,.85)) drop-shadow(0 0 48px rgba(0,245,255,.28)); }
   }
   .hero-title { animation: title-glow 3s ease-in-out infinite; }
 
-  /* Active panel-tab neon pulse */
   @keyframes tab-neon {
     0%, 100% { box-shadow: 0 0 22px rgba(0,245,255,.18); }
     50%       { box-shadow: 0 0 38px rgba(0,245,255,.45), 0 0 14px rgba(123,47,247,.32); }
   }
   .panel-tab.active { animation: tab-neon 2.5s ease-in-out infinite; }
-
-  /* Richer glassmorphism on modals */
   .modal-card { backdrop-filter: blur(32px) saturate(1.6); }
+  .main-btn, .ghost-btn { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.06) inset; }
 
-  /* 3D floating shadow on buttons at rest */
-  .main-btn, .ghost-btn {
-    box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.06) inset;
-  }
+  /* =================================================================
+     PHASE 7 — Dashboard redesign + mobile button
+     ================================================================= */
 
-  /* =========================================================
-     PHASE 7 — Mobile button keep-text + stats strip
-     ========================================================= */
-
-  /* Mobile: compact pill keeping "Join Server" label (overrides P6 icon-only) */
+  /* Mobile: compact pill, keeps label */
   @media (max-width: 600px) {
     .tg-float {
       padding: 7px 13px !important;
@@ -90,22 +73,105 @@
       right: 14px !important;
       font-size: 11px !important;
     }
-    .tg-float-label {
-      display: inline !important;
-      font-size: 10.5px !important;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-    }
+    .tg-float-label { display: inline !important; font-size: 10.5px !important; white-space: nowrap; }
     .tg-float-icon svg { width: 14px !important; height: 14px !important; }
     .tg-float-pulse { width: 38px !important; height: 38px !important; top: -4px !important; right: -4px !important; }
   }
 
-  /* Stats strip */
+  /* Hide old hero (heroSub moved into profile card) */
+  .hero { display: none !important; }
+
+  /* ---- Profile card ---- */
+  @keyframes profile-border-glow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(123,47,247,.22), 0 12px 40px rgba(0,0,0,.35); }
+    50%       { box-shadow: 0 0 0 1px rgba(0,245,255,.32), 0 12px 40px rgba(0,0,0,.35); }
+  }
+  .p7-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(123,47,247,.1) 0%, rgba(0,245,255,.05) 100%);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 20px;
+    margin: 0 0 14px;
+    backdrop-filter: blur(14px);
+    position: relative;
+    overflow: hidden;
+    animation: profile-border-glow 4s ease-in-out infinite;
+    transition: background .25s;
+  }
+  .p7-profile::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -20px;
+    width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(0,245,255,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .p7-profile:hover {
+    background: linear-gradient(135deg, rgba(123,47,247,.14) 0%, rgba(0,245,255,.08) 100%);
+  }
+  .p7-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7b2ff7 0%, #00f5ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 0 24px rgba(123,47,247,.6), 0 0 8px rgba(0,245,255,.25);
+    letter-spacing: 0;
+  }
+  .p7-profile-info { flex: 1; min-width: 0; }
+  .p7-greeting {
+    font-size: 0.67rem;
+    color: rgba(161,161,194,.65);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+  .p7-username {
+    font-size: 1.28rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #ffffff 20%, #00f5ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .p7-since {
+    font-size: 0.63rem;
+    color: rgba(161,161,194,.48);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+  /* heroSub inside the profile card */
+  .p7-profile .hero-sub {
+    font-size: 0.77rem;
+    color: rgba(161,161,194,.72);
+    margin-top: 5px;
+    line-height: 1.45;
+    -webkit-text-fill-color: unset;
+    background: none;
+    white-space: normal;
+  }
+
+  /* ---- Stats strip: 3 columns ---- */
   .p7-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin: 0 0 24px;
+    margin: 0 0 22px;
   }
   .p7-stat-card {
     background: linear-gradient(135deg, rgba(123,47,247,.08) 0%, rgba(0,245,255,.04) 100%);
@@ -124,10 +190,10 @@
   .p7-stat-card::before {
     content: '';
     position: absolute;
-    top: -24px; left: 50%;
+    top: -22px; left: 50%;
     transform: translateX(-50%);
     width: 64px; height: 64px;
-    background: radial-gradient(circle, rgba(0,245,255,.13) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0,245,255,.12) 0%, transparent 70%);
     pointer-events: none;
   }
   .p7-stat-card:hover {
@@ -153,19 +219,31 @@
     text-align: center;
     white-space: nowrap;
   }
-  @media (max-width: 520px) {
-    .p7-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0 0 18px; }
-    .p7-stat-card { padding: 11px 8px 9px; border-radius: 11px; }
-    .p7-val { font-size: 1.15rem; }
-    .p7-lbl { font-size: 0.57rem; }
+
+  /* Gradient text on ref-count (total invites big number) */
+  .ref-count {
+    background: linear-gradient(135deg, #00f5ff 0%, #7b2ff7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Hero divider */
-  .p7-hero-divider {
+  /* Subtler divider above tabs */
+  .p7-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(0,245,255,.18) 30%, rgba(123,47,247,.22) 70%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(0,245,255,.15) 35%, rgba(123,47,247,.18) 65%, transparent 100%);
     margin: 0 0 20px;
     border: none;
+  }
+
+  @media (max-width: 480px) {
+    .p7-profile { padding: 14px 15px; gap: 12px; }
+    .p7-avatar { width: 46px; height: 46px; font-size: 1.25rem; }
+    .p7-username { font-size: 1.1rem; }
+    .p7-stats { gap: 8px; margin: 0 0 18px; }
+    .p7-stat-card { padding: 11px 8px 9px; border-radius: 11px; }
+    .p7-val { font-size: 1.15rem; }
+    .p7-lbl { font-size: 0.56rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -173,6 +251,7 @@
     .panel-tab.active { animation: none !important; }
     .tier-card:hover { animation: none !important; }
     .p6-shine { display: none !important; }
+    .p7-profile { animation: none !important; }
   }
   </style>
 </head>
@@ -189,33 +268,26 @@
 </a>
 
 <main class="app">
-  <!-- ============ AUTH PAGE (signup-first) ============ -->
+  <!-- ============ AUTH PAGE ============ -->
   <section id="entryPage" class="entry-page">
     <div class="entry-card">
       <div class="badge">PRIVATE ACCESS SYSTEM</div>
-
       <div class="top-pills">
         <div class="pill green">🔒 Secured</div>
         <div class="pill blue" id="userCountPill">👥 2.1k users</div>
       </div>
-
       <h1>Create your account</h1>
       <p class="sub">Sign up to unlock tiers via referrals or instant payment.</p>
-
       <div class="auth-tabs" role="tablist" aria-label="Choose access mode">
         <button id="signupTab" class="tab active" type="button">Sign up</button>
         <button id="loginTab" class="tab" type="button">Login</button>
       </div>
-
       <div id="refNotice" class="notice hidden"></div>
-
       <form id="entryForm">
         <label for="username">Username</label>
         <input id="username" autocomplete="username" placeholder="minimum 3 letters" maxlength="24" />
-
         <label for="password">Password</label>
         <input id="password" type="password" autocomplete="new-password" placeholder="your password" maxlength="60" />
-
         <div id="captchaBlock" class="captcha-block">
           <label for="captchaAnswer">Anti-bot — solve this calculation</label>
           <div class="captcha-row">
@@ -223,11 +295,9 @@
             <input id="captchaAnswer" inputmode="numeric" placeholder="answer" />
           </div>
         </div>
-
         <input id="website" class="honeypot" tabindex="-1" autocomplete="off" />
         <button id="submitBtn" class="main-btn" type="submit">Create account</button>
       </form>
-
       <div id="entryMsg" class="msg" aria-live="polite"></div>
     </div>
   </section>
@@ -263,12 +333,11 @@
       </div>
     </header>
 
-    <!-- Drawer (sidebar) -->
+    <!-- Drawer -->
     <aside id="drawer" class="drawer hidden" aria-hidden="true">
       <div class="drawer-head">
         <button id="drawerClose" class="drawer-close" type="button" aria-label="Close">×</button>
       </div>
-
       <nav class="drawer-nav">
         <button class="drawer-item" type="button" data-action="home">Home</button>
         <button class="drawer-item" type="button" data-action="menu">Custom Packs</button>
@@ -276,10 +345,8 @@
         <button class="drawer-item" type="button" data-action="more-videos">Get More Videos</button>
         <button class="drawer-item" type="button" data-action="invites">Earn With Invites</button>
         <button class="drawer-item" type="button" data-action="reviews">Reviews</button>
-
         <div class="drawer-section">TIERS</div>
         <div id="drawerTiers"></div>
-
         <button class="drawer-item drawer-support" type="button" data-action="support">
           <span class="dot"></span> Support
         </button>
@@ -290,17 +357,30 @@
 
     <!-- Content -->
     <section class="panel-main">
-      <div class="hero">
+
+      <!-- OLD HERO hidden — heroSub kept in DOM for app.js compatibility -->
+      <div class="hero" aria-hidden="true">
         <h1 class="hero-title">Instant Access</h1>
-        <p class="hero-sub" id="heroSub">Choose your path: Invite friends or purchase instantly!</p>
+        <p class="hero-sub" id="heroSub"></p>
       </div>
 
-      <!-- Phase 7: Stats strip -->
-      <hr class="p7-hero-divider" />
-      <div class="p7-stats" id="p7Stats">
+      <!-- PHASE 7: Profile card -->
+      <div class="p7-profile" id="p7Profile">
+        <div class="p7-avatar" id="p7Avatar">N</div>
+        <div class="p7-profile-info">
+          <div class="p7-greeting">Welcome back 👋</div>
+          <div class="p7-username" id="p7Username">Loading…</div>
+          <div class="p7-since" id="p7Since"></div>
+          <!-- mirror of #heroSub set by app.js -->
+          <p class="hero-sub" id="p7HeroSub" style="font-size:.77rem;color:rgba(161,161,194,.72);margin-top:5px;line-height:1.45"></p>
+        </div>
+      </div>
+
+      <!-- PHASE 7: Stats strip (3 cards — no public online count) -->
+      <div class="p7-stats">
         <div class="p7-stat-card">
           <span class="p7-val" id="p7Users">—</span>
-          <span class="p7-lbl">👥 Users</span>
+          <span class="p7-lbl">👥 Community</span>
         </div>
         <div class="p7-stat-card">
           <span class="p7-val" id="p7Invites">—</span>
@@ -310,11 +390,9 @@
           <span class="p7-val" id="p7Tiers">—</span>
           <span class="p7-lbl">🏆 Tiers</span>
         </div>
-        <div class="p7-stat-card">
-          <span class="p7-val" id="p7Online">—</span>
-          <span class="p7-lbl">🟢 Online</span>
-        </div>
       </div>
+
+      <hr class="p7-divider" />
 
       <nav class="panel-tabs" role="tablist" aria-label="Sections">
         <button class="panel-tab active" type="button" data-section="tiers">🎯 Tiers</button>
@@ -326,8 +404,6 @@
       <div class="panel-section" data-section="tiers">
         <div class="drawer-section-inline">STANDARD TIERS</div>
         <div id="tierGrid" class="tier-grid"></div>
-
-        <!-- How to Purchase -->
         <div class="howto-card">
           <h3>How to Purchase</h3>
           <p class="muted">
@@ -380,17 +456,14 @@
               <span class="price-current" id="customPriceCurrent">$—</span>
             </div>
           </div>
-
           <div class="custom-step">
             <h4>1 · Choose category</h4>
             <div id="customCategories" class="custom-categories"></div>
           </div>
-
           <div class="custom-step">
             <h4>2 · Choose size</h4>
             <div id="customSizes" class="custom-sizes"></div>
           </div>
-
           <div class="custom-actions">
             <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
             <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
@@ -409,74 +482,56 @@
           </div>
           <button class="modal-close" type="button" id="modalClose" aria-label="Close">×</button>
         </header>
-
         <div class="modal-tabs">
           <button class="modal-tab active" type="button" data-tab="giftcard">🎁 Gift Card</button>
           <button class="modal-tab" type="button" data-tab="crypto">₿ Crypto</button>
         </div>
-
-        <!-- Gift card pane -->
         <div class="modal-pane" data-pane="giftcard">
           <div class="info-box">
             <strong id="gcAmount">💳 Amount: $10</strong>
             <p>Purchase a gift card and send us the code. We'll activate your tier instantly!</p>
           </div>
-
           <h4>Choose a platform to buy <span class="muted" style="font-weight:400;font-size:.85rem">(opens store with PayPal search)</span>:</h4>
           <div id="gcPlatforms" class="platform-list"></div>
-
           <div class="info-box light">
             <strong>📝 Enter Your Gift Card Code</strong>
             <input id="gcCode" placeholder="Enter 14+ character gift card code" maxlength="200" />
             <small id="gcCharCount" class="muted">• 0/14 characters minimum</small>
           </div>
-
           <button class="main-btn" type="button" id="gcSubmit">Submit gift card</button>
         </div>
-
-        <!-- Crypto pane -->
         <div class="modal-pane hidden" data-pane="crypto">
           <div class="info-box">
             <strong id="cryptoAmountUSD">💰 Amount: $10 USD</strong>
-            <div class="crypto-eq">
-              ≈ <span id="cryptoAmountCrypto">0.00015859</span>
-              <span id="cryptoAmountTicker">BTC</span>
-            </div>
+            <div class="crypto-eq">≈ <span id="cryptoAmountCrypto">0.00015859</span> <span id="cryptoAmountTicker">BTC</span></div>
             <p>Send the exact amount shown above to the address below.</p>
           </div>
-
           <div class="crypto-row">
             <h4>Select cryptocurrency:</h4>
             <button class="ghost-mini" type="button" id="cryptoRefresh">🔄 Refresh</button>
           </div>
-
           <div id="cryptoTickers" class="crypto-tickers"></div>
-
           <label id="cryptoAddrLabel">Bitcoin Address:</label>
           <div class="addr-row">
             <input id="cryptoAddr" readonly />
             <button class="copy-btn" type="button" id="cryptoCopy" title="Copy">📋</button>
           </div>
-
           <div class="info-box light">
             <strong>📝 Enter Transaction ID <span class="hint" title="Paste the txid you got from your wallet after sending">?</span></strong>
             <input id="cryptoTxId" placeholder="Paste your transaction ID here" maxlength="200" />
             <small id="cryptoTxCount" class="muted">• 0 characters</small>
           </div>
-
           <div class="warn-box">
             <strong>⚠ Important:</strong>
             <span id="cryptoWarn">Send exactly <b>0.00015859 BTC ($10 USD)</b></span>
           </div>
-
           <button class="main-btn" type="button" id="cryptoSubmit">Submit transaction</button>
         </div>
-
         <div id="modalMsg" class="msg" aria-live="polite"></div>
       </div>
     </div>
 
-    <!-- Custom order request modal -->
+    <!-- Custom order modal -->
     <div id="customOrderModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
@@ -515,7 +570,7 @@
       </div>
     </div>
 
-    <!-- Choice modal: when referral threshold is reached -->
+    <!-- Choice modal -->
     <div id="choiceModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card small">
         <header class="modal-head">
@@ -528,7 +583,7 @@
       </div>
     </div>
 
-    <!-- Share guide modal: how to share referral link on each platform -->
+    <!-- Share guide modal -->
     <div id="shareGuideModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
@@ -545,7 +600,7 @@
   </section>
 </main>
 
-<!-- ============ WELCOME ANIMATION (shown after signup) ============ -->
+<!-- ============ WELCOME ANIMATION ============ -->
 <div id="welcomeOverlay" class="welcome-overlay hidden" role="dialog" aria-modal="true" aria-label="Welcome">
   <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
   <div class="welcome-card">
@@ -561,21 +616,16 @@
 <script src="/app.js?v=14"></script>
 
 <script>
-/* =========================================================
-   PHASE 6 — Mouse-follow card shine (light-source effect)
-   ========================================================= */
+/* =================================================================
+   PHASE 6 — Mouse-follow card shine
+   ================================================================= */
 (function () {
   var CARD_SEL = '.tier-card, .entry-card, .referral-card, .howto-card, .modal-card';
-
   function ensureShine(el) {
     if (el.querySelector('.p6-shine')) return;
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
-    var s = document.createElement('div');
-    s.className = 'p6-shine';
-    el.appendChild(s);
+    var s = document.createElement('div'); s.className = 'p6-shine'; el.appendChild(s);
   }
-
-  // Track mouse position per card (event delegation)
   document.addEventListener('mousemove', function (e) {
     var t = e.target;
     while (t && t !== document.body) {
@@ -583,14 +633,11 @@
         var r = t.getBoundingClientRect();
         t.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(0) + '%');
         t.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(0) + '%');
-        ensureShine(t);
-        return;
+        ensureShine(t); return;
       }
       t = t.parentElement;
     }
   }, { passive: true });
-
-  // Watch for dynamically rendered cards (tier grid, modals)
   var obs = new MutationObserver(function (muts) {
     muts.forEach(function (m) {
       m.addedNodes.forEach(function (n) {
@@ -601,16 +648,14 @@
     });
   });
   obs.observe(document.body, { childList: true, subtree: true });
-
-  // Init on existing cards
   function init() { document.querySelectorAll(CARD_SEL).forEach(ensureShine); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 }());
 
-/* =========================================================
-   PHASE 7 — Stats strip loader
-   ========================================================= */
+/* =================================================================
+   PHASE 7 — Profile card + stats loader
+   ================================================================= */
 (function () {
   var token = localStorage.getItem('token') || '';
 
@@ -619,22 +664,45 @@
     if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
     return String(n);
   }
-
   function setVal(id, v) {
     var el = document.getElementById(id);
     if (el) el.textContent = v;
   }
+  function fmtSince(iso) {
+    if (!iso) return '';
+    try {
+      return 'Member since ' + new Date(iso).toLocaleDateString('en', { month: 'short', year: 'numeric' });
+    } catch (_) { return ''; }
+  }
 
-  // Fetch public stats (total users + online now)
+  // Instant username from JWT (no server round-trip)
+  if (token) {
+    try {
+      var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload && payload.username) {
+        setVal('p7Username', payload.username);
+        setVal('p7Avatar', payload.username.charAt(0).toUpperCase());
+      }
+    } catch (_) {}
+  }
+
+  // Mirror #heroSub into profile card (app.js sets it after load)
+  var heroSub = document.getElementById('heroSub');
+  var p7HeroSub = document.getElementById('p7HeroSub');
+  if (heroSub && p7HeroSub) {
+    var mirrorObs = new MutationObserver(function () {
+      p7HeroSub.textContent = heroSub.textContent;
+    });
+    mirrorObs.observe(heroSub, { childList: true, characterData: true, subtree: true });
+  }
+
+  // Fetch public user count
   fetch('/api/stats')
     .then(function (r) { return r.json(); })
-    .then(function (data) {
-      setVal('p7Users', fmtNum(data.users));
-      if (data.onlineNow !== undefined) setVal('p7Online', data.onlineNow);
-    })
+    .then(function (data) { setVal('p7Users', fmtNum(data.users)); })
     .catch(function () {});
 
-  // Fetch user-specific stats
+  // Fetch user-specific data
   if (token) {
     fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function (r) { return r.json(); })
@@ -642,6 +710,12 @@
         if (!data.user) return;
         setVal('p7Invites', fmtNum(data.user.referrals_count));
         setVal('p7Tiers', (data.user.unlocked_tiers || []).length);
+        setVal('p7Since', fmtSince(data.user.created_at));
+        // Confirm username + avatar from server (overrides JWT decode)
+        if (data.user.username) {
+          setVal('p7Username', data.user.username);
+          setVal('p7Avatar', data.user.username.charAt(0).toUpperCase());
+        }
       })
       .catch(function () {});
   }
