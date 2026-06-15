@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=13" />
+  <link rel="stylesheet" href="/style.css?v=14" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
@@ -27,7 +27,7 @@
 
       <div class="top-pills">
         <div class="pill green">🔒 Secured</div>
-        <div class="pill blue">👥 2.1k users</div>
+        <div class="pill blue" id="userCountPill">👥 2.1k users</div>
       </div>
 
       <h1>Create your account</h1>
@@ -74,7 +74,7 @@
         <div class="topbar-title" id="topbarTitle">Nonaxion Access</div>
         <div class="topbar-pills">
           <span class="pill-mini green">🔒 Secured</span>
-          <span class="pill-mini blue">👥 2.1k users</span>
+          <span class="pill-mini blue" id="userCountPillMini">👥 2.1k users</span>
         </div>
       </div>
       <div class="topbar-actions">
@@ -126,74 +126,86 @@
         <p class="hero-sub" id="heroSub">Choose your path: Invite friends or purchase instantly!</p>
       </div>
 
-      <!-- Free Access with Referrals -->
-      <div class="referral-card">
-        <div class="referral-left">
-          <h3>Free Access with Referrals</h3>
-          <p class="muted">Share your link to earn invites and unlock tiers for free</p>
-          <div id="nextTierBadge" class="invite-badge"></div>
-          <div class="link-box">
-            <input id="refLink" readonly />
-            <button type="button" id="copyLinkBtn">Copy Link</button>
-          </div>
-          <div id="copyMsg" class="copy-msg" aria-live="polite"></div>
-          <button type="button" id="howToShareBtn" class="share-guide-btn">
-            <span class="share-guide-icon"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i></span>
-            <span class="share-guide-text">How to share &amp; get more invites</span>
-            <span class="share-guide-arrow" aria-hidden="true">→</span>
-          </button>
+      <nav class="panel-tabs" role="tablist" aria-label="Sections">
+        <button class="panel-tab active" type="button" data-section="tiers">🎯 Tiers</button>
+        <button class="panel-tab" type="button" data-section="invites">🔗 Free Invites</button>
+        <button class="panel-tab" type="button" data-section="custom">🛠️ Custom Pack</button>
+      </nav>
+
+      <!-- Standard Tiers -->
+      <div class="panel-section" data-section="tiers">
+        <div class="drawer-section-inline">STANDARD TIERS</div>
+        <div id="tierGrid" class="tier-grid"></div>
+
+        <!-- How to Purchase -->
+        <div class="howto-card">
+          <h3>How to Purchase</h3>
+          <p class="muted">
+            Click "Buy" on any tier to submit your payment. Your payment will be reviewed within
+            5–10 minutes. Once confirmed, you'll get immediate access.
+            <br /><br />
+            Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.
+            <br />
+            Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.
+          </p>
         </div>
-        <div class="referral-right">
-          <div class="ref-count" id="totalRefs">0</div>
-          <div class="ref-label">TOTAL INVITES</div>
+      </div>
+
+      <!-- Free Access with Referrals -->
+      <div class="panel-section hidden" data-section="invites">
+        <div class="referral-card">
+          <div class="referral-left">
+            <h3>Free Access with Referrals</h3>
+            <p class="muted">Share your link to earn invites and unlock tiers for free</p>
+            <div id="nextTierBadge" class="invite-badge"></div>
+            <div class="link-box">
+              <input id="refLink" readonly />
+              <button type="button" id="copyLinkBtn">Copy Link</button>
+            </div>
+            <div id="copyMsg" class="copy-msg" aria-live="polite"></div>
+            <button type="button" id="howToShareBtn" class="share-guide-btn">
+              <span class="share-guide-icon"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i></span>
+              <span class="share-guide-text">How to share &amp; get more invites</span>
+              <span class="share-guide-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+          <div class="referral-right">
+            <div class="ref-count" id="totalRefs">0</div>
+            <div class="ref-label">TOTAL INVITES</div>
+          </div>
         </div>
       </div>
 
       <!-- Custom Pack builder -->
-      <div id="customPackSection" class="custom-pack-section">
-        <div class="custom-pack-header">
-          <div>
-            <span class="custom-pack-badge">BUILD YOUR OWN</span>
-            <h2 id="customPackTitle">Custom Pack</h2>
-            <p class="muted" id="customPackSub">Pick a category, choose your size, pay instantly.</p>
+      <div class="panel-section hidden" data-section="custom">
+        <div id="customPackSection" class="custom-pack-section">
+          <div class="custom-pack-header">
+            <div>
+              <span class="custom-pack-badge">BUILD YOUR OWN</span>
+              <h2 id="customPackTitle">Custom Pack</h2>
+              <p class="muted" id="customPackSub">Pick a category, choose your size, pay instantly.</p>
+            </div>
+            <div class="custom-price-display" id="customPriceDisplay">
+              <span class="price-original" id="customPriceOriginal"></span>
+              <span class="price-current" id="customPriceCurrent">$—</span>
+            </div>
           </div>
-          <div class="custom-price-display" id="customPriceDisplay">
-            <span class="price-original" id="customPriceOriginal"></span>
-            <span class="price-current" id="customPriceCurrent">$—</span>
+
+          <div class="custom-step">
+            <h4>1 · Choose category</h4>
+            <div id="customCategories" class="custom-categories"></div>
+          </div>
+
+          <div class="custom-step">
+            <h4>2 · Choose size</h4>
+            <div id="customSizes" class="custom-sizes"></div>
+          </div>
+
+          <div class="custom-actions">
+            <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
+            <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
           </div>
         </div>
-
-        <div class="custom-step">
-          <h4>1 · Choose category</h4>
-          <div id="customCategories" class="custom-categories"></div>
-        </div>
-
-        <div class="custom-step">
-          <h4>2 · Choose size</h4>
-          <div id="customSizes" class="custom-sizes"></div>
-        </div>
-
-        <div class="custom-actions">
-          <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
-          <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
-        </div>
-      </div>
-
-      <!-- Tier grid -->
-      <div class="drawer-section-inline">STANDARD TIERS</div>
-      <div id="tierGrid" class="tier-grid"></div>
-
-      <!-- How to Purchase -->
-      <div class="howto-card">
-        <h3>How to Purchase</h3>
-        <p class="muted">
-          Click "Buy" on any tier to submit your payment. Your payment will be reviewed within
-          5–10 minutes. Once confirmed, you'll get immediate access.
-          <br /><br />
-          Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.
-          <br />
-          Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.
-        </p>
       </div>
     </section>
 
@@ -355,7 +367,7 @@
   </div>
 </div>
 
-<script src="/tiers.config.js?v=13"></script>
-<script src="/app.js?v=13"></script>
+<script src="/tiers.config.js?v=14"></script>
+<script src="/app.js?v=14"></script>
 </body>
 </html>
