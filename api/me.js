@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
 
       return send(res, 200, { ok: true, tracked: true });
     } catch (err) {
-      return send(res, err.status || 500, { error: err.message || "Server error" });
+      return send(res, err.status || 401, { error: err.message || "Unauthorized" });
     }
   }
 
@@ -43,14 +43,12 @@ module.exports = async function handler(req, res) {
       return send(res, 404, { error: "User not found" });
     }
 
-    // Presence ping for the admin "online now" stat. Fire-and-forget;
-    // if the last_seen column doesn't exist yet (migration not run),
-    // this fails silently and the rest of the response is unaffected.
-    supabase
+    // Update last_seen synchronously so admin "online now" count stays accurate.
+    // Silently ignored if last_seen column doesn't exist yet (migration not run).
+    await supabase
       .from("profiles")
       .update({ last_seen: new Date().toISOString() })
-      .eq("id", auth.id)
-      .then(() => {}, () => {});
+      .eq("id", auth.id);
 
     return send(res, 200, { user });
   } catch (err) {

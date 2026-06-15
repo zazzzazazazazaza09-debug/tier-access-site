@@ -29,7 +29,7 @@ function hashValue(value) {
 
 module.exports = async function handler(req, res) {
   if (req.method === "GET") {
-    // Public stats (e.g. total registered users), routed here from /api/stats
+    // Public stats (total users + online now), routed here from /api/stats
     try {
       const supabase = getSupabase();
       const { count, error } = await supabase
@@ -38,7 +38,19 @@ module.exports = async function handler(req, res) {
 
       if (error) throw error;
 
-      return send(res, 200, { users: count || 0 });
+      // Online count: users active in the last 5 minutes via last_seen.
+      // Silently returns 0 if the last_seen column doesn't exist yet.
+      let onlineNow = 0;
+      try {
+        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const { count: oc } = await supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .gte("last_seen", fiveMinAgo.toISOString());
+        onlineNow = oc || 0;
+      } catch (_) {}
+
+      return send(res, 200, { users: count || 0, onlineNow });
     } catch (err) {
       return send(res, 500, { error: err.message || "Server error" });
     }
@@ -144,10 +156,6 @@ module.exports = async function handler(req, res) {
     let referralMessage = "";
 
     if (referrer && referrer.id !== created.id) {
-      // Self-referral guard: if this signup comes from the same device or
-      // the same network/IP as the referrer's own account, don't count it.
-      // This blocks the "log out, sign up again with my own link, claim
-      // tiers" loophole.
       const selfReferral =
         (referrer.signup_device_hash && referrer.signup_device_hash === deviceHash) ||
         (referrer.signup_ip_hash && referrer.signup_ip_hash === ipHash);
