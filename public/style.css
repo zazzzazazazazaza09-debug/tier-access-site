@@ -1284,3 +1284,111 @@ input:focus, textarea:focus {
 @media (max-width: 700px) {
   .chart-wrap { height: 220px; padding: 10px; }
 }
+
+/* =========================================================
+   SHARE GUIDE — referral share button + platform grid
+   ========================================================= */
+.share-guide-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px 20px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  color: white;
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 0 24px rgba(0,245,255,.25), 0 4px 18px rgba(123,47,247,.25);
+  animation: share-glow 2.6s ease-in-out infinite;
+  transition: transform .18s, box-shadow .18s;
+}
+.share-guide-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 32px rgba(0,245,255,.4), 0 6px 22px rgba(123,47,247,.35);
+}
+.share-guide-btn:active { transform: scale(.98); }
+.share-guide-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,.18);
+  font-size: 1.05rem;
+}
+.share-guide-text { flex: 1; text-align: left; }
+.share-guide-arrow {
+  font-size: 1.2rem; font-weight: 900;
+  transition: transform .18s;
+}
+.share-guide-btn:hover .share-guide-arrow { transform: translateX(4px); }
+
+@keyframes share-glow {
+  0%, 100% { box-shadow: 0 0 24px rgba(0,245,255,.25), 0 4px 18px rgba(123,47,247,.25); }
+  50%       { box-shadow: 0 0 36px rgba(0,245,255,.45), 0 4px 22px rgba(123,47,247,.4); }
+}
+
+/* Platform grid inside the share guide modal */
+.share-platforms {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+.share-platform {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.03);
+  transition: .18s;
+}
+.share-platform:hover {
+  border-color: var(--border-strong);
+  background: rgba(255,255,255,.06);
+  transform: translateY(-2px);
+}
+.share-platform-head {
+  display: flex; align-items: center; gap: 10px;
+}
+.share-platform-head strong { font-size: .95rem; }
+.share-platform-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  font-size: 1.15rem;
+  color: var(--cyan);
+}
+.share-platform-tip {
+  font-size: .82rem; line-height: 1.4; margin: 0; flex: 1;
+}
+.share-action-btn {
+  width: 100%; margin-top: 0;
+  padding: 10px 14px;
+  font-size: .85rem;
+  border-radius: 12px;
+}
+
+/* Brand colors */
+.share-platform[data-platform="x"] .share-platform-icon { color: #ffffff; }
+.share-platform[data-platform="telegram"] .share-platform-icon { color: #29b6f6; }
+.share-platform[data-platform="reddit"] .share-platform-icon { color: #ff4500; }
+.share-platform[data-platform="facebook"] .share-platform-icon { color: #1877f2; }
+.share-platform[data-platform="whatsapp"] .share-platform-icon { color: #25d366; }
+.share-platform[data-platform="tumblr"] .share-platform-icon { color: #36465d; }
+.share-platform[data-platform="discord"] .share-platform-icon { color: #5865f2; }
+.share-platform[data-platform="tiktok"] .share-platform-icon { color: #ff0050; }
+.share-platform[data-platform="instagram"] .share-platform-icon { color: #e1306c; }
+
+@media (max-width: 700px) {
+  .share-platforms { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+  .share-platforms { grid-template-columns: 1fr; }
+  .share-guide-text { font-size: .92rem; }
+}
