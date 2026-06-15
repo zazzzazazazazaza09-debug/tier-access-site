@@ -72,25 +72,16 @@ function setEntryMessage(text, error = false) {
 }
 
 function createCaptcha() {
-  const ops = ["+", "-", "*"];
-  captchaOp = ops[Math.floor(Math.random() * ops.length)];
-  if (captchaOp === "*") {
-    captchaA = Math.floor(Math.random() * 6) + 2;
-    captchaB = Math.floor(Math.random() * 6) + 2;
-  } else if (captchaOp === "-") {
-    captchaA = Math.floor(Math.random() * 12) + 6;
-    captchaB = Math.floor(Math.random() * (captchaA - 1)) + 1;
-  } else {
-    captchaA = Math.floor(Math.random() * 12) + 2;
-    captchaB = Math.floor(Math.random() * 12) + 2;
-  }
+  // Keep it to small additions only — easy for real users, still
+  // enough to stop trivial bots.
+  captchaOp = "+";
+  captchaA = Math.floor(Math.random() * 9) + 1; // 1-9
+  captchaB = Math.floor(Math.random() * 9) + 1; // 1-9
   $("captchaQuestion").textContent = `${captchaA} ${captchaOp} ${captchaB} = ?`;
 }
 
 function captchaExpected() {
-  if (captchaOp === "+") return captchaA + captchaB;
-  if (captchaOp === "-") return captchaA - captchaB;
-  return captchaA * captchaB;
+  return captchaA + captchaB;
 }
 
 function setMode(mode) {
