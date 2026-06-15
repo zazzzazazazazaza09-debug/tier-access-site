@@ -6,6 +6,90 @@
   <title>Nonaxion Access</title>
   <link rel="stylesheet" href="/style.css?v=14" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+  /* =========================================================
+     PHASE 6 — Mobile compact tg-float + enhanced 3D visuals
+     ========================================================= */
+
+  /* Mobile: icon-only tg-float button */
+  @media (max-width: 600px) {
+    .tg-float { padding: 10px; border-radius: 50%; gap: 0; min-width: 0; }
+    .tg-float-label { display: none !important; }
+    .tg-float-icon svg { width: 20px; height: 20px; }
+    .tg-float-pulse { width: 42px; height: 42px; top: -5px; right: -5px; }
+  }
+
+  /* Deeper / more dramatic 3D tilt (overrides phase 5) */
+  .main-btn:hover, .ghost-btn:hover, .btn-buy:hover, .btn-invites:hover,
+  .tier-card:hover, .icon-btn:hover, .tab:hover, .modal-tab:hover,
+  .panel-tab:hover, .pill:hover, .pill-mini:hover {
+    transform: perspective(500px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg)) translateY(-5px) translateZ(10px);
+    transition: transform .05s linear;
+  }
+  .main-btn:active, .ghost-btn:active, .btn-buy:active, .btn-invites:active,
+  .tier-card:active, .icon-btn:active, .tab:active, .modal-tab:active,
+  .panel-tab:active, .pill:active, .pill-mini:active {
+    transform: perspective(500px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg)) scale(.96) translateZ(0);
+    transition: transform .05s linear;
+  }
+
+  /* Mouse-follow shine overlay (injected by JS) */
+  .p6-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 9;
+    opacity: 0;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 35%, transparent 60%);
+    transition: opacity .2s;
+  }
+  .tier-card:hover .p6-shine,
+  .entry-card:hover .p6-shine,
+  .referral-card:hover .p6-shine,
+  .howto-card:hover .p6-shine,
+  .modal-card:hover .p6-shine { opacity: 1; }
+
+  /* Holographic box-shadow cycle on tier card hover */
+  @keyframes holo-shift {
+    0%   { box-shadow: 0 24px 64px rgba(123,47,247,.5),  0 0 0 1px rgba(123,47,247,.45); }
+    33%  { box-shadow: 0 24px 64px rgba(0,245,255,.45),  0 0 0 1px rgba(0,245,255,.45); }
+    66%  { box-shadow: 0 24px 64px rgba(255,95,179,.45), 0 0 0 1px rgba(255,95,179,.45); }
+    100% { box-shadow: 0 24px 64px rgba(123,47,247,.5),  0 0 0 1px rgba(123,47,247,.45); }
+  }
+  .tier-card:hover { animation: holo-shift 3s linear infinite; }
+  .tier-card { transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease; }
+
+  /* Hero title glow pulse */
+  @keyframes title-glow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(123,47,247,.5)) drop-shadow(0 0 28px rgba(0,245,255,.12)); }
+    50%       { filter: drop-shadow(0 0 22px rgba(123,47,247,.85)) drop-shadow(0 0 48px rgba(0,245,255,.28)); }
+  }
+  .hero-title { animation: title-glow 3s ease-in-out infinite; }
+
+  /* Active panel-tab neon pulse */
+  @keyframes tab-neon {
+    0%, 100% { box-shadow: 0 0 22px rgba(0,245,255,.18); }
+    50%       { box-shadow: 0 0 38px rgba(0,245,255,.45), 0 0 14px rgba(123,47,247,.32); }
+  }
+  .panel-tab.active { animation: tab-neon 2.5s ease-in-out infinite; }
+
+  /* Richer glassmorphism on modals */
+  .modal-card { backdrop-filter: blur(32px) saturate(1.6); }
+
+  /* 3D floating shadow on buttons at rest */
+  .main-btn, .ghost-btn {
+    box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.06) inset;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-title  { animation: none !important; filter: none; }
+    .panel-tab.active { animation: none !important; }
+    .tier-card:hover { animation: none !important; }
+    .p6-shine { display: none !important; }
+  }
+  </style>
 </head>
 
 <body>
@@ -128,7 +212,7 @@
 
       <nav class="panel-tabs" role="tablist" aria-label="Sections">
         <button class="panel-tab active" type="button" data-section="tiers">🎯 Tiers</button>
-        <button class="panel-tab" type="button" data-section="invites">🔗 Free Invites</button>
+        <button class="panel-tab" type="button" data-section="invites">🎁 Get Free</button>
         <button class="panel-tab" type="button" data-section="custom">🛠️ Custom Pack</button>
       </nav>
 
@@ -369,5 +453,54 @@
 
 <script src="/tiers.config.js?v=14"></script>
 <script src="/app.js?v=14"></script>
+
+<script>
+/* =========================================================
+   PHASE 6 — Mouse-follow card shine (light-source effect)
+   ========================================================= */
+(function () {
+  var CARD_SEL = '.tier-card, .entry-card, .referral-card, .howto-card, .modal-card';
+
+  function ensureShine(el) {
+    if (el.querySelector('.p6-shine')) return;
+    if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+    var s = document.createElement('div');
+    s.className = 'p6-shine';
+    el.appendChild(s);
+  }
+
+  // Track mouse position per card (event delegation)
+  document.addEventListener('mousemove', function (e) {
+    var t = e.target;
+    while (t && t !== document.body) {
+      if (t.matches && t.matches(CARD_SEL)) {
+        var r = t.getBoundingClientRect();
+        t.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(0) + '%');
+        t.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(0) + '%');
+        ensureShine(t);
+        return;
+      }
+      t = t.parentElement;
+    }
+  }, { passive: true });
+
+  // Watch for dynamically rendered cards (tier grid, modals)
+  var obs = new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      m.addedNodes.forEach(function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.matches && n.matches(CARD_SEL)) ensureShine(n);
+        if (n.querySelectorAll) n.querySelectorAll(CARD_SEL).forEach(ensureShine);
+      });
+    });
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  // Init on existing cards
+  function init() { document.querySelectorAll(CARD_SEL).forEach(ensureShine); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}());
+</script>
 </body>
 </html>
