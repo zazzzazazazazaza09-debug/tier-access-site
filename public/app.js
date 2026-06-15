@@ -140,7 +140,11 @@ function initAuth() {
       localStorage.setItem("token", data.token);
       await loadMe();
 
-      if (data.referral_message) showFlash(data.referral_message);
+      if (authMode === "signup") {
+        showWelcomeAnimation(currentUser.username, data.referral_message);
+      } else if (data.referral_message) {
+        showFlash(data.referral_message);
+      }
     } catch (err) {
       setEntryMessage(err.message, true);
       if (authMode === "signup") createCaptcha();
@@ -1270,6 +1274,114 @@ function initBackground() {
 function initTelegramFloat() {
   const link = $("tgServerFloat");
   if (link && CFG.telegramServer) link.href = CFG.telegramServer;
+}
+
+/* ================================================================
+   WELCOME ANIMATION (post-signup "wow" moment)
+================================================================ */
+function launchConfetti() {
+  const canvas = $("confettiCanvas");
+  if (!canvas) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const ctx = canvas.getContext("2d");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = window.innerWidth, H = window.innerHeight;
+
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const colors = ["#7b2ff7", "#00f5ff", "#ff5fb3", "#36e08e", "#ffd166", "#6366f1", "#ffffff"];
+  const count = Math.min(220, Math.max(110, Math.floor(W / 5)));
+  const particles = [];
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: W / 2 + (Math.random() - 0.5) * W * 0.7,
+      y: H * 0.4 + (Math.random() - 0.5) * 120,
+      vx: (Math.random() - 0.5) * 11,
+      vy: -(Math.random() * 13 + 5),
+      g: 0.25 + Math.random() * 0.2,
+      size: 5 + Math.random() * 7,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * 360,
+      vr: (Math.random() - 0.5) * 18,
+      shape: Math.random() < 0.5 ? "rect" : "circle",
+      life: 0,
+      maxLife: 110 + Math.random() * 50
+    });
+  }
+
+  let frame = 0;
+  function tick() {
+    frame++;
+    ctx.clearRect(0, 0, W, H);
+    let alive = false;
+    for (const p of particles) {
+      if (p.life > p.maxLife) continue;
+      alive = true;
+      p.life++;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.g;
+      p.rot += p.vr;
+      const fadeStart = p.maxLife - 30;
+      const alpha = p.life > fadeStart ? Math.max(0, (p.maxLife - p.life) / 30) : 1;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rot * Math.PI) / 180);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.color;
+      if (p.shape === "rect") {
+        ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.6);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    if (alive && frame < 280) {
+      requestAnimationFrame(tick);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      window.removeEventListener("resize", resize);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function showWelcomeAnimation(username, message) {
+  const overlay = $("welcomeOverlay");
+  if (!overlay) return;
+
+  $("welcomeUsername").textContent = username || "there";
+  $("welcomeSub").textContent = message ||
+    "Your account is ready. Share your link to earn free invites or unlock tiers instantly.";
+
+  overlay.classList.remove("hidden");
+  requestAnimationFrame(() => overlay.classList.add("show"));
+  launchConfetti();
+
+  let closed = false;
+  const close = () => {
+    if (closed) return;
+    closed = true;
+    overlay.classList.remove("show");
+    setTimeout(() => overlay.classList.add("hidden"), 400);
+  };
+
+  $("welcomeContinue").onclick = close;
+  overlay.onclick = (e) => { if (e.target === overlay) close(); };
+  setTimeout(close, 6500);
 }
 
 /* ================================================================
