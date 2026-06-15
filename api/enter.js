@@ -28,6 +28,22 @@ function hashValue(value) {
 }
 
 module.exports = async function handler(req, res) {
+  if (req.method === "GET") {
+    // Public stats (e.g. total registered users), routed here from /api/stats
+    try {
+      const supabase = getSupabase();
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+      if (error) throw error;
+
+      return send(res, 200, { users: count || 0 });
+    } catch (err) {
+      return send(res, 500, { error: err.message || "Server error" });
+    }
+  }
+
   if (req.method !== "POST") {
     return send(res, 405, { error: "Method not allowed" });
   }
