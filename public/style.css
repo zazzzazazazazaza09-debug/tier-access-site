@@ -1531,10 +1531,131 @@ input:focus, textarea:focus {
   .welcome-sub { font-size: .92rem; margin-bottom: 20px; }
 }
 
+/* =========================================================
+   PHASE 5 — MICRO-INTERACTIONS (3D tilt, ripple, transitions)
+   ========================================================= */
+
+/* 3D tilt hover effect */
+.main-btn, .ghost-btn, .btn-buy, .btn-invites, .tier-card, .icon-btn, .tab, .modal-tab,
+.custom-cat-btn, .custom-size-btn, .ticker-btn, .platform-item, .share-platform,
+.share-action-btn, .share-guide-btn, .chat-float-btn, .drawer-item, .pill, .pill-mini, .panel-tab {
+  --tiltX: 0deg; --tiltY: 0deg;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.main-btn:hover, .ghost-btn:hover, .btn-buy:hover, .btn-invites:hover, .tier-card:hover,
+.icon-btn:hover, .tab:hover, .modal-tab:hover, .custom-cat-btn:hover, .custom-size-btn:hover,
+.ticker-btn:hover, .platform-item:hover, .share-platform:hover, .share-action-btn:hover,
+.share-guide-btn:hover, .chat-float-btn:hover, .drawer-item:hover, .pill:hover, .pill-mini:hover,
+.panel-tab:hover {
+  transform: perspective(700px) rotateX(var(--tiltX)) rotateY(var(--tiltY)) translateY(-3px) translateZ(0);
+  transition: transform .05s linear;
+}
+.main-btn:active, .ghost-btn:active, .btn-buy:active, .btn-invites:active, .tier-card:active,
+.icon-btn:active, .tab:active, .modal-tab:active, .custom-cat-btn:active, .custom-size-btn:active,
+.ticker-btn:active, .platform-item:active, .share-platform:active, .share-action-btn:active,
+.share-guide-btn:active, .chat-float-btn:active, .drawer-item:active, .pill:active, .pill-mini:active,
+.panel-tab:active {
+  transform: perspective(700px) rotateX(var(--tiltX)) rotateY(var(--tiltY)) scale(.97) translateZ(0);
+  transition: transform .05s linear;
+}
+
+/* Click ripple */
+.click-ripple {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.45), rgba(255,255,255,0) 70%);
+  transform: scale(0);
+  pointer-events: none;
+  z-index: 9999;
+  animation: click-ripple-anim .55s ease-out forwards;
+}
+@keyframes click-ripple-anim {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* Page fade-in */
+#panelPage:not(.hidden) {
+  animation: page-fade-in .5s cubic-bezier(.16,1,.3,1);
+}
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Modal entrance transitions */
+.modal:not(.hidden) {
+  animation: modal-overlay-in .25s ease;
+}
+.modal:not(.hidden) .modal-card {
+  animation: modal-card-in .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modal-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modal-card-in {
+  from { opacity: 0; transform: scale(.92) translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Panel tab switch fade-in */
+.panel-section.hidden { display: none; }
+.panel-section-in {
+  animation: panel-section-in .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes panel-section-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Panel tabs nav */
+.panel-tabs {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.panel-tab {
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  color: var(--muted);
+  font-weight: 900; font-size: .9rem;
+  transition: .18s;
+}
+.panel-tab.active {
+  color: white;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  border-color: transparent;
+  box-shadow: 0 0 22px rgba(0,245,255,.18);
+}
+@media (max-width: 700px) {
+  .panel-tabs { gap: 6px; }
+  .panel-tab { padding: 10px 14px; font-size: .82rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .welcome-card::before { animation: none; }
   .welcome-icon { animation: none; }
   .welcome-icon::before, .welcome-icon::after { animation: none; opacity: 0; }
   .welcome-badge, .welcome-title, .welcome-sub, .welcome-continue { animation: none; opacity: 1; transform: none; }
   .welcome-continue::after { animation: none; display: none; }
+
+  /* Phase 5 micro-interactions */
+  #panelPage:not(.hidden), .modal:not(.hidden), .modal:not(.hidden) .modal-card,
+  .panel-section-in, .click-ripple {
+    animation: none !important;
+  }
+  .main-btn:hover, .ghost-btn:hover, .btn-buy:hover, .btn-invites:hover, .tier-card:hover,
+  .icon-btn:hover, .tab:hover, .modal-tab:hover, .custom-cat-btn:hover, .custom-size-btn:hover,
+  .ticker-btn:hover, .platform-item:hover, .share-platform:hover, .share-action-btn:hover,
+  .share-guide-btn:hover, .chat-float-btn:hover, .drawer-item:hover, .pill:hover, .pill-mini:hover,
+  .panel-tab:hover,
+  .main-btn:active, .ghost-btn:active, .btn-buy:active, .btn-invites:active, .tier-card:active,
+  .icon-btn:active, .tab:active, .modal-tab:active, .custom-cat-btn:active, .custom-size-btn:active,
+  .ticker-btn:active, .platform-item:active, .share-platform:active, .share-action-btn:active,
+  .share-guide-btn:active, .chat-float-btn:active, .drawer-item:active, .pill:active, .pill-mini:active,
+  .panel-tab:active {
+    transform: none !important;
+  }
 }
