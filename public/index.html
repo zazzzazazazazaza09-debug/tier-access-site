@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nonaxion Access</title>
-  <link rel="stylesheet" href="/style.css?v=10" />
+  <link rel="stylesheet" href="/style.css?v=11" />
 </head>
 
 <body>
@@ -136,6 +136,7 @@
             <button type="button" id="copyLinkBtn">Copy Link</button>
           </div>
           <div id="copyMsg" class="copy-msg" aria-live="polite"></div>
+          <button type="button" id="howToShareBtn" class="ghost-btn share-guide-btn">📤 How to share &amp; get more invites</button>
         </div>
         <div class="referral-right">
           <div class="ref-count" id="totalRefs">0</div>
@@ -319,10 +320,25 @@
         <button class="ghost-btn" type="button" id="choicePay">Pay to unlock now</button>
       </div>
     </div>
+
+    <!-- Share guide modal: how to share referral link on each platform -->
+    <div id="shareGuideModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <header class="modal-head">
+          <div>
+            <h2>How to share</h2>
+            <p class="muted">Tap a platform to share your invite link — more shares, more invites!</p>
+          </div>
+          <button class="modal-close" type="button" id="shareGuideClose" aria-label="Close">×</button>
+        </header>
+        <div id="sharePlatforms" class="share-platforms"></div>
+        <div id="shareGuideMsg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
   </section>
 </main>
 
-<script src="/tiers.config.js?v=10"></script>
-<script src="/app.js?v=10"></script>
+<script src="/tiers.config.js?v=11"></script>
+<script src="/app.js?v=11"></script>
 </body>
 </html>
