@@ -84,7 +84,7 @@ module.exports = async function handler(req, res) {
     if (ref) {
       const { data } = await supabase
         .from("profiles")
-        .select("id, referrals_count")
+        .select("id, referrals_count, signup_ip_hash, signup_device_hash")
         .eq("referral_code", ref)
         .maybeSingle();
 
@@ -128,51 +128,73 @@ module.exports = async function handler(req, res) {
     let referralMessage = "";
 
     if (referrer && referrer.id !== created.id) {
-      const { data: alreadyUsed } = await supabase
-        .from("referral_claims")
-        .select("id, reason")
-        .eq("referrer_id", referrer.id)
-        .or(`ip_hash.eq.${ipHash},device_hash.eq.${deviceHash}`)
-        .limit(1);
+      // Self-referral guard: if this signup comes from the same device or
+      // the same network/IP as the referrer's own account, don't count it.
+      // This blocks the "log out, sign up again with my own link, claim
+      // tiers" loophole.
+      const selfReferral =
+        (referrer.signup_device_hash && referrer.signup_device_hash === deviceHash) ||
+        (referrer.signup_ip_hash && referrer.signup_ip_hash === ipHash);
 
-      if (alreadyUsed && alreadyUsed.length > 0) {
+      if (selfReferral) {
         await supabase.from("referral_claims").insert({
           referrer_id: referrer.id,
           referred_id: created.id,
           ip_hash: ipHash,
           device_hash: deviceHash,
           counted: false,
-          reason: "duplicate_ip_or_device"
+          reason: "self_referral"
         });
 
         referralMessage =
-          "Account created, but this referral was not counted because this IP/device already used this referral link.";
+          "Account created, but this referral was not counted because it was created from the same device or network as the referral link's owner.";
       } else {
-        await supabase.from("referrals").insert({
-          referrer_id: referrer.id,
-          referred_id: created.id
-        });
+        const { data: alreadyUsed } = await supabase
+          .from("referral_claims")
+          .select("id, reason")
+          .eq("referrer_id", referrer.id)
+          .or(`ip_hash.eq.${ipHash},device_hash.eq.${deviceHash}`)
+          .limit(1);
 
-        await supabase.from("referral_claims").insert({
-          referrer_id: referrer.id,
-          referred_id: created.id,
-          ip_hash: ipHash,
-          device_hash: deviceHash,
-          counted: true,
-          reason: "counted"
-        });
+        if (alreadyUsed && alreadyUsed.length > 0) {
+          await supabase.from("referral_claims").insert({
+            referrer_id: referrer.id,
+            referred_id: created.id,
+            ip_hash: ipHash,
+            device_hash: deviceHash,
+            counted: false,
+            reason: "duplicate_ip_or_device"
+          });
 
-        const newCount = Number(referrer.referrals_count || 0) + 1;
+          referralMessage =
+            "Account created, but this referral was not counted because this IP/device already used this referral link.";
+        } else {
+          await supabase.from("referrals").insert({
+            referrer_id: referrer.id,
+            referred_id: created.id
+          });
 
-        await supabase
-          .from("profiles")
-          .update({
-            referrals_count: newCount,
-            reward_unlocked: newCount >= 5
-          })
-          .eq("id", referrer.id);
+          await supabase.from("referral_claims").insert({
+            referrer_id: referrer.id,
+            referred_id: created.id,
+            ip_hash: ipHash,
+            device_hash: deviceHash,
+            counted: true,
+            reason: "counted"
+          });
 
-        referralMessage = "Referral counted successfully.";
+          const newCount = Number(referrer.referrals_count || 0) + 1;
+
+          await supabase
+            .from("profiles")
+            .update({
+              referrals_count: newCount,
+              reward_unlocked: newCount >= 5
+            })
+            .eq("id", referrer.id);
+
+          referralMessage = "Referral counted successfully.";
+        }
       }
     }
 
