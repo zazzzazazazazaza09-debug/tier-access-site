@@ -1103,6 +1103,108 @@ function initNotifications() {
 }
 
 /* ================================================================
+   SHARE GUIDE (how to share the referral link on each platform)
+================================================================ */
+const SHARE_PLATFORMS = [
+  {
+    id: "x", name: "X (Twitter)", icon: "🐦", type: "intent",
+    url: (link, msg) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}&url=${encodeURIComponent(link)}`,
+    tip: "Opens a ready-made post — just hit \"Post\"."
+  },
+  {
+    id: "telegram", name: "Telegram", icon: "✈️", type: "intent",
+    url: (link, msg) => `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(msg)}`,
+    tip: "Pick a friend, group or channel to send it to."
+  },
+  {
+    id: "reddit", name: "Reddit", icon: "👽", type: "intent",
+    url: (link, msg) => `https://www.reddit.com/submit?url=${encodeURIComponent(link)}&title=${encodeURIComponent(msg)}`,
+    tip: "Post it in a relevant subreddit (check the rules first)."
+  },
+  {
+    id: "facebook", name: "Facebook", icon: "📘", type: "intent",
+    url: (link) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+    tip: "Share to your feed, a group, or send it in Messenger."
+  },
+  {
+    id: "whatsapp", name: "WhatsApp", icon: "💬", type: "intent",
+    url: (link, msg) => `https://wa.me/?text=${encodeURIComponent(`${msg} ${link}`)}`,
+    tip: "Send it to a contact, a group, or post it to your status."
+  },
+  {
+    id: "tumblr", name: "Tumblr", icon: "📝", type: "intent",
+    url: (link, msg) => `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(link)}&caption=${encodeURIComponent(msg)}`,
+    tip: "Reblog it or post it straight to your blog."
+  },
+  {
+    id: "discord", name: "Discord", icon: "🎮", type: "copy",
+    tip: "Paste your link in a server, your DMs, or set it as your custom status."
+  },
+  {
+    id: "tiktok", name: "TikTok", icon: "🎵", type: "copy",
+    tip: "Add it to your bio, or mention it in your video caption / comments."
+  },
+  {
+    id: "instagram", name: "Instagram", icon: "📸", type: "copy",
+    tip: "Add it to your bio, or share it in your Story with the link sticker."
+  }
+];
+
+function shareMessage() {
+  return "🔥 Get free premium access — join with my invite link and unlock tiers instantly!";
+}
+
+function renderSharePlatforms() {
+  const wrap = $("sharePlatforms");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  const link = ($("refLink") && $("refLink").value) ||
+    (currentUser ? `${window.location.origin}/?invite=${currentUser.referral_code}` : "");
+  const msg = shareMessage();
+
+  for (const p of SHARE_PLATFORMS) {
+    const card = el("div", { class: "share-platform" }, [
+      el("div", { class: "share-platform-head" }, [
+        el("span", { class: "share-platform-icon" }, p.icon),
+        el("strong", {}, p.name)
+      ]),
+      el("p", { class: "muted share-platform-tip" }, p.tip)
+    ]);
+
+    if (p.type === "intent") {
+      card.appendChild(el("button", {
+        class: "main-btn share-action-btn", type: "button",
+        onclick: () => window.open(p.url(link, msg), "_blank", "noopener,noreferrer")
+      }, `Share on ${p.name}`));
+    } else {
+      card.appendChild(el("button", {
+        class: "ghost-btn share-action-btn", type: "button",
+        onclick: async () => {
+          await copyToClipboard(link, null);
+          $("shareGuideMsg").textContent = `Link copied! ${p.tip}`;
+          $("shareGuideMsg").className = "msg success";
+        }
+      }, `Copy link for ${p.name}`));
+    }
+
+    wrap.appendChild(card);
+  }
+}
+
+function initShareGuide() {
+  const btn = $("howToShareBtn");
+  if (!btn || !$("shareGuideModal")) return;
+
+  btn.addEventListener("click", () => {
+    renderSharePlatforms();
+    $("shareGuideMsg").textContent = "";
+    $("shareGuideModal").classList.remove("hidden");
+  });
+  $("shareGuideClose").addEventListener("click", () => $("shareGuideModal").classList.add("hidden"));
+}
+
+/* ================================================================
    COPY LINK + GENERIC BIND
 ================================================================ */
 function bindStaticUI() {
@@ -1123,6 +1225,7 @@ function bindStaticUI() {
   $("cryptoSubmit").addEventListener("click", submitCrypto);
 
   bindChoiceClose();
+  initShareGuide();
 }
 
 /* ================================================================
