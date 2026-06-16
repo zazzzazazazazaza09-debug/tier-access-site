@@ -6,6 +6,8 @@ let currentView = "purchases";
 let activeOrderId = null;
 let orderPollTimer = null;
 let banLookupTarget = null;
+let userListPage = 1;
+let userListSearch = "";
 
 let signupsChartInstance = null;
 let revenueChartInstance = null;
@@ -86,7 +88,12 @@ document.querySelectorAll(".admin-tabs button[data-view]").forEach(b => {
     document.querySelectorAll(".purchase-tab").forEach(x => {
       x.style.display = isPurchases ? "" : "none";
     });
-    if (!isUsers) refresh();
+    if (isUsers) {
+      populateGrantTiers();
+      loadUserList(1, "");
+    } else {
+      refresh();
+    }
   });
 });
 
@@ -98,7 +105,10 @@ document.querySelectorAll(".admin-tabs button[data-status]").forEach(b => {
     refresh();
   });
 });
-$("adminRefresh").addEventListener("click", refresh);
+$("adminRefresh").addEventListener("click", () => {
+  if (currentView === "users") loadUserList(userListPage, userListSearch);
+  else refresh();
+});
 $("adminChatSend").addEventListener("click", sendAdminChat);
 $("adminChatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendAdminChat(); });
 $("adminSetPriceBtn").addEventListener("click", adminSetPrice);
@@ -111,12 +121,28 @@ $("banUsernameInput").addEventListener("keydown", (e) => { if (e.key === "Enter"
 $("banBtn").addEventListener("click", () => doBan("ban"));
 $("unbanBtn").addEventListener("click", () => doBan("unban"));
 
+// ---- Grant / Revoke UI ----
+$("grantTierBtn").addEventListener("click", () => doGrantRevoke("grant_tier"));
+$("revokeTierBtn").addEventListener("click", () => doGrantRevoke("revoke_tier"));
+
+// ---- User list UI ----
+$("userSearchBtn").addEventListener("click", () => loadUserList(1, $("userSearchInput").value.trim()));
+$("userSearchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") loadUserList(1, $("userSearchInput").value.trim()); });
+$("userListRefreshBtn").addEventListener("click", () => loadUserList(userListPage, userListSearch));
+
+// ---- Purchase search + CSV ----
+$("purchaseSearchBtn").addEventListener("click", filterPurchases);
+$("purchaseSearchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") filterPurchases(); });
+$("exportCsvBtn").addEventListener("click", exportCsv);
+
 async function banLookup() {
   const username = $("banUsernameInput").value.trim();
   if (!username) return;
   const res = $("banResult");
+  const card = $("banDetailCard");
   res.textContent = "Looking up…";
   res.className = "ban-result";
+  if (card) card.className = "user-detail-card";
   $("banBtn").disabled = true;
   $("unbanBtn").disabled = true;
   banLookupTarget = null;
@@ -131,7 +157,21 @@ async function banLookup() {
       ? `<span class="banned-badge">BANNED</span>`
       : `<span class="active-badge">ACTIVE</span>`;
     res.innerHTML = `User found: <strong>${escapeHtml(u.username)}</strong>${badge}`;
-    $("banBtn").disabled = !!u.is_banned;
+
+    if (card) {
+      const tiers = Array.isArray(u.unlocked_tiers) && u.unlocked_tiers.length ? u.unlocked_tiers.join(", ") : "none";
+      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString() : "—";
+      card.innerHTML = `
+        <div class="user-detail-row"><span class="muted">Referral code:</span> <strong>${escapeHtml(u.referral_code || "—")}</strong></div>
+        <div class="user-detail-row"><span class="muted">Referrals:</span> <strong>${u.referrals_count || 0}</strong></div>
+        <div class="user-detail-row"><span class="muted">Unlocked tiers:</span> <strong>${escapeHtml(tiers)}</strong></div>
+        <div class="user-detail-row"><span class="muted">Admin:</span> <strong>${u.is_admin ? "Yes" : "No"}</strong></div>
+        <div class="user-detail-row"><span class="muted">Joined:</span> <strong>${joined}</strong></div>
+      `;
+      card.classList.add("visible");
+    }
+
+    $("banBtn").disabled = !!u.is_banned || !!u.is_admin;
     $("unbanBtn").disabled = !u.is_banned;
   } catch (err) {
     res.textContent = err.message;
@@ -162,6 +202,167 @@ async function doBan(action) {
   }
 }
 
+function populateGrantTiers() {
+  const sel = $("grantTierSelect");
+  if (!sel || sel.options.length > 1) return;
+  const tiers = (window.SITE_CONFIG && window.SITE_CONFIG.tiers) || [];
+  for (const t of tiers) {
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.name;
+    sel.appendChild(opt);
+  }
+}
+
+async function doGrantRevoke(action) {
+  const username = $("grantUsernameInput").value.trim();
+  const tierId = $("grantTierSelect").value;
+  const res = $("grantResult");
+  if (!username) { res.textContent = "Enter a username."; res.className = "ban-result error"; return; }
+  if (!tierId) { res.textContent = "Select a tier."; res.className = "ban-result error"; return; }
+  const label = action === "grant_tier" ? "Grant" : "Revoke";
+  if (!confirm(`${label} tier "${tierId}" for "${username}"?`)) return;
+  res.textContent = "Working…";
+  res.className = "ban-result";
+  try {
+    const data = await request("admin-stats", {
+      method: "POST",
+      body: JSON.stringify({ action, username, tier_id: tierId })
+    });
+    const tiers = (data.unlocked_tiers || []).join(", ") || "none";
+    res.innerHTML = `✓ Done. <strong>${escapeHtml(data.username)}</strong> unlocked tiers: <strong>${escapeHtml(tiers)}</strong>`;
+    res.className = "ban-result";
+  } catch (err) {
+    res.textContent = err.message;
+    res.className = "ban-result error";
+  }
+}
+
+async function loadUserList(page = 1, search = "") {
+  userListPage = page;
+  userListSearch = search;
+  const tbody = $("userListTbody");
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Loading…</td></tr>`;
+  try {
+    const data = await request("admin-stats", {
+      method: "POST",
+      body: JSON.stringify({ action: "users_list", page, limit: 25, search })
+    });
+    renderUserList(data.users || [], data.total || 0, data.page || 1, data.limit || 25);
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#ff8a9e;padding:16px">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderUserList(users, total, page, limit) {
+  const tbody = $("userListTbody");
+  tbody.innerHTML = "";
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No users found.</td></tr>`;
+  } else {
+    for (const u of users) {
+      const tiers = Array.isArray(u.unlocked_tiers) && u.unlocked_tiers.length ? u.unlocked_tiers.join(", ") : "—";
+      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString() : "—";
+      const statusBadge = u.is_banned
+        ? `<span class="banned-badge">BANNED</span>`
+        : u.is_admin
+          ? `<span class="active-badge" style="background:rgba(123,47,247,.2);color:#b080ff">ADMIN</span>`
+          : `<span class="active-badge">ACTIVE</span>`;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(u.username)}</strong></td>
+        <td>${statusBadge}</td>
+        <td style="font-size:.8rem;max-width:140px;word-break:break-all">${escapeHtml(tiers)}</td>
+        <td>${u.referrals_count || 0}</td>
+        <td>${joined}</td>
+        <td>
+          <button class="ghost-mini" type="button" data-action="fill-ban" data-username="${escapeHtml(u.username)}" title="Look up in ban panel" style="font-size:.75rem;padding:2px 8px">🔍</button>
+          <button class="ghost-mini" type="button" data-action="fill-grant" data-username="${escapeHtml(u.username)}" title="Fill in grant panel" style="font-size:.75rem;padding:2px 8px;margin-left:4px">🎯</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+    tbody.querySelectorAll("button[data-action]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const uname = btn.dataset.username;
+        if (btn.dataset.action === "fill-ban") {
+          $("banUsernameInput").value = uname;
+          $("banUsernameInput").scrollIntoView({ behavior: "smooth", block: "center" });
+        } else if (btn.dataset.action === "fill-grant") {
+          $("grantUsernameInput").value = uname;
+          $("grantUsernameInput").scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    });
+  }
+  const pages = Math.ceil(total / limit) || 1;
+  const pag = $("userPagination");
+  pag.innerHTML = "";
+  const info = document.createElement("span");
+  info.textContent = `${total} user${total !== 1 ? "s" : ""} — page ${page}/${pages}`;
+  pag.appendChild(info);
+  if (page > 1) {
+    const prev = document.createElement("button");
+    prev.className = "ghost-mini";
+    prev.style.marginLeft = "8px";
+    prev.textContent = "← Prev";
+    prev.addEventListener("click", () => loadUserList(page - 1, userListSearch));
+    pag.appendChild(prev);
+  }
+  if (page < pages) {
+    const next = document.createElement("button");
+    next.className = "ghost-mini";
+    next.style.marginLeft = "4px";
+    next.textContent = "Next →";
+    next.addEventListener("click", () => loadUserList(page + 1, userListSearch));
+    pag.appendChild(next);
+  }
+}
+
+function filterPurchases() {
+  const q = ($("purchaseSearchInput").value || "").toLowerCase().trim();
+  const tbody = $("adminTbody");
+  const rows = tbody.querySelectorAll("tr");
+  let shown = 0;
+  rows.forEach(tr => {
+    if (!q || tr.textContent.toLowerCase().includes(q)) {
+      tr.style.display = "";
+      shown++;
+    } else {
+      tr.style.display = "none";
+    }
+  });
+  $("adminMsg").textContent = q ? `Showing ${shown} matching row(s).` : "";
+}
+
+function exportCsv() {
+  const tbody = $("adminTbody");
+  const rows = Array.from(tbody.querySelectorAll("tr")).filter(tr => tr.style.display !== "none");
+  if (!rows.length) { alert("No rows to export."); return; }
+  const headers = ["Date", "User", "Product", "Method", "Amount", "Details", "Status"];
+  const lines = [headers.join(",")];
+  rows.forEach(tr => {
+    const cells = tr.querySelectorAll("td");
+    if (cells.length < 7) return;
+    const row = Array.from(cells).slice(0, 7).map(td => {
+      let text = td.textContent.replace(/\s+/g, " ").trim();
+      if (text.includes(",") || text.includes('"') || text.includes("\n")) {
+        text = '"' + text.replace(/"/g, '""') + '"';
+      }
+      return text;
+    });
+    lines.push(row.join(","));
+  });
+  const csv = lines.join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `purchases-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 async function refresh() {
   $("adminMsg").textContent = "Loading…";
   $("adminMsg").className = "msg";
@@ -173,6 +374,7 @@ async function refresh() {
       const data = await request(`purchases?status=${encodeURIComponent(currentStatus)}`);
       renderRows(data.purchases || []);
       $("adminMsg").textContent = `${data.purchases.length} record(s).`;
+      if ($("purchaseSearchInput")) $("purchaseSearchInput").value = "";
     } else if (currentView === "orders") {
       const data = await request("custom-orders");
       renderOrders(data.orders || []);
@@ -265,7 +467,7 @@ function renderCharts(s) {
     });
   }
 
-  const revenueCanvas = $("revenueCanvas");
+  const revenueCanvas = $("revenueChart");
   if (revenueCanvas) {
     if (revenueChartInstance) revenueChartInstance.destroy();
     revenueChartInstance = new Chart(revenueCanvas.getContext("2d"), {

@@ -24,7 +24,7 @@ function dateKey(d) {
 }
 
 module.exports = async function handler(req, res) {
-  // ---- POST: ban operations ----
+  // ---- POST: admin actions ----
   if (req.method === "POST") {
     try {
       const auth = verifyAuth(req);
@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
         if (!username) return send(res, 400, { error: "username required" });
         const { data: target } = await supabase
           .from("profiles")
-          .select("id, username, is_banned")
+          .select("id, username, is_banned, is_admin, referrals_count, unlocked_tiers, created_at, referral_code")
           .ilike("username", username)
           .maybeSingle();
         if (!target) return send(res, 404, { error: "User not found" });
@@ -64,6 +64,58 @@ module.exports = async function handler(req, res) {
           .eq("id", target.id);
         if (updErr) throw updErr;
         return send(res, 200, { ok: true, username: target.username, banned: newBanned });
+      }
+
+      if (action === "users_list") {
+        const page = Math.max(1, Number(body.page) || 1);
+        const limit = Math.min(50, Math.max(1, Number(body.limit) || 25));
+        const search = String(body.search || "").trim();
+        const offset = (page - 1) * limit;
+
+        let query = supabase
+          .from("profiles")
+          .select("id, username, is_banned, is_admin, referrals_count, unlocked_tiers, created_at, referral_code", { count: "exact" })
+          .order("created_at", { ascending: false })
+          .range(offset, offset + limit - 1);
+
+        if (search) query = query.ilike("username", `%${search}%`);
+
+        const { data: users, count, error: usersErr } = await query;
+        if (usersErr) throw usersErr;
+        return send(res, 200, { users: users || [], total: count || 0, page, limit });
+      }
+
+      if (action === "grant_tier" || action === "revoke_tier") {
+        const username = String(body.username || "").trim();
+        const tierId = String(body.tier_id || "").trim();
+        if (!username) return send(res, 400, { error: "username required" });
+        if (!tierId) return send(res, 400, { error: "tier_id required" });
+
+        const validTierIds = TIERS.map(t => t.id);
+        if (!validTierIds.includes(tierId)) return send(res, 400, { error: "Invalid tier_id" });
+
+        const { data: target, error: findErr } = await supabase
+          .from("profiles")
+          .select("id, username, unlocked_tiers")
+          .ilike("username", username)
+          .maybeSingle();
+        if (findErr) throw findErr;
+        if (!target) return send(res, 404, { error: "User not found" });
+
+        const current = Array.isArray(target.unlocked_tiers) ? target.unlocked_tiers : [];
+        let updated;
+        if (action === "grant_tier") {
+          updated = current.includes(tierId) ? current : [...current, tierId];
+        } else {
+          updated = current.filter(t => t !== tierId);
+        }
+
+        const { error: updErr } = await supabase
+          .from("profiles")
+          .update({ unlocked_tiers: updated })
+          .eq("id", target.id);
+        if (updErr) throw updErr;
+        return send(res, 200, { ok: true, username: target.username, unlocked_tiers: updated });
       }
 
       return send(res, 400, { error: "Unknown action" });

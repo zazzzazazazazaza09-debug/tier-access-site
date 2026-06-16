@@ -13,6 +13,19 @@
   .ban-result { margin-top: 10px; font-size: .83rem; }
   .banned-badge { display: inline-block; background: rgba(255,80,80,.2); color: #ff8a9e; border-radius: 6px; padding: 2px 8px; font-size: .75rem; font-weight: 700; margin-left: 6px; }
   .active-badge { display: inline-block; background: rgba(0,255,140,.15); color: #00ff9c; border-radius: 6px; padding: 2px 8px; font-size: .75rem; font-weight: 700; margin-left: 6px; }
+  .grant-panel { background: rgba(0,245,255,.05); border: 1px solid rgba(0,245,255,.18); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+  .grant-panel h3 { margin: 0 0 12px; color: #00f5ff; font-size: .95rem; }
+  .grant-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .grant-row input, .grant-row select { flex: 1; min-width: 140px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 8px 12px; color: #e8e8f0; }
+  .user-search-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .user-search-row input { flex: 1; min-width: 180px; }
+  .user-table-wrap { overflow-x: auto; margin-bottom: 12px; }
+  .user-pagination { display: flex; gap: 8px; align-items: center; margin-top: 8px; font-size: .85rem; color: var(--muted); }
+  .user-detail-card { background: rgba(123,47,247,.08); border: 1px solid rgba(123,47,247,.25); border-radius: 12px; padding: 14px 16px; margin-top: 10px; font-size: .85rem; display: none; }
+  .user-detail-card.visible { display: block; }
+  .user-detail-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+  .purchase-search-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .purchase-search-bar input { flex: 1; min-width: 160px; }
   </style>
 </head>
 <body>
@@ -81,6 +94,11 @@
       </div>
 
       <div id="purchasesView">
+        <div class="purchase-search-bar">
+          <input id="purchaseSearchInput" placeholder="Search by username, method, tx…" />
+          <button class="ghost-mini" type="button" id="purchaseSearchBtn">🔍 Search</button>
+          <button class="ghost-mini" type="button" id="exportCsvBtn" style="margin-left:auto">📥 Export CSV</button>
+        </div>
         <div style="overflow-x:auto">
           <table class="admin-table">
             <thead>
@@ -116,16 +134,53 @@
       </div>
 
       <div id="usersView" class="hidden">
+        <!-- Grant / Revoke tier panel -->
+        <div class="grant-panel">
+          <h3>🎯 Grant / Revoke Tier</h3>
+          <div class="grant-row">
+            <input id="grantUsernameInput" placeholder="Username…" maxlength="60" />
+            <select id="grantTierSelect">
+              <option value="">— Select tier —</option>
+            </select>
+            <button type="button" class="ghost-mini" id="grantTierBtn" style="color:#00f5ff;border-color:rgba(0,245,255,.35)">✅ Grant</button>
+            <button type="button" class="ghost-mini" id="revokeTierBtn" style="color:#ff8a9e;border-color:rgba(255,80,80,.35)">❌ Revoke</button>
+          </div>
+          <div id="grantResult" class="ban-result"></div>
+        </div>
+
+        <!-- Ban panel -->
         <div class="ban-panel">
-          <h3>🚨 IP Ban / Restrict user</h3>
-          <p class="muted" style="font-size:.82rem;margin:0 0 12px">Banning a user restricts them to tiers &amp; custom packs only. They see an Error 293 page and can no longer submit custom orders.</p>
+          <h3>🚨 Ban / Restrict user</h3>
+          <p class="muted" style="font-size:.82rem;margin:0 0 12px">Banning a user restricts them. They see an Error 293 page and can no longer submit custom orders.</p>
           <div class="ban-row">
-            <input id="banUsernameInput" placeholder="Username to ban…" maxlength="60" />
+            <input id="banUsernameInput" placeholder="Username to look up…" maxlength="60" />
             <button type="button" class="ghost-mini" id="banLookupBtn">Look up</button>
             <button type="button" class="ghost-mini" id="banBtn" style="color:#ff8a9e;border-color:rgba(255,80,80,.35)" disabled>🚫 Ban</button>
             <button type="button" class="ghost-mini" id="unbanBtn" style="color:#00ff9c;border-color:rgba(0,255,140,.35)" disabled>✅ Unban</button>
           </div>
           <div id="banResult" class="ban-result"></div>
+          <div id="banDetailCard" class="user-detail-card"></div>
+        </div>
+
+        <!-- User list -->
+        <div>
+          <h3 style="margin:0 0 12px;font-size:.95rem;color:#00f5ff">👥 User List</h3>
+          <div class="user-search-row">
+            <input id="userSearchInput" placeholder="Search username…" maxlength="60" />
+            <button type="button" class="ghost-mini" id="userSearchBtn">🔍 Search</button>
+            <button type="button" class="ghost-mini" id="userListRefreshBtn">🔄 Refresh</button>
+          </div>
+          <div class="user-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Username</th><th>Status</th><th>Tiers</th><th>Referrals</th><th>Joined</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="userListTbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Select the Users tab to load.</td></tr></tbody>
+            </table>
+          </div>
+          <div class="user-pagination" id="userPagination"></div>
         </div>
       </div>
     </div>
@@ -134,6 +189,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/tiers.config.js?v=10"></script>
-<script src="/admin.js?v=12"></script>
+<script src="/admin.js?v=13"></script>
 </body>
 </html>
