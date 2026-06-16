@@ -47,7 +47,27 @@ module.exports = async function handler(req, res) {
       .update({ last_seen: new Date().toISOString() })
       .eq("id", auth.id);
 
-    return send(res, 200, { user });
+    // Fetch unread admin notifications and mark them read
+    let notifications = [];
+    try {
+      const { data: notifs } = await supabase
+        .from("admin_notifications")
+        .select("id, message, created_at")
+        .eq("user_id", user.id)
+        .is("read_at", null)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (notifs && notifs.length) {
+        notifications = notifs;
+        await supabase
+          .from("admin_notifications")
+          .update({ read_at: new Date().toISOString() })
+          .eq("user_id", user.id)
+          .is("read_at", null);
+      }
+    } catch (_) {}
+
+    return send(res, 200, { user, notifications });
   } catch (err) {
     return send(res, 401, { error: err.message || "Unauthorized" });
   }

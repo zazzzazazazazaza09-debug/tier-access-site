@@ -26,6 +26,18 @@
   .user-detail-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
   .purchase-search-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
   .purchase-search-bar input { flex: 1; min-width: 160px; }
+  .notif-panel { background: rgba(0,255,140,.04); border: 1px solid rgba(0,255,140,.2); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+  .notif-panel h3 { margin: 0 0 12px; color: #00ff9c; font-size: .95rem; }
+  .notif-form { display: flex; flex-direction: column; gap: 8px; }
+  .notif-form input, .notif-form textarea { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 8px 12px; color: #e8e8f0; font-family: inherit; font-size: .9rem; resize: vertical; }
+  .notif-history { margin-top: 14px; border-top: 1px solid rgba(255,255,255,.08); padding-top: 12px; }
+  .notif-item { border-bottom: 1px solid rgba(255,255,255,.06); padding: 8px 0; font-size: .82rem; }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-user { color: #00f5ff; font-weight: 600; margin-bottom: 2px; }
+  .notif-msg { color: #e8e8f0; margin: 2px 0 3px; line-height: 1.4; }
+  .notif-time { color: var(--muted); font-size: .75rem; }
+  .notif-read { color: #00ff9c; font-size: .72rem; margin-left: 6px; }
+  .notif-unread { color: var(--muted); font-size: .72rem; margin-left: 6px; }
   </style>
 </head>
 <body>
@@ -134,6 +146,21 @@
       </div>
 
       <div id="usersView" class="hidden">
+        <!-- Send message panel -->
+        <div class="notif-panel">
+          <h3>📬 Send Message to User</h3>
+          <div class="notif-form">
+            <input id="notifUsernameInput" placeholder="Username…" maxlength="60" />
+            <textarea id="notifMessageInput" placeholder="Message to send to the user… (max 1000 chars)" maxlength="1000" rows="3"></textarea>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button type="button" class="ghost-mini" id="sendNotifBtn" style="color:#00ff9c;border-color:rgba(0,255,140,.35)">📤 Send Message</button>
+              <button type="button" class="ghost-mini" id="loadNotifHistoryBtn">📋 History</button>
+            </div>
+            <div id="notifResult" class="ban-result"></div>
+          </div>
+          <div id="notifHistory" class="notif-history hidden"></div>
+        </div>
+
         <!-- Grant / Revoke tier panel -->
         <div class="grant-panel">
           <h3>🎯 Grant / Revoke Tier</h3>
@@ -189,6 +216,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/tiers.config.js?v=10"></script>
-<script src="/admin.js?v=13"></script>
+<script src="/admin.js?v=14"></script>
 </body>
 </html>

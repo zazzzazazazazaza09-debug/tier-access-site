@@ -118,6 +118,56 @@ module.exports = async function handler(req, res) {
         return send(res, 200, { ok: true, username: target.username, unlocked_tiers: updated });
       }
 
+      if (action === "send_notification") {
+        const username = String(body.username || "").trim();
+        const message = String(body.message || "").trim();
+        if (!username) return send(res, 400, { error: "username required" });
+        if (!message) return send(res, 400, { error: "message required" });
+        if (message.length > 1000) return send(res, 400, { error: "message too long (max 1000 chars)" });
+
+        const { data: target, error: findErr } = await supabase
+          .from("profiles")
+          .select("id, username")
+          .ilike("username", username)
+          .maybeSingle();
+        if (findErr) throw findErr;
+        if (!target) return send(res, 404, { error: "User not found" });
+
+        const { error: insertErr } = await supabase
+          .from("admin_notifications")
+          .insert({ user_id: target.id, message });
+        if (insertErr) throw insertErr;
+
+        return send(res, 200, { ok: true, username: target.username });
+      }
+
+      if (action === "list_notifications") {
+        const username = String(body.username || "").trim();
+        const limit = Math.min(50, Math.max(1, Number(body.limit) || 20));
+
+        let targetId = null;
+        if (username) {
+          const { data: t } = await supabase
+            .from("profiles")
+            .select("id")
+            .ilike("username", username)
+            .maybeSingle();
+          if (t) targetId = t.id;
+        }
+
+        let query = supabase
+          .from("admin_notifications")
+          .select("id, user_id, message, read_at, created_at, profiles(username)")
+          .order("created_at", { ascending: false })
+          .limit(limit);
+
+        if (targetId) query = query.eq("user_id", targetId);
+
+        const { data: notifications, error: notifErr } = await query;
+        if (notifErr) throw notifErr;
+        return send(res, 200, { notifications: notifications || [] });
+      }
+
       return send(res, 400, { error: "Unknown action" });
     } catch (err) {
       return send(res, err.status || 500, { error: err.message || "Server error" });

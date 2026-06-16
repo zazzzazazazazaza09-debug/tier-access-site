@@ -135,6 +135,65 @@ $("purchaseSearchBtn").addEventListener("click", filterPurchases);
 $("purchaseSearchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") filterPurchases(); });
 $("exportCsvBtn").addEventListener("click", exportCsv);
 
+// ---- Send notification UI ----
+$("sendNotifBtn").addEventListener("click", sendNotification);
+$("loadNotifHistoryBtn").addEventListener("click", loadNotificationHistory);
+$("notifUsernameInput").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) sendNotification(); });
+
+async function sendNotification() {
+  const username = $("notifUsernameInput").value.trim();
+  const message = $("notifMessageInput").value.trim();
+  const res = $("notifResult");
+  if (!username) { res.textContent = "Enter a username."; res.className = "ban-result error"; return; }
+  if (!message) { res.textContent = "Enter a message."; res.className = "ban-result error"; return; }
+  res.textContent = "Sending…";
+  res.className = "ban-result";
+  try {
+    const data = await request("admin-stats", {
+      method: "POST",
+      body: JSON.stringify({ action: "send_notification", username, message })
+    });
+    res.innerHTML = `✓ Message sent to <strong>${escapeHtml(data.username)}</strong>.`;
+    res.className = "ban-result";
+    $("notifMessageInput").value = "";
+  } catch (err) {
+    res.textContent = err.message;
+    res.className = "ban-result error";
+  }
+}
+
+async function loadNotificationHistory() {
+  const username = $("notifUsernameInput").value.trim();
+  const container = $("notifHistory");
+  container.classList.remove("hidden");
+  container.innerHTML = "<div style='color:var(--muted);font-size:.83rem;padding:4px 0'>Loading…</div>";
+  try {
+    const data = await request("admin-stats", {
+      method: "POST",
+      body: JSON.stringify({ action: "list_notifications", username, limit: 20 })
+    });
+    const notifs = data.notifications || [];
+    if (!notifs.length) {
+      container.innerHTML = "<div style='color:var(--muted);font-size:.83rem;padding:4px 0'>No messages sent yet.</div>";
+      return;
+    }
+    container.innerHTML = notifs.map(n => {
+      const uname = (n.profiles && n.profiles.username) ? n.profiles.username : n.user_id;
+      const time = n.created_at ? new Date(n.created_at).toLocaleString() : "—";
+      const readStatus = n.read_at
+        ? `<span class='notif-read'>✓ Read ${new Date(n.read_at).toLocaleString()}</span>`
+        : `<span class='notif-unread'>⏳ Not yet read</span>`;
+      return `<div class='notif-item'>
+        <div class='notif-user'>${escapeHtml(uname || "")}${readStatus}</div>
+        <div class='notif-msg'>${escapeHtml(n.message)}</div>
+        <div class='notif-time'>${time}</div>
+      </div>`;
+    }).join("");
+  } catch (err) {
+    container.innerHTML = `<div style='color:#ff8a9e;font-size:.83rem'>${escapeHtml(err.message)}</div>`;
+  }
+}
+
 async function banLookup() {
   const username = $("banUsernameInput").value.trim();
   if (!username) return;
@@ -278,6 +337,7 @@ function renderUserList(users, total, page, limit) {
         <td>
           <button class="ghost-mini" type="button" data-action="fill-ban" data-username="${escapeHtml(u.username)}" title="Look up in ban panel" style="font-size:.75rem;padding:2px 8px">🔍</button>
           <button class="ghost-mini" type="button" data-action="fill-grant" data-username="${escapeHtml(u.username)}" title="Fill in grant panel" style="font-size:.75rem;padding:2px 8px;margin-left:4px">🎯</button>
+          <button class="ghost-mini" type="button" data-action="fill-notif" data-username="${escapeHtml(u.username)}" title="Send message to user" style="font-size:.75rem;padding:2px 8px;margin-left:4px">📬</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -291,6 +351,10 @@ function renderUserList(users, total, page, limit) {
         } else if (btn.dataset.action === "fill-grant") {
           $("grantUsernameInput").value = uname;
           $("grantUsernameInput").scrollIntoView({ behavior: "smooth", block: "center" });
+        } else if (btn.dataset.action === "fill-notif") {
+          $("notifUsernameInput").value = uname;
+          $("notifUsernameInput").scrollIntoView({ behavior: "smooth", block: "center" });
+          $("notifMessageInput").focus();
         }
       });
     });
