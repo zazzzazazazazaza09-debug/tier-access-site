@@ -11,7 +11,7 @@ let activeCrypto = "BTC";
 let selectedCustomPack = null;    // category id
 let selectedCustomSize = null;    // size id
 let activeChatOrderId = null;
-let chatPollTimer = null;
+let chatPollTimer = null;h
 let myOpenOrders = [];
 let orderPollTimer = null;
 let heartbeatTimer = null;
@@ -405,7 +405,11 @@ async function onInviteButton(tier) {
     showChoiceModal(tier);
     return;
   }
-  openPurchaseModal(tier);
+  // Locked — redirect to Get Free tab so user can share their invite link
+  switchPanelTab('invites');
+  requestAnimationFrame(() => {
+    document.querySelector('.referral-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
 }
 
 async function openTier(tier) {
