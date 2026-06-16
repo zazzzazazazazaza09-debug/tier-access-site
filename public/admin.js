@@ -104,6 +104,7 @@ $("adminSetPriceBtn").addEventListener("click", adminSetPrice);
 $("adminPriceInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") adminSetPrice();
 });
+$("adminCloseOrderBtn").addEventListener("click", adminCloseOrder);
 
 async function refresh() {
   $("adminMsg").textContent = "Loading…";
@@ -207,7 +208,6 @@ function renderCharts(s) {
   const series = s.series || {};
   const labels = (series.labels || []).map(fmtDateLabel);
 
-  // --- Signups line chart ---
   const signupsCanvas = $("signupsChart");
   if (signupsCanvas) {
     if (signupsChartInstance) signupsChartInstance.destroy();
@@ -234,7 +234,6 @@ function renderCharts(s) {
     });
   }
 
-  // --- Revenue bar chart ---
   const revenueCanvas = $("revenueChart");
   if (revenueCanvas) {
     if (revenueChartInstance) revenueChartInstance.destroy();
@@ -253,7 +252,6 @@ function renderCharts(s) {
     });
   }
 
-  // --- Purchase methods doughnut chart ---
   const methodCanvas = $("methodChart");
   if (methodCanvas) {
     if (methodChartInstance) methodChartInstance.destroy();
@@ -371,12 +369,15 @@ async function openAdminChat(order) {
   activeOrderId = order.id;
   $("adminChatPanel").classList.remove("hidden");
   $("adminChatTitle").textContent = `Chat with ${order.username || "user"}`;
-  // Highlight selected order without re-fetching all orders
-  document.querySelectorAll(".custom-order-item").forEach(b => b.classList.remove("active-order"));
-  document.querySelectorAll(".custom-order-item").forEach(b => {
-    if (b.querySelector(".co-preview") && b.onclick) {} // handled below via refresh
-  });
-  await refresh(); // refresh to update highlighted order in list
+  // Update close button state
+  const closeBtn = $("adminCloseOrderBtn");
+  if (closeBtn) {
+    const isClosed = order.status === "closed";
+    closeBtn.disabled = isClosed;
+    closeBtn.textContent = isClosed ? "🔒 Closed" : "🔒 Close conversation";
+    closeBtn.style.opacity = isClosed ? "0.45" : "1";
+  }
+  await refresh();
   await loadAdminChat();
   if (orderPollTimer) clearInterval(orderPollTimer);
   orderPollTimer = setInterval(() => loadAdminChat(true), 6000);
@@ -403,10 +404,8 @@ async function loadAdminChat(silent) {
     }
     box.scrollTop = box.scrollHeight;
 
-    // Update price display
     const agreedPrice = data.agreed_price;
     const priceDisplay = $("adminAgreedPrice");
-    const priceSetBtn = $("adminSetPriceBtn");
     if (priceDisplay) {
       if (agreedPrice && agreedPrice > 0) {
         priceDisplay.textContent = `Agreed price: $${agreedPrice}`;
@@ -418,6 +417,35 @@ async function loadAdminChat(silent) {
     }
   } catch (err) {
     if (!silent) $("adminMsg").textContent = err.message;
+  }
+}
+
+async function adminCloseOrder() {
+  if (!activeOrderId) return;
+  if (!confirm("Close this conversation? The user won't be able to send more messages.")) return;
+  try {
+    await request("custom-orders", {
+      method: "POST",
+      body: JSON.stringify({ action: "close", order_id: activeOrderId })
+    });
+    // Reload chat to show the closing system message
+    await loadAdminChat();
+    // Update button state
+    const closeBtn = $("adminCloseOrderBtn");
+    if (closeBtn) {
+      closeBtn.disabled = true;
+      closeBtn.textContent = "🔒 Closed";
+      closeBtn.style.opacity = "0.45";
+    }
+    // Disable input
+    const input = $("adminChatInput");
+    const sendBtn = $("adminChatSend");
+    if (input) { input.disabled = true; input.placeholder = "Conversation closed"; }
+    if (sendBtn) sendBtn.disabled = true;
+    // Refresh order list
+    await refresh();
+  } catch (err) {
+    alert(err.message);
   }
 }
 
@@ -483,7 +511,6 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-/* starfield reuse */
 function initBackground() {
   const canvas = document.getElementById("bgCanvas");
   if (!canvas) return;

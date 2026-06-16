@@ -103,7 +103,10 @@
       <div id="ordersView" class="hidden">
         <div id="adminOrdersList" class="admin-orders-list"></div>
         <div id="adminChatPanel" class="admin-chat-panel hidden">
-          <h3 id="adminChatTitle">Conversation</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
+            <h3 id="adminChatTitle" style="margin:0">Conversation</h3>
+            <button type="button" id="adminCloseOrderBtn" class="ghost-mini" style="color:#ff8a9e;border-color:rgba(255,138,158,.35);flex-shrink:0">🔒 Close conversation</button>
+          </div>
           <div id="adminChatMessages" class="chat-messages"></div>
           <div class="admin-price-row">
             <span id="adminAgreedPrice" class="muted">No price set yet</span>
@@ -123,6 +126,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/tiers.config.js?v=10"></script>
-<script src="/admin.js?v=10"></script>
+<script src="/admin.js?v=11"></script>
 </body>
 </html>

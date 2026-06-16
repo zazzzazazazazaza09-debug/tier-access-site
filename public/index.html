@@ -11,7 +11,6 @@
   /* =================================================================
      PHASE 6 — 3D effects, holo, glow
      ================================================================= */
-
   .main-btn:hover, .ghost-btn:hover, .btn-buy:hover, .btn-invites:hover,
   .tier-card:hover, .icon-btn:hover, .tab:hover, .modal-tab:hover,
   .panel-tab:hover, .pill:hover, .pill-mini:hover {
@@ -24,7 +23,6 @@
     transform: perspective(500px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) scale(.96) translateZ(0);
     transition: transform .05s linear;
   }
-
   .p6-shine {
     position: absolute; inset: 0; border-radius: inherit;
     pointer-events: none; z-index: 9; opacity: 0;
@@ -34,7 +32,6 @@
   .tier-card:hover .p6-shine, .entry-card:hover .p6-shine,
   .referral-card:hover .p6-shine, .howto-card:hover .p6-shine,
   .modal-card:hover .p6-shine { opacity: 1; }
-
   @keyframes holo-shift {
     0%   { box-shadow: 0 24px 64px rgba(123,47,247,.5),  0 0 0 1px rgba(123,47,247,.45); }
     33%  { box-shadow: 0 24px 64px rgba(0,245,255,.45),  0 0 0 1px rgba(0,245,255,.45); }
@@ -43,13 +40,11 @@
   }
   .tier-card:hover { animation: holo-shift 3s linear infinite; }
   .tier-card { transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease; }
-
   @keyframes title-glow {
     0%, 100% { filter: drop-shadow(0 0 10px rgba(123,47,247,.5)) drop-shadow(0 0 28px rgba(0,245,255,.12)); }
     50%       { filter: drop-shadow(0 0 22px rgba(123,47,247,.85)) drop-shadow(0 0 48px rgba(0,245,255,.28)); }
   }
   .hero-title { animation: title-glow 3s ease-in-out infinite; }
-
   @keyframes tab-neon {
     0%, 100% { box-shadow: 0 0 22px rgba(0,245,255,.18); }
     50%       { box-shadow: 0 0 38px rgba(0,245,255,.45), 0 0 14px rgba(123,47,247,.32); }
@@ -62,44 +57,45 @@
      PHASE 7 — Dashboard redesign + mobile button
      ================================================================= */
 
-  /* Mobile button — use ID for max specificity to beat style.css */
+  /* Mobile: icon-only discreet FAB */
   @media (max-width: 600px) {
     #tgServerFloat {
       position: fixed !important;
-      display: inline-flex !important;
+      display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      width: auto !important;
+      width: 40px !important;
+      height: 40px !important;
       min-width: 0 !important;
-      max-width: 130px !important;
+      max-width: 40px !important;
+      padding: 0 !important;
       left: auto !important;
-      right: 12px !important;
-      bottom: 16px !important;
-      padding: 7px 12px !important;
-      border-radius: 100px !important;
-      gap: 5px !important;
-      font-size: 10px !important;
-      line-height: 1 !important;
-      box-sizing: border-box !important;
+      right: 14px !important;
+      bottom: 18px !important;
+      border-radius: 50% !important;
+      opacity: 0.72 !important;
+      box-shadow: 0 2px 12px rgba(0,0,0,.4) !important;
+    }
+    #tgServerFloat:hover, #tgServerFloat:active {
+      opacity: 1 !important;
     }
     #tgServerFloat .tg-float-label {
-      display: inline !important;
-      font-size: 9.5px !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
+      display: none !important;
     }
     #tgServerFloat .tg-float-icon svg {
-      width: 13px !important;
-      height: 13px !important;
-      flex-shrink: 0 !important;
+      width: 18px !important;
+      height: 18px !important;
     }
     #tgServerFloat .tg-float-pulse {
-      width: 32px !important;
-      height: 32px !important;
+      width: 46px !important;
+      height: 46px !important;
+      top: -3px !important;
+      left: -3px !important;
+      right: auto !important;
     }
   }
 
-  /* Hide old hero (heroSub kept in DOM for app.js compatibility) */
+  /* Hide old hero */
   .hero { display: none !important; }
 
   /* ---- Profile card ---- */
@@ -108,113 +104,51 @@
     50%       { box-shadow: 0 0 0 1px rgba(0,245,255,.32), 0 12px 40px rgba(0,0,0,.35); }
   }
   .p7-profile {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px 22px;
+    display: flex; align-items: center; gap: 16px; padding: 20px 22px;
     background: linear-gradient(135deg, rgba(123,47,247,.1) 0%, rgba(0,245,255,.05) 100%);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 20px;
-    margin: 0 0 14px;
-    backdrop-filter: blur(14px);
-    position: relative;
-    overflow: hidden;
-    animation: profile-border-glow 4s ease-in-out infinite;
-    transition: background .25s;
+    border: 1px solid rgba(255,255,255,.1); border-radius: 20px; margin: 0 0 14px;
+    backdrop-filter: blur(14px); position: relative; overflow: hidden;
+    animation: profile-border-glow 4s ease-in-out infinite; transition: background .25s;
   }
   .p7-profile::before {
-    content: '';
-    position: absolute;
-    top: -30px; right: -20px;
+    content: ''; position: absolute; top: -30px; right: -20px;
     width: 150px; height: 150px;
     background: radial-gradient(circle, rgba(0,245,255,.07) 0%, transparent 70%);
     pointer-events: none;
   }
-  .p7-profile:hover {
-    background: linear-gradient(135deg, rgba(123,47,247,.14) 0%, rgba(0,245,255,.08) 100%);
-  }
+  .p7-profile:hover { background: linear-gradient(135deg, rgba(123,47,247,.14) 0%, rgba(0,245,255,.08) 100%); }
   .p7-avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
+    width: 56px; height: 56px; border-radius: 50%;
     background: linear-gradient(135deg, #7b2ff7 0%, #00f5ff 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.55rem;
-    font-weight: 800;
-    color: #fff;
-    text-transform: uppercase;
-    flex-shrink: 0;
-    box-shadow: 0 0 24px rgba(123,47,247,.6), 0 0 8px rgba(0,245,255,.25);
-    letter-spacing: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.55rem; font-weight: 800; color: #fff; text-transform: uppercase;
+    flex-shrink: 0; box-shadow: 0 0 24px rgba(123,47,247,.6), 0 0 8px rgba(0,245,255,.25); letter-spacing: 0;
   }
   .p7-profile-info { flex: 1; min-width: 0; }
-  .p7-greeting {
-    font-size: 0.67rem;
-    color: rgba(161,161,194,.65);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 3px;
-  }
+  .p7-greeting { font-size: 0.67rem; color: rgba(161,161,194,.65); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
   .p7-username {
-    font-size: 1.28rem;
-    font-weight: 800;
+    font-size: 1.28rem; font-weight: 800;
     background: linear-gradient(90deg, #ffffff 20%, #00f5ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.15;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
   }
-  .p7-since {
-    font-size: 0.63rem;
-    color: rgba(161,161,194,.48);
-    margin-top: 3px;
-    letter-spacing: 0.02em;
-  }
+  .p7-since { font-size: 0.63rem; color: rgba(161,161,194,.48); margin-top: 3px; letter-spacing: 0.02em; }
   .p7-profile .hero-sub {
-    font-size: 0.77rem;
-    color: rgba(161,161,194,.72);
-    margin-top: 5px;
-    line-height: 1.45;
-    -webkit-text-fill-color: unset;
-    background: none;
-    white-space: normal;
+    font-size: 0.77rem; color: rgba(161,161,194,.72); margin-top: 5px; line-height: 1.45;
+    -webkit-text-fill-color: unset; background: none; white-space: normal;
   }
-
-  /* ---- Stats strip: 3 columns ---- */
-  .p7-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 0 0 22px;
-  }
+  .p7-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 22px; }
   .p7-stat-card {
     background: linear-gradient(135deg, rgba(123,47,247,.08) 0%, rgba(0,245,255,.04) 100%);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 14px;
-    padding: 14px 10px 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    backdrop-filter: blur(10px);
-    transition: border-color .25s, background .25s, transform .18s;
-    position: relative;
-    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px 10px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    backdrop-filter: blur(10px); transition: border-color .25s, background .25s, transform .18s;
+    position: relative; overflow: hidden;
   }
   .p7-stat-card::before {
-    content: '';
-    position: absolute;
-    top: -22px; left: 50%;
-    transform: translateX(-50%);
+    content: ''; position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
     width: 64px; height: 64px;
-    background: radial-gradient(circle, rgba(0,245,255,.12) 0%, transparent 70%);
-    pointer-events: none;
+    background: radial-gradient(circle, rgba(0,245,255,.12) 0%, transparent 70%); pointer-events: none;
   }
   .p7-stat-card:hover {
     border-color: rgba(0,245,255,.28);
@@ -222,36 +156,21 @@
     transform: translateY(-2px);
   }
   .p7-val {
-    font-size: 1.4rem;
-    font-weight: 800;
+    font-size: 1.4rem; font-weight: 800;
     background: linear-gradient(135deg, #00f5ff 0%, #7b2ff7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.02em;
-    line-height: 1;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    letter-spacing: -0.02em; line-height: 1;
   }
-  .p7-lbl {
-    font-size: 0.6rem;
-    color: var(--muted, #a1a1c2);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    text-align: center;
-    white-space: nowrap;
-  }
+  .p7-lbl { font-size: 0.6rem; color: var(--muted, #a1a1c2); text-transform: uppercase; letter-spacing: 0.07em; text-align: center; white-space: nowrap; }
   .ref-count {
     background: linear-gradient(135deg, #00f5ff 0%, #7b2ff7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .p7-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent 0%, rgba(0,245,255,.15) 35%, rgba(123,47,247,.18) 65%, transparent 100%);
-    margin: 0 0 20px;
-    border: none;
+    margin: 0 0 20px; border: none;
   }
-
   @media (max-width: 480px) {
     .p7-profile { padding: 14px 15px; gap: 12px; }
     .p7-avatar { width: 46px; height: 46px; font-size: 1.25rem; }
@@ -261,9 +180,8 @@
     .p7-val { font-size: 1.15rem; }
     .p7-lbl { font-size: 0.56rem; }
   }
-
   @media (prefers-reduced-motion: reduce) {
-    .hero-title  { animation: none !important; filter: none; }
+    .hero-title { animation: none !important; filter: none; }
     .panel-tab.active { animation: none !important; }
     .tier-card:hover { animation: none !important; }
     .p6-shine { display: none !important; }
@@ -284,7 +202,6 @@
 </a>
 
 <main class="app">
-  <!-- ============ AUTH PAGE ============ -->
   <section id="entryPage" class="entry-page">
     <div class="entry-card">
       <div class="badge">PRIVATE ACCESS SYSTEM</div>
@@ -318,7 +235,6 @@
     </div>
   </section>
 
-  <!-- ============ MAIN PANEL ============ -->
   <section id="panelPage" class="panel-page hidden">
     <header class="topbar">
       <button id="drawerOpen" class="icon-btn" type="button" aria-label="Open menu">
@@ -342,9 +258,7 @@
             <div id="notifList" class="notif-list"></div>
           </div>
         </div>
-        <button class="icon-btn icon-btn-ghost" type="button" id="adminLinkBtn" title="Admin panel" style="display:none">
-          ADMIN
-        </button>
+        <button class="icon-btn icon-btn-ghost" type="button" id="adminLinkBtn" title="Admin panel" style="display:none">ADMIN</button>
       </div>
     </header>
 
@@ -361,9 +275,7 @@
         <button class="drawer-item" type="button" data-action="reviews">Reviews</button>
         <div class="drawer-section">TIERS</div>
         <div id="drawerTiers"></div>
-        <button class="drawer-item drawer-support" type="button" data-action="support">
-          <span class="dot"></span> Support
-        </button>
+        <button class="drawer-item drawer-support" type="button" data-action="support"><span class="dot"></span> Support</button>
         <button class="drawer-item drawer-logout" type="button" data-action="logout">Logout</button>
       </nav>
     </aside>
@@ -386,18 +298,9 @@
       </div>
 
       <div class="p7-stats">
-        <div class="p7-stat-card">
-          <span class="p7-val" id="p7Users">—</span>
-          <span class="p7-lbl">👥 Community</span>
-        </div>
-        <div class="p7-stat-card">
-          <span class="p7-val" id="p7Invites">—</span>
-          <span class="p7-lbl">🔗 My Invites</span>
-        </div>
-        <div class="p7-stat-card">
-          <span class="p7-val" id="p7Tiers">—</span>
-          <span class="p7-lbl">🏆 Tiers</span>
-        </div>
+        <div class="p7-stat-card"><span class="p7-val" id="p7Users">—</span><span class="p7-lbl">👥 Community</span></div>
+        <div class="p7-stat-card"><span class="p7-val" id="p7Invites">—</span><span class="p7-lbl">🔗 My Invites</span></div>
+        <div class="p7-stat-card"><span class="p7-val" id="p7Tiers">—</span><span class="p7-lbl">🏆 Tiers</span></div>
       </div>
 
       <hr class="p7-divider" />
@@ -413,14 +316,7 @@
         <div id="tierGrid" class="tier-grid"></div>
         <div class="howto-card">
           <h3>How to Purchase</h3>
-          <p class="muted">
-            Click "Buy" on any tier to submit your payment. Your payment will be reviewed within
-            5–10 minutes. Once confirmed, you'll get immediate access.
-            <br /><br />
-            Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.
-            <br />
-            Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.
-          </p>
+          <p class="muted">Click "Buy" on any tier to submit your payment. Your payment will be reviewed within 5–10 minutes. Once confirmed, you'll get immediate access.<br /><br />Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.<br />Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.</p>
         </div>
       </div>
 
@@ -461,14 +357,8 @@
               <span class="price-current" id="customPriceCurrent">$—</span>
             </div>
           </div>
-          <div class="custom-step">
-            <h4>1 · Choose category</h4>
-            <div id="customCategories" class="custom-categories"></div>
-          </div>
-          <div class="custom-step">
-            <h4>2 · Choose size</h4>
-            <div id="customSizes" class="custom-sizes"></div>
-          </div>
+          <div class="custom-step"><h4>1 · Choose category</h4><div id="customCategories" class="custom-categories"></div></div>
+          <div class="custom-step"><h4>2 · Choose size</h4><div id="customSizes" class="custom-sizes"></div></div>
           <div class="custom-actions">
             <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
             <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
@@ -480,10 +370,7 @@
     <div id="purchaseModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
-          <div>
-            <h2 id="modalTitle">Purchase Tier 1</h2>
-            <p class="muted">Complete your payment to unlock instant access</p>
-          </div>
+          <div><h2 id="modalTitle">Purchase Tier 1</h2><p class="muted">Complete your payment to unlock instant access</p></div>
           <button class="modal-close" type="button" id="modalClose" aria-label="Close">×</button>
         </header>
         <div class="modal-tabs">
@@ -491,10 +378,7 @@
           <button class="modal-tab" type="button" data-tab="crypto">₿ Crypto</button>
         </div>
         <div class="modal-pane" data-pane="giftcard">
-          <div class="info-box">
-            <strong id="gcAmount">💳 Amount: $10</strong>
-            <p>Purchase a gift card and send us the code. We'll activate your tier instantly!</p>
-          </div>
+          <div class="info-box"><strong id="gcAmount">💳 Amount: $10</strong><p>Purchase a gift card and send us the code. We'll activate your tier instantly!</p></div>
           <h4>Choose a platform to buy <span class="muted" style="font-weight:400;font-size:.85rem">(opens store with PayPal search)</span>:</h4>
           <div id="gcPlatforms" class="platform-list"></div>
           <div class="info-box light">
@@ -510,10 +394,7 @@
             <div class="crypto-eq">≈ <span id="cryptoAmountCrypto">0.00015859</span> <span id="cryptoAmountTicker">BTC</span></div>
             <p>Send the exact amount shown above to the address below.</p>
           </div>
-          <div class="crypto-row">
-            <h4>Select cryptocurrency:</h4>
-            <button class="ghost-mini" type="button" id="cryptoRefresh">🔄 Refresh</button>
-          </div>
+          <div class="crypto-row"><h4>Select cryptocurrency:</h4><button class="ghost-mini" type="button" id="cryptoRefresh">🔄 Refresh</button></div>
           <div id="cryptoTickers" class="crypto-tickers"></div>
           <label id="cryptoAddrLabel">Bitcoin Address:</label>
           <div class="addr-row">
@@ -525,10 +406,7 @@
             <input id="cryptoTxId" placeholder="Paste your transaction ID here" maxlength="200" />
             <small id="cryptoTxCount" class="muted">• 0 characters</small>
           </div>
-          <div class="warn-box">
-            <strong>⚠ Important:</strong>
-            <span id="cryptoWarn">Send exactly <b>0.00015859 BTC ($10 USD)</b></span>
-          </div>
+          <div class="warn-box"><strong>⚠ Important:</strong><span id="cryptoWarn">Send exactly <b>0.00015859 BTC ($10 USD)</b></span></div>
           <button class="main-btn" type="button" id="cryptoSubmit">Submit transaction</button>
         </div>
         <div id="modalMsg" class="msg" aria-live="polite"></div>
@@ -538,29 +416,20 @@
     <div id="customOrderModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
-          <div>
-            <h2>Custom order</h2>
-            <p class="muted">Describe exactly what you want — we'll reply on the site.</p>
-          </div>
+          <div><h2>Custom order</h2><p class="muted">Describe exactly what you want — we'll reply on the site.</p></div>
           <button class="modal-close" type="button" id="customOrderClose" aria-label="Close">×</button>
         </header>
         <textarea id="customOrderText" rows="5" placeholder="Example: I want Pack 3 with specific content, 500 GB, delivered via Mega…" maxlength="2000"></textarea>
         <button class="main-btn" type="button" id="customOrderSubmit">Send request</button>
         <div id="customOrderMsg" class="msg" aria-live="polite"></div>
-        <div class="custom-orders-list-wrap">
-          <h4>Your conversations</h4>
-          <div id="myCustomOrders" class="custom-orders-list"></div>
-        </div>
+        <div class="custom-orders-list-wrap"><h4>Your conversations</h4><div id="myCustomOrders" class="custom-orders-list"></div></div>
       </div>
     </div>
 
     <div id="chatModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card chat-modal-card">
         <header class="modal-head">
-          <div>
-            <h2 id="chatTitle">Conversation</h2>
-            <p class="muted" id="chatSub">Chat with support</p>
-          </div>
+          <div><h2 id="chatTitle">Conversation</h2><p class="muted" id="chatSub">Chat with support</p></div>
           <button class="modal-close" type="button" id="chatClose" aria-label="Close">×</button>
         </header>
         <div id="chatMessages" class="chat-messages"></div>
@@ -587,10 +456,7 @@
     <div id="shareGuideModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
-          <div>
-            <h2>How to share</h2>
-            <p class="muted">Tap a platform to share your invite link — more shares, more invites!</p>
-          </div>
+          <div><h2>How to share</h2><p class="muted">Tap a platform to share your invite link — more shares, more invites!</p></div>
           <button class="modal-close" type="button" id="shareGuideClose" aria-label="Close">×</button>
         </header>
         <div id="sharePlatforms" class="share-platforms"></div>
@@ -615,9 +481,6 @@
 <script src="/app.js?v=14"></script>
 
 <script>
-/* =================================================================
-   PHASE 6 — Mouse-follow card shine
-   ================================================================= */
 (function () {
   var CARD_SEL = '.tier-card, .entry-card, .referral-card, .howto-card, .modal-card';
   function ensureShine(el) {
@@ -652,52 +515,24 @@
   else init();
 }());
 
-/* =================================================================
-   PHASE 7 — Profile card + stats loader
-   ================================================================= */
 (function () {
   var token = localStorage.getItem('token') || '';
-
-  function fmtNum(n) {
-    n = Number(n) || 0;
-    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
-    return String(n);
-  }
-  function setVal(id, v) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = v;
-  }
-  function fmtSince(iso) {
-    if (!iso) return '';
-    try {
-      return 'Member since ' + new Date(iso).toLocaleDateString('en', { month: 'short', year: 'numeric' });
-    } catch (_) { return ''; }
-  }
-
+  function fmtNum(n) { n = Number(n) || 0; if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k'; return String(n); }
+  function setVal(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+  function fmtSince(iso) { if (!iso) return ''; try { return 'Member since ' + new Date(iso).toLocaleDateString('en', { month: 'short', year: 'numeric' }); } catch (_) { return ''; } }
   if (token) {
     try {
       var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      if (payload && payload.username) {
-        setVal('p7Username', payload.username);
-        setVal('p7Avatar', payload.username.charAt(0).toUpperCase());
-      }
+      if (payload && payload.username) { setVal('p7Username', payload.username); setVal('p7Avatar', payload.username.charAt(0).toUpperCase()); }
     } catch (_) {}
   }
-
   var heroSub = document.getElementById('heroSub');
   var p7HeroSub = document.getElementById('p7HeroSub');
   if (heroSub && p7HeroSub) {
-    var mirrorObs = new MutationObserver(function () {
-      p7HeroSub.textContent = heroSub.textContent;
-    });
+    var mirrorObs = new MutationObserver(function () { p7HeroSub.textContent = heroSub.textContent; });
     mirrorObs.observe(heroSub, { childList: true, characterData: true, subtree: true });
   }
-
-  fetch('/api/stats')
-    .then(function (r) { return r.json(); })
-    .then(function (data) { setVal('p7Users', fmtNum(data.users)); })
-    .catch(function () {});
-
+  fetch('/api/stats').then(function (r) { return r.json(); }).then(function (data) { setVal('p7Users', fmtNum(data.users)); }).catch(function () {});
   if (token) {
     fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function (r) { return r.json(); })
@@ -706,49 +541,9 @@
         setVal('p7Invites', fmtNum(data.user.referrals_count));
         setVal('p7Tiers', (data.user.unlocked_tiers || []).length);
         setVal('p7Since', fmtSince(data.user.created_at));
-        if (data.user.username) {
-          setVal('p7Username', data.user.username);
-          setVal('p7Avatar', data.user.username.charAt(0).toUpperCase());
-        }
-      })
-      .catch(function () {});
+        if (data.user.username) { setVal('p7Username', data.user.username); setVal('p7Avatar', data.user.username.charAt(0).toUpperCase()); }
+      }).catch(function () {});
   }
-}());
-
-/* =================================================================
-   Fix mobile button via JS as last resort (overrides any CSS)
-   ================================================================= */
-(function () {
-  function fixBtn() {
-    if (window.innerWidth > 600) return;
-    var btn = document.getElementById('tgServerFloat');
-    if (!btn) return;
-    var s = document.createElement('style');
-    s.textContent = [
-      '#tgServerFloat{',
-      'position:fixed!important;',
-      'display:inline-flex!important;',
-      'align-items:center!important;',
-      'width:auto!important;',
-      'min-width:0!important;',
-      'max-width:140px!important;',
-      'left:auto!important;',
-      'right:12px!important;',
-      'bottom:16px!important;',
-      'padding:7px 12px!important;',
-      'border-radius:100px!important;',
-      'gap:5px!important;',
-      'font-size:10px!important;',
-      'line-height:1!important;',
-      'box-sizing:border-box!important',
-      '}',
-      '#tgServerFloat .tg-float-label{display:inline!important;font-size:9.5px!important;white-space:nowrap!important}',
-      '#tgServerFloat .tg-float-icon svg{width:13px!important;height:13px!important}'
-    ].join('');
-    document.head.appendChild(s);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fixBtn);
-  else fixBtn();
 }());
 </script>
 </body>

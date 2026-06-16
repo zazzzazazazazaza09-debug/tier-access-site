@@ -3,7 +3,7 @@ const { verifyAuth } = require("./_auth");
 const { send } = require("./_utils");
 
 // GET  — list orders (admin sees all, user sees own)
-// POST — action: "set_price" (admin sets agreed price on an order)
+// POST — action: "set_price" | "close" (admin only)
 module.exports = async function handler(req, res) {
   try {
     const auth = verifyAuth(req);
@@ -90,6 +90,40 @@ module.exports = async function handler(req, res) {
         if (msgErr) throw msgErr;
 
         return send(res, 200, { ok: true, agreed_price: price });
+      }
+
+      if (action === "close") {
+        const orderId = String(body.order_id || "").trim();
+        if (!orderId) return send(res, 400, { error: "order_id required" });
+
+        const { data: order, error: orderErr } = await supabase
+          .from("custom_orders")
+          .select("id, status")
+          .eq("id", orderId)
+          .maybeSingle();
+
+        if (orderErr) throw orderErr;
+        if (!order) return send(res, 404, { error: "Order not found" });
+        if (order.status === "closed") {
+          return send(res, 400, { error: "Already closed." });
+        }
+
+        // Insert a system message before closing
+        await supabase.from("order_messages").insert({
+          order_id: orderId,
+          sender_id: me.id,
+          is_admin: true,
+          content: "This conversation has been closed by the admin."
+        });
+
+        const { error: updErr } = await supabase
+          .from("custom_orders")
+          .update({ status: "closed", updated_at: new Date().toISOString() })
+          .eq("id", orderId);
+
+        if (updErr) throw updErr;
+
+        return send(res, 200, { ok: true });
       }
 
       return send(res, 400, { error: "Unknown action" });
