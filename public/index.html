@@ -65,6 +65,19 @@
   /* Hide old hero */
   .hero { display: none !important; }
 
+  /* ---- Error 293 ban banner ---- */
+  #banBanner {
+    display: none;
+    background: linear-gradient(135deg, rgba(180,0,0,.18) 0%, rgba(255,80,80,.08) 100%);
+    border: 1px solid rgba(255,80,80,.35);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin: 0 0 16px;
+    color: #ff8a9e;
+  }
+  #banBanner .ban-code { font-size: 1.1rem; font-weight: 800; letter-spacing: .04em; margin-bottom: 5px; }
+  #banBanner .ban-msg { font-size: .8rem; color: rgba(255,138,158,.78); line-height: 1.5; }
+
   /* ---- Profile card ---- */
   @keyframes profile-border-glow {
     0%, 100% { box-shadow: 0 0 0 1px rgba(123,47,247,.22), 0 12px 40px rgba(0,0,0,.35); }
@@ -78,10 +91,8 @@
     animation: profile-border-glow 4s ease-in-out infinite; transition: background .25s;
   }
   .p7-profile::before {
-    content: ''; position: absolute; top: -30px; right: -20px;
-    width: 150px; height: 150px;
-    background: radial-gradient(circle, rgba(0,245,255,.07) 0%, transparent 70%);
-    pointer-events: none;
+    content: ''; position: absolute; top: -30px; right: -20px; width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(0,245,255,.07) 0%, transparent 70%); pointer-events: none;
   }
   .p7-profile:hover { background: linear-gradient(135deg, rgba(123,47,247,.14) 0%, rgba(0,245,255,.08) 100%); }
   .p7-avatar {
@@ -254,6 +265,12 @@
         <p class="hero-sub" id="heroSub"></p>
       </div>
 
+      <!-- Error 293 ban banner -->
+      <div id="banBanner">
+        <div class="ban-code">⚠️ Error 293</div>
+        <div class="ban-msg">Your access has been restricted due to suspected automated activity.<br />You can still browse tiers and purchase custom packs.</div>
+      </div>
+
       <div class="p7-profile" id="p7Profile">
         <div class="p7-avatar" id="p7Avatar">N</div>
         <div class="p7-profile-info">
@@ -328,6 +345,7 @@
           <div class="custom-step"><h4>2 · Choose size</h4><div id="customSizes" class="custom-sizes"></div></div>
           <div class="custom-actions">
             <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
+            <!-- customRequestBtn hidden for banned users via JS -->
             <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
           </div>
         </div>
@@ -482,70 +500,68 @@
   else init();
 }());
 
-/* ---- Mobile Join Server : on cache l'original et on injecte un bouton propre ---- */
+/* ---- Mobile Join Server compact button ---- */
 (function () {
   if (window.innerWidth > 600) return;
   function inject() {
     if (document.getElementById('tgMiniBtn')) return;
-    // Cacher l'original de facon absolue
     var orig = document.getElementById('tgServerFloat');
     if (orig) orig.style.setProperty('display', 'none', 'important');
-    // Créer le nouveau bouton compact avec styles inline (rien ne peut les écraser)
     var a = document.createElement('a');
     a.id = 'tgMiniBtn';
     a.href = 'https://t.me/+ZQDbceeZVUs0ODA8';
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.innerHTML =
-      '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="flex-shrink:0;display:block">'
-      + '<path d="M9.78 15.28l-.28-4.05 8.9-8.03a.5.5 0 0 1 .8.38l-1.52 7.18-5.9 4.52zM9.78 15.28l-2.9 2.7a.5.5 0 0 1-.82-.35l.5-3.35 3.22.99z"/>'
-      + '</svg>Join Server';
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="flex-shrink:0;display:block"><path d="M9.78 15.28l-.28-4.05 8.9-8.03a.5.5 0 0 1 .8.38l-1.52 7.18-5.9 4.52zM9.78 15.28l-2.9 2.7a.5.5 0 0 1-.82-.35l.5-3.35 3.22.99z"/></svg>Join Server';
     var s = a.style;
-    s.position = 'fixed';
-    s.right = '12px';
-    s.bottom = '16px';
-    s.zIndex = '99999';
-    s.display = 'inline-flex';
-    s.alignItems = 'center';
-    s.gap = '5px';
+    s.position = 'fixed'; s.right = '12px'; s.bottom = '16px'; s.zIndex = '99999';
+    s.display = 'inline-flex'; s.alignItems = 'center'; s.gap = '5px';
     s.padding = '6px 11px 6px 8px';
     s.background = 'linear-gradient(135deg,#0088cc,#00a8e8)';
-    s.color = '#fff';
-    s.textDecoration = 'none';
-    s.borderRadius = '100px';
-    s.fontSize = '11px';
-    s.fontWeight = '600';
-    s.lineHeight = '1';
-    s.whiteSpace = 'nowrap';
-    s.opacity = '0.8';
+    s.color = '#fff'; s.textDecoration = 'none'; s.borderRadius = '100px';
+    s.fontSize = '11px'; s.fontWeight = '600'; s.lineHeight = '1';
+    s.whiteSpace = 'nowrap'; s.opacity = '0.8';
     s.boxShadow = '0 2px 10px rgba(0,0,0,.45)';
-    s.border = 'none';
-    s.outline = 'none';
+    s.border = 'none'; s.outline = 'none';
     document.body.appendChild(a);
   }
-  // Exécuter après le chargement complet (y compris app.js)
   if (document.readyState === 'complete') { inject(); }
   else { window.addEventListener('load', inject); }
 }());
 
+/* ---- Ban detection: Error 293 + hide custom order ---- */
 (function () {
   var token = localStorage.getItem('token') || '';
   function fmtNum(n) { n = Number(n) || 0; if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k'; return String(n); }
   function setVal(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
   function fmtSince(iso) { if (!iso) return ''; try { return 'Member since ' + new Date(iso).toLocaleDateString('en', { month: 'short', year: 'numeric' }); } catch (_) { return ''; } }
+
+  function applyBan() {
+    // Show Error 293 banner
+    var banner = document.getElementById('banBanner');
+    if (banner) banner.style.display = 'block';
+    // Hide custom order button and orders list
+    var reqBtn = document.getElementById('customRequestBtn');
+    if (reqBtn) reqBtn.style.display = 'none';
+    // Also hide the panel-tab for custom section if it contains the order form
+    // (tiers & custom pack stay visible, only the request button is hidden)
+  }
+
   if (token) {
     try {
       var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
       if (payload && payload.username) { setVal('p7Username', payload.username); setVal('p7Avatar', payload.username.charAt(0).toUpperCase()); }
     } catch (_) {}
   }
+
   var heroSub = document.getElementById('heroSub');
   var p7HeroSub = document.getElementById('p7HeroSub');
   if (heroSub && p7HeroSub) {
     var mirrorObs = new MutationObserver(function () { p7HeroSub.textContent = heroSub.textContent; });
     mirrorObs.observe(heroSub, { childList: true, characterData: true, subtree: true });
   }
+
   fetch('/api/stats').then(function (r) { return r.json(); }).then(function (data) { setVal('p7Users', fmtNum(data.users)); }).catch(function () {});
+
   if (token) {
     fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function (r) { return r.json(); })
@@ -555,6 +571,8 @@
         setVal('p7Tiers', (data.user.unlocked_tiers || []).length);
         setVal('p7Since', fmtSince(data.user.created_at));
         if (data.user.username) { setVal('p7Username', data.user.username); setVal('p7Avatar', data.user.username.charAt(0).toUpperCase()); }
+        // Apply ban restrictions if user is banned
+        if (data.user.is_banned) applyBan();
       }).catch(function () {});
   }
 }());

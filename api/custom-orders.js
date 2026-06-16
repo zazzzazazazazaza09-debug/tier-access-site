@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
 
     const { data: me } = await supabase
       .from("profiles")
-      .select("id, is_admin")
+      .select("id, is_admin, is_banned")
       .eq("id", auth.id)
       .maybeSingle();
 
@@ -108,7 +108,6 @@ module.exports = async function handler(req, res) {
           return send(res, 400, { error: "Already closed." });
         }
 
-        // Insert a system message before closing
         await supabase.from("order_messages").insert({
           order_id: orderId,
           sender_id: me.id,

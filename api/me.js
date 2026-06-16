@@ -15,7 +15,6 @@ module.exports = async function handler(req, res) {
         .eq("id", auth.id);
 
       if (error) {
-        // Column might not exist yet (migration not run) — fail silently.
         return send(res, 200, { ok: true, tracked: false });
       }
 
@@ -35,7 +34,7 @@ module.exports = async function handler(req, res) {
 
     const { data: user } = await supabase
       .from("profiles")
-      .select("id, username, referral_code, referrals_count, reward_unlocked, unlocked_tiers, is_admin, created_at")
+      .select("id, username, referral_code, referrals_count, reward_unlocked, unlocked_tiers, is_admin, is_banned, created_at")
       .eq("id", auth.id)
       .maybeSingle();
 
@@ -43,8 +42,6 @@ module.exports = async function handler(req, res) {
       return send(res, 404, { error: "User not found" });
     }
 
-    // Update last_seen synchronously so admin "online now" count stays accurate.
-    // Silently ignored if last_seen column doesn't exist yet (migration not run).
     await supabase
       .from("profiles")
       .update({ last_seen: new Date().toISOString() })

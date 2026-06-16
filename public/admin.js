@@ -5,6 +5,7 @@ let currentStatus = "pending";
 let currentView = "purchases";
 let activeOrderId = null;
 let orderPollTimer = null;
+let banLookupTarget = null;
 
 let signupsChartInstance = null;
 let revenueChartInstance = null;
@@ -77,13 +78,15 @@ document.querySelectorAll(".admin-tabs button[data-view]").forEach(b => {
     const isPurchases = currentView === "purchases";
     const isDashboard = currentView === "dashboard";
     const isOrders = currentView === "orders";
+    const isUsers = currentView === "users";
     $("dashboardView").classList.toggle("hidden", !isDashboard);
     $("purchasesView").classList.toggle("hidden", !isPurchases);
     $("ordersView").classList.toggle("hidden", !isOrders);
+    $("usersView").classList.toggle("hidden", !isUsers);
     document.querySelectorAll(".purchase-tab").forEach(x => {
       x.style.display = isPurchases ? "" : "none";
     });
-    refresh();
+    if (!isUsers) refresh();
   });
 });
 
@@ -97,14 +100,64 @@ document.querySelectorAll(".admin-tabs button[data-status]").forEach(b => {
 });
 $("adminRefresh").addEventListener("click", refresh);
 $("adminChatSend").addEventListener("click", sendAdminChat);
-$("adminChatInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendAdminChat();
-});
+$("adminChatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendAdminChat(); });
 $("adminSetPriceBtn").addEventListener("click", adminSetPrice);
-$("adminPriceInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") adminSetPrice();
-});
+$("adminPriceInput").addEventListener("keydown", (e) => { if (e.key === "Enter") adminSetPrice(); });
 $("adminCloseOrderBtn").addEventListener("click", adminCloseOrder);
+
+// ---- Ban UI ----
+$("banLookupBtn").addEventListener("click", banLookup);
+$("banUsernameInput").addEventListener("keydown", (e) => { if (e.key === "Enter") banLookup(); });
+$("banBtn").addEventListener("click", () => doBan("ban"));
+$("unbanBtn").addEventListener("click", () => doBan("unban"));
+
+async function banLookup() {
+  const username = $("banUsernameInput").value.trim();
+  if (!username) return;
+  const res = $("banResult");
+  res.textContent = "Looking up…";
+  res.className = "ban-result";
+  $("banBtn").disabled = true;
+  $("unbanBtn").disabled = true;
+  banLookupTarget = null;
+  try {
+    const data = await request(`admin-ban?username=${encodeURIComponent(username)}`);
+    const u = data.user;
+    banLookupTarget = u;
+    const badge = u.is_banned
+      ? `<span class="banned-badge">BANNED</span>`
+      : `<span class="active-badge">ACTIVE</span>`;
+    res.innerHTML = `User found: <strong>${escapeHtml(u.username)}</strong>${badge}`;
+    $("banBtn").disabled = !!u.is_banned;
+    $("unbanBtn").disabled = !u.is_banned;
+  } catch (err) {
+    res.textContent = err.message;
+    res.className = "ban-result error";
+  }
+}
+
+async function doBan(action) {
+  if (!banLookupTarget) return;
+  const label = action === "ban" ? "ban" : "unban";
+  if (!confirm(`${label.charAt(0).toUpperCase() + label.slice(1)} user "${banLookupTarget.username}"?`)) return;
+  const res = $("banResult");
+  try {
+    const data = await request("admin-ban", {
+      method: "POST",
+      body: JSON.stringify({ username: banLookupTarget.username, action })
+    });
+    banLookupTarget.is_banned = data.banned;
+    const badge = data.banned
+      ? `<span class="banned-badge">BANNED</span>`
+      : `<span class="active-badge">ACTIVE</span>`;
+    res.innerHTML = `✓ Done. User <strong>${escapeHtml(data.username)}</strong>${badge}`;
+    $("banBtn").disabled = data.banned;
+    $("unbanBtn").disabled = !data.banned;
+  } catch (err) {
+    res.textContent = err.message;
+    res.className = "ban-result error";
+  }
+}
 
 async function refresh() {
   $("adminMsg").textContent = "Loading…";
@@ -117,10 +170,12 @@ async function refresh() {
       const data = await request(`purchases?status=${encodeURIComponent(currentStatus)}`);
       renderRows(data.purchases || []);
       $("adminMsg").textContent = `${data.purchases.length} record(s).`;
-    } else {
+    } else if (currentView === "orders") {
       const data = await request("custom-orders");
       renderOrders(data.orders || []);
       $("adminMsg").textContent = `${data.orders.length} conversation(s).`;
+    } else {
+      $("adminMsg").textContent = "";
     }
   } catch (err) {
     $("adminMsg").textContent = err.message;
@@ -184,21 +239,10 @@ function chartOptions(extra = {}) {
   return Object.assign({
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: { color: "#a1a1c2" }
-      }
-    },
+    plugins: { legend: { labels: { color: "#a1a1c2" } } },
     scales: {
-      x: {
-        ticks: { color: "#a1a1c2" },
-        grid: { color: "rgba(255,255,255,.05)" }
-      },
-      y: {
-        ticks: { color: "#a1a1c2" },
-        grid: { color: "rgba(255,255,255,.05)" },
-        beginAtZero: true
-      }
+      x: { ticks: { color: "#a1a1c2" }, grid: { color: "rgba(255,255,255,.05)" } },
+      y: { ticks: { color: "#a1a1c2" }, grid: { color: "rgba(255,255,255,.05)" }, beginAtZero: true }
     }
   }, extra);
 }
@@ -213,24 +257,8 @@ function renderCharts(s) {
     if (signupsChartInstance) signupsChartInstance.destroy();
     signupsChartInstance = new Chart(signupsCanvas.getContext("2d"), {
       type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "New signups",
-          data: series.signups || [],
-          borderColor: "#00f5ff",
-          backgroundColor: "rgba(0,245,255,.15)",
-          tension: 0.3,
-          fill: true,
-          pointRadius: 3
-        }]
-      },
-      options: chartOptions({
-        scales: {
-          x: { ticks: { color: "#a1a1c2" }, grid: { color: "rgba(255,255,255,.05)" } },
-          y: { ticks: { color: "#a1a1c2", precision: 0 }, grid: { color: "rgba(255,255,255,.05)" }, beginAtZero: true }
-        }
-      })
+      data: { labels, datasets: [{ label: "New signups", data: series.signups || [], borderColor: "#00f5ff", backgroundColor: "rgba(0,245,255,.15)", tension: 0.3, fill: true, pointRadius: 3 }] },
+      options: chartOptions({ scales: { x: { ticks: { color: "#a1a1c2" }, grid: { color: "rgba(255,255,255,.05)" } }, y: { ticks: { color: "#a1a1c2", precision: 0 }, grid: { color: "rgba(255,255,255,.05)" }, beginAtZero: true } } })
     });
   }
 
@@ -239,15 +267,7 @@ function renderCharts(s) {
     if (revenueChartInstance) revenueChartInstance.destroy();
     revenueChartInstance = new Chart(revenueCanvas.getContext("2d"), {
       type: "bar",
-      data: {
-        labels,
-        datasets: [{
-          label: "Approved revenue ($)",
-          data: series.revenue || [],
-          backgroundColor: "rgba(123,47,247,.55)",
-          borderRadius: 6
-        }]
-      },
+      data: { labels, datasets: [{ label: "Approved revenue ($)", data: series.revenue || [], backgroundColor: "rgba(123,47,247,.55)", borderRadius: 6 }] },
       options: chartOptions()
     });
   }
@@ -260,22 +280,8 @@ function renderCharts(s) {
     const methodColors = ["#00f5ff", "#7b2ff7", "#00ff9c", "#ff5fb3", "#ffd166"];
     methodChartInstance = new Chart(methodCanvas.getContext("2d"), {
       type: "doughnut",
-      data: {
-        labels: methodLabels,
-        datasets: [{
-          data: methodLabels.map(k => byMethod[k]),
-          backgroundColor: methodLabels.map((_, i) => methodColors[i % methodColors.length]),
-          borderColor: "rgba(8,10,28,.8)",
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: "#a1a1c2" } }
-        }
-      }
+      data: { labels: methodLabels, datasets: [{ data: methodLabels.map(k => byMethod[k]), backgroundColor: methodLabels.map((_, i) => methodColors[i % methodColors.length]), borderColor: "rgba(8,10,28,.8)", borderWidth: 2 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: "#a1a1c2" } } } }
     });
   }
 }
@@ -285,16 +291,13 @@ function productName(r) {
   if (r.is_custom) return `Custom Pack ${r.custom_pack_id || ""} · ${r.custom_size_id || ""}`;
   return tierName(r.tier_id);
 }
-
 function tierName(id) {
   const t = (window.SITE_CONFIG && window.SITE_CONFIG.tiers || []).find(x => x.id === id);
   return t ? t.name : `Tier ${id}`;
 }
-
 function fmtDate(iso) {
   if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleString();
+  return new Date(iso).toLocaleString();
 }
 
 function renderRows(rows) {
@@ -306,25 +309,18 @@ function renderRows(rows) {
   }
   for (const r of rows) {
     const tr = document.createElement("tr");
-
     let details = "";
     if (r.method === "crypto" || r.method === "cashapp") {
       details = `<div><b>${r.crypto_currency || ""}</b> ${r.crypto_amount || ""}</div><div class="mono">${escapeHtml(r.tx_id || "")}</div>`;
     } else if (r.method === "giftcard") {
       details = `<div>${escapeHtml(r.giftcard_platform || "")}</div><div class="mono">${escapeHtml(r.giftcard_code || "")}</div>`;
     }
-
     let actions = "";
     if (r.status === "pending") {
-      actions = `
-        <div class="row-actions">
-          <button class="btn-approve" data-id="${r.id}" data-action="approve">Approve</button>
-          <button class="btn-reject"  data-id="${r.id}" data-action="reject">Reject</button>
-        </div>`;
+      actions = `<div class="row-actions"><button class="btn-approve" data-id="${r.id}" data-action="approve">Approve</button><button class="btn-reject" data-id="${r.id}" data-action="reject">Reject</button></div>`;
     } else {
       actions = `<small class="muted">${escapeHtml(r.admin_note || "")}</small>`;
     }
-
     tr.innerHTML = `
       <td>${fmtDate(r.created_at)}</td>
       <td>${escapeHtml(r.username || r.user_id || "")}</td>
@@ -337,7 +333,6 @@ function renderRows(rows) {
     `;
     tb.appendChild(tr);
   }
-
   tb.querySelectorAll("button[data-id]").forEach(btn => {
     btn.addEventListener("click", () => onAction(btn.dataset.id, btn.dataset.action));
   });
@@ -369,7 +364,6 @@ async function openAdminChat(order) {
   activeOrderId = order.id;
   $("adminChatPanel").classList.remove("hidden");
   $("adminChatTitle").textContent = `Chat with ${order.username || "user"}`;
-  // Update close button state
   const closeBtn = $("adminCloseOrderBtn");
   if (closeBtn) {
     const isClosed = order.status === "closed";
@@ -403,7 +397,6 @@ async function loadAdminChat(silent) {
       box.appendChild(line);
     }
     box.scrollTop = box.scrollHeight;
-
     const agreedPrice = data.agreed_price;
     const priceDisplay = $("adminAgreedPrice");
     if (priceDisplay) {
@@ -424,29 +417,15 @@ async function adminCloseOrder() {
   if (!activeOrderId) return;
   if (!confirm("Close this conversation? The user won't be able to send more messages.")) return;
   try {
-    await request("custom-orders", {
-      method: "POST",
-      body: JSON.stringify({ action: "close", order_id: activeOrderId })
-    });
-    // Reload chat to show the closing system message
+    await request("custom-orders", { method: "POST", body: JSON.stringify({ action: "close", order_id: activeOrderId }) });
     await loadAdminChat();
-    // Update button state
     const closeBtn = $("adminCloseOrderBtn");
-    if (closeBtn) {
-      closeBtn.disabled = true;
-      closeBtn.textContent = "🔒 Closed";
-      closeBtn.style.opacity = "0.45";
-    }
-    // Disable input
-    const input = $("adminChatInput");
-    const sendBtn = $("adminChatSend");
+    if (closeBtn) { closeBtn.disabled = true; closeBtn.textContent = "🔒 Closed"; closeBtn.style.opacity = "0.45"; }
+    const input = $("adminChatInput"); const sendBtn = $("adminChatSend");
     if (input) { input.disabled = true; input.placeholder = "Conversation closed"; }
     if (sendBtn) sendBtn.disabled = true;
-    // Refresh order list
     await refresh();
-  } catch (err) {
-    alert(err.message);
-  }
+  } catch (err) { alert(err.message); }
 }
 
 async function adminSetPrice() {
@@ -459,10 +438,7 @@ async function adminSetPrice() {
     return;
   }
   try {
-    await request("custom-orders", {
-      method: "POST",
-      body: JSON.stringify({ action: "set_price", order_id: activeOrderId, price })
-    });
+    await request("custom-orders", { method: "POST", body: JSON.stringify({ action: "set_price", order_id: activeOrderId, price }) });
     input.value = "";
     $("adminPriceMsg").textContent = "Price set!";
     $("adminPriceMsg").className = "msg success";
@@ -478,31 +454,19 @@ async function sendAdminChat() {
   const content = $("adminChatInput").value.trim();
   if (!content) return;
   try {
-    await request("custom-messages", {
-      method: "POST",
-      body: JSON.stringify({ order_id: activeOrderId, content })
-    });
+    await request("custom-messages", { method: "POST", body: JSON.stringify({ order_id: activeOrderId, content }) });
     $("adminChatInput").value = "";
     await loadAdminChat();
-  } catch (err) {
-    alert(err.message);
-  }
+  } catch (err) { alert(err.message); }
 }
 
 async function onAction(id, action) {
   let note = "";
-  if (action === "reject") {
-    note = prompt("Reason (optional):") || "";
-  }
+  if (action === "reject") { note = prompt("Reason (optional):") || ""; }
   try {
-    await request("purchase-approve", {
-      method: "POST",
-      body: JSON.stringify({ purchase_id: id, action, note })
-    });
+    await request("purchase-approve", { method: "POST", body: JSON.stringify({ purchase_id: id, action, note }) });
     await refresh();
-  } catch (err) {
-    alert(err.message);
-  }
+  } catch (err) { alert(err.message); }
 }
 
 function escapeHtml(s) {
@@ -517,25 +481,16 @@ function initBackground() {
   const ctx = canvas.getContext("2d");
   let w = 0, h = 0, stars = [];
   function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-    stars = Array.from({ length: 80 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      r: Math.random() * 1.4 + .35, d: Math.random() * .5 + .08
-    }));
+    w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight;
+    stars = Array.from({ length: 80 }, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.4 + .35, d: Math.random() * .5 + .08 }));
   }
   function draw() {
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = "rgba(255,255,255,.55)";
-    for (const s of stars) {
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
-      s.y += s.d; if (s.y > h) { s.y = 0; s.x = Math.random() * w; }
-    }
+    for (const s of stars) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill(); s.y += s.d; if (s.y > h) { s.y = 0; s.x = Math.random() * w; } }
     requestAnimationFrame(draw);
   }
-  resize();
-  window.addEventListener("resize", resize);
-  draw();
+  resize(); window.addEventListener("resize", resize); draw();
 }
 initBackground();
 tryEnter();
