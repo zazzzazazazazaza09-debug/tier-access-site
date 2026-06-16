@@ -54,45 +54,12 @@
   .main-btn, .ghost-btn { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.06) inset; }
 
   /* =================================================================
-     PHASE 7 — Dashboard redesign + mobile button
+     PHASE 7 — Dashboard redesign
      ================================================================= */
 
-  /* Mobile: compact pill with icon + label */
+  /* Cache le bouton original sur mobile — on le remplace par injection JS */
   @media (max-width: 600px) {
-    #tgServerFloat {
-      position: fixed !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      width: auto !important;
-      min-width: 0 !important;
-      max-width: none !important;
-      left: auto !important;
-      right: 12px !important;
-      bottom: 16px !important;
-      padding: 6px 11px 6px 8px !important;
-      border-radius: 100px !important;
-      gap: 5px !important;
-      font-size: 11px !important;
-      line-height: 1 !important;
-      opacity: 0.78 !important;
-      box-shadow: 0 2px 10px rgba(0,0,0,.4) !important;
-      box-sizing: border-box !important;
-    }
-    #tgServerFloat:hover, #tgServerFloat:active {
-      opacity: 1 !important;
-    }
-    #tgServerFloat .tg-float-label {
-      display: inline !important;
-      font-size: 11px !important;
-    }
-    #tgServerFloat .tg-float-icon svg {
-      width: 15px !important;
-      height: 15px !important;
-    }
-    #tgServerFloat .tg-float-pulse {
-      display: none !important;
-    }
+    #tgServerFloat { display: none !important; }
   }
 
   /* Hide old hero */
@@ -513,6 +480,52 @@
   function init() { document.querySelectorAll(CARD_SEL).forEach(ensureShine); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+}());
+
+/* ---- Mobile Join Server : on cache l'original et on injecte un bouton propre ---- */
+(function () {
+  if (window.innerWidth > 600) return;
+  function inject() {
+    if (document.getElementById('tgMiniBtn')) return;
+    // Cacher l'original de facon absolue
+    var orig = document.getElementById('tgServerFloat');
+    if (orig) orig.style.setProperty('display', 'none', 'important');
+    // Créer le nouveau bouton compact avec styles inline (rien ne peut les écraser)
+    var a = document.createElement('a');
+    a.id = 'tgMiniBtn';
+    a.href = 'https://t.me/+ZQDbceeZVUs0ODA8';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.innerHTML =
+      '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="flex-shrink:0;display:block">'
+      + '<path d="M9.78 15.28l-.28-4.05 8.9-8.03a.5.5 0 0 1 .8.38l-1.52 7.18-5.9 4.52zM9.78 15.28l-2.9 2.7a.5.5 0 0 1-.82-.35l.5-3.35 3.22.99z"/>'
+      + '</svg>Join Server';
+    var s = a.style;
+    s.position = 'fixed';
+    s.right = '12px';
+    s.bottom = '16px';
+    s.zIndex = '99999';
+    s.display = 'inline-flex';
+    s.alignItems = 'center';
+    s.gap = '5px';
+    s.padding = '6px 11px 6px 8px';
+    s.background = 'linear-gradient(135deg,#0088cc,#00a8e8)';
+    s.color = '#fff';
+    s.textDecoration = 'none';
+    s.borderRadius = '100px';
+    s.fontSize = '11px';
+    s.fontWeight = '600';
+    s.lineHeight = '1';
+    s.whiteSpace = 'nowrap';
+    s.opacity = '0.8';
+    s.boxShadow = '0 2px 10px rgba(0,0,0,.45)';
+    s.border = 'none';
+    s.outline = 'none';
+    document.body.appendChild(a);
+  }
+  // Exécuter après le chargement complet (y compris app.js)
+  if (document.readyState === 'complete') { inject(); }
+  else { window.addEventListener('load', inject); }
 }());
 
 (function () {
