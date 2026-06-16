@@ -275,6 +275,15 @@ async function loadMe() {
   const data = await request("me");
   currentUser = data.user;
 
+  // Display unread admin notifications as toast banners
+  if (data.notifications && data.notifications.length) {
+    setTimeout(() => {
+      data.notifications.forEach((n, i) => {
+        setTimeout(() => showAdminToast(n.message), i * 700);
+      });
+    }, 1200);
+  }
+
   try {
     const t = await request("tiers");
     serverTiers = t.tiers || [];
@@ -1495,6 +1504,14 @@ function showWelcomeAnimation(username, message) {
   $("welcomeContinue").onclick = close;
   overlay.onclick = (e) => { if (e.target === overlay) close(); };
   setTimeout(close, 6500);
+}
+
+function showAdminToast(msg) {
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;top:20px;right:20px;z-index:9999;background:rgba(8,10,28,.96);border:1px solid rgba(0,255,140,.45);border-radius:12px;padding:14px 18px;max-width:300px;color:#e8e8f0;font-size:.9rem;box-shadow:0 4px 28px rgba(0,0,0,.55);line-height:1.5";
+  d.innerHTML = '<div style="color:#00ff9c;font-weight:700;margin-bottom:5px">📬 Message from Admin<\/div><div>' + String(msg).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<\/div>';
+  document.body.appendChild(d);
+  setTimeout(() => { d.style.transition = "opacity .5s"; d.style.opacity = "0"; setTimeout(() => d.remove(), 600); }, 9000);
 }
 
 /* ================================================================
