@@ -24,6 +24,55 @@ function dateKey(d) {
 }
 
 module.exports = async function handler(req, res) {
+  // ---- POST: ban operations ----
+  if (req.method === "POST") {
+    try {
+      const auth = verifyAuth(req);
+      const supabase = getSupabase();
+      await requireAdmin(supabase, auth.id);
+
+      const body = req.body || {};
+      const action = String(body.action || "").trim();
+
+      if (action === "ban_lookup") {
+        const username = String(body.username || "").trim();
+        if (!username) return send(res, 400, { error: "username required" });
+        const { data: target } = await supabase
+          .from("profiles")
+          .select("id, username, is_banned")
+          .ilike("username", username)
+          .maybeSingle();
+        if (!target) return send(res, 404, { error: "User not found" });
+        return send(res, 200, { user: target });
+      }
+
+      if (action === "ban" || action === "unban") {
+        const username = String(body.username || "").trim();
+        if (!username) return send(res, 400, { error: "username required" });
+        const { data: target, error: findErr } = await supabase
+          .from("profiles")
+          .select("id, username, is_admin, is_banned")
+          .ilike("username", username)
+          .maybeSingle();
+        if (findErr) throw findErr;
+        if (!target) return send(res, 404, { error: "User not found" });
+        if (target.is_admin) return send(res, 400, { error: "Cannot ban an admin account" });
+        const newBanned = action !== "unban";
+        const { error: updErr } = await supabase
+          .from("profiles")
+          .update({ is_banned: newBanned })
+          .eq("id", target.id);
+        if (updErr) throw updErr;
+        return send(res, 200, { ok: true, username: target.username, banned: newBanned });
+      }
+
+      return send(res, 400, { error: "Unknown action" });
+    } catch (err) {
+      return send(res, err.status || 500, { error: err.message || "Server error" });
+    }
+  }
+
+  // ---- GET: dashboard stats ----
   if (req.method !== "GET") {
     return send(res, 405, { error: "Method not allowed" });
   }
@@ -37,13 +86,12 @@ module.exports = async function handler(req, res) {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfWeek = new Date(startOfToday);
-    startOfWeek.setDate(startOfWeek.getDate() - 6); // last 7 days incl. today
+    startOfWeek.setDate(startOfWeek.getDate() - 6);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const seriesStart = new Date(startOfToday);
     seriesStart.setDate(seriesStart.getDate() - (SERIES_DAYS - 1));
 
-    // --- Users ---
     const { count: totalUsers } = await supabase
       .from("profiles")
       .select("id", { count: "exact", head: true });
@@ -63,7 +111,6 @@ module.exports = async function handler(req, res) {
       .select("id", { count: "exact", head: true })
       .eq("is_admin", true);
 
-    // --- Online now (best-effort — column may not exist yet) ---
     let onlineNow = 0;
     try {
       const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000);
@@ -76,7 +123,6 @@ module.exports = async function handler(req, res) {
       onlineNow = 0;
     }
 
-    // --- Referrals, unlocked tiers & signup series (need per-row data) ---
     const { data: profiles, error: profilesErr } = await supabase
       .from("profiles")
       .select("referrals_count, reward_unlocked, unlocked_tiers, referred_by, created_at");
@@ -114,7 +160,6 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // --- Purchases ---
     const { data: purchases, error: purchasesErr } = await supabase
       .from("purchases")
       .select("status, amount_usd, method, is_custom, created_at");
@@ -173,7 +218,6 @@ module.exports = async function handler(req, res) {
       revenueSeries[key] = round2(revenueSeries[key]);
     }
 
-    // --- Custom orders ---
     const { count: openOrders } = await supabase
       .from("custom_orders")
       .select("id", { count: "exact", head: true })

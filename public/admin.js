@@ -121,7 +121,10 @@ async function banLookup() {
   $("unbanBtn").disabled = true;
   banLookupTarget = null;
   try {
-    const data = await request(`admin-ban?username=${encodeURIComponent(username)}`);
+    const data = await request("admin-stats", {
+      method: "POST",
+      body: JSON.stringify({ action: "ban_lookup", username })
+    });
     const u = data.user;
     banLookupTarget = u;
     const badge = u.is_banned
@@ -142,9 +145,9 @@ async function doBan(action) {
   if (!confirm(`${label.charAt(0).toUpperCase() + label.slice(1)} user "${banLookupTarget.username}"?`)) return;
   const res = $("banResult");
   try {
-    const data = await request("admin-ban", {
+    const data = await request("admin-stats", {
       method: "POST",
-      body: JSON.stringify({ username: banLookupTarget.username, action })
+      body: JSON.stringify({ action, username: banLookupTarget.username })
     });
     banLookupTarget.is_banned = data.banned;
     const badge = data.banned
@@ -262,7 +265,7 @@ function renderCharts(s) {
     });
   }
 
-  const revenueCanvas = $("revenueChart");
+  const revenueCanvas = $("revenueCanvas");
   if (revenueCanvas) {
     if (revenueChartInstance) revenueChartInstance.destroy();
     revenueChartInstance = new Chart(revenueCanvas.getContext("2d"), {

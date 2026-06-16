@@ -1,2 +1,3 @@
 api/stats.js
 api/heartbeat.js
+api/admin-ban.js
