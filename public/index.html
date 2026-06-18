@@ -146,11 +146,9 @@
   .tier-card[data-color="silver"] .feature-list li::before { color: #c8cad8; }
   .tier-card[data-color="silver"] .tier-size strong { color: #c8cad8; }
 
-  /* Starter section wrapper */
   #starterTierWrap { margin-bottom: 4px; }
   .starter-label { margin-bottom: 14px !important; color: #b0f0c0 !important; }
 
-  /* Starter grid: single centered card, max ~460px wide */
   .starter-grid {
     display: grid !important;
     grid-template-columns: minmax(260px, 460px) !important;
@@ -158,7 +156,6 @@
     margin-bottom: 6px !important;
   }
 
-  /* Starter card: dashed border to feel "apart" */
   .starter-card {
     border-style: dashed !important;
     border-color: rgba(176,240,192,.35) !important;
@@ -168,7 +165,6 @@
   .starter-card .feature-list li::before { color: #b0f0c0 !important; }
   .starter-card .tier-size strong { color: #b0f0c0 !important; }
 
-  /* Full-width single invite button */
   .btn-invites-full {
     width: 100% !important;
     background: linear-gradient(90deg, rgba(0,255,156,.18), rgba(0,180,110,.22)) !important;
@@ -182,22 +178,61 @@
     border-color: rgba(0,255,156,.5) !important;
   }
 
-  /* Free badge */
   .tier-badge.free-badge { color: #7dffbf; border-color: rgba(0,255,156,.35); background: rgba(0,255,156,.12); }
 
-  /* Divider between starter and main grid */
   .starter-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
     margin: 20px 0 28px;
   }
 
-  /* Subtitle text */
   .tier-subtitle {
     font-size: .8rem; color: #a1a1c2;
     line-height: 1.45; margin: -6px 0 14px;
     font-style: italic;
   }
+
+  /* =================================================================
+     ADMIN CHAT FLOAT BUTTON
+     ================================================================= */
+  #adminChatFloat {
+    position: fixed;
+    bottom: 90px;
+    right: 18px;
+    z-index: 1001;
+  }
+  #adminChatFloat.hidden { display: none !important; }
+  #adminChatFloatBtn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7b2ff7 0%, #00b4d8 100%);
+    border: 1px solid rgba(0,245,255,.35);
+    color: #fff; font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(123,47,247,.55);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  }
+  #adminChatFloatBtn:hover { transform: scale(1.12); box-shadow: 0 6px 28px rgba(123,47,247,.75); }
+  #adminChatFloat.has-new #adminChatFloatBtn {
+    animation: admin-float-pulse 2s ease-in-out infinite;
+  }
+  @keyframes admin-float-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(123,47,247,.55), 0 0 0 0 rgba(0,245,255,.5); }
+    50%       { box-shadow: 0 4px 20px rgba(123,47,247,.8),  0 0 0 8px rgba(0,245,255,.0); }
+  }
+  #adminChatBadge {
+    position: absolute; top: -3px; right: -3px;
+    background: #ff4060; color: #fff;
+    font-size: .62rem; font-weight: 800;
+    min-width: 18px; height: 18px;
+    border-radius: 9px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #0a0a1e;
+    line-height: 1;
+  }
+  #adminChatBadge.hidden { display: none !important; }
   </style>
 </head>
 
@@ -211,6 +246,14 @@
   </span>
   <span class="tg-float-label">Join Server</span>
 </a>
+
+<!-- Admin chat float button (shown when there are admin messages) -->
+<div id="adminChatFloat" class="hidden">
+  <button type="button" id="adminChatFloatBtn" title="Messages from admin">
+    📬
+    <span id="adminChatBadge" class="hidden">0</span>
+  </button>
+</div>
 
 <main class="app">
   <section id="entryPage" class="entry-page">
@@ -383,6 +426,7 @@
       </div>
     </section>
 
+    <!-- Purchase modal -->
     <div id="purchaseModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
@@ -429,6 +473,7 @@
       </div>
     </div>
 
+    <!-- Custom order modal -->
     <div id="customOrderModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
@@ -442,6 +487,7 @@
       </div>
     </div>
 
+    <!-- Custom order chat modal -->
     <div id="chatModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card chat-modal-card">
         <header class="modal-head">
@@ -457,6 +503,21 @@
       </div>
     </div>
 
+    <!-- Admin messages chat modal -->
+    <div id="adminChatModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card chat-modal-card">
+        <header class="modal-head">
+          <div>
+            <h2>📬 Messages from Admin</h2>
+            <p class="muted">Official messages from the Nonaxion team</p>
+          </div>
+          <button class="modal-close" type="button" id="adminChatClose" aria-label="Close">×</button>
+        </header>
+        <div id="adminChatMessages" class="chat-messages"></div>
+      </div>
+    </div>
+
+    <!-- Choice modal -->
     <div id="choiceModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card small">
         <header class="modal-head">
@@ -469,6 +530,7 @@
       </div>
     </div>
 
+    <!-- Share guide modal -->
     <div id="shareGuideModal" class="modal hidden" role="dialog" aria-modal="true">
       <div class="modal-card">
         <header class="modal-head">
@@ -587,6 +649,10 @@
         setVal('p7Since', fmtSince(data.user.created_at));
         if (data.user.username) { setVal('p7Username', data.user.username); setVal('p7Avatar', data.user.username.charAt(0).toUpperCase()); }
         if (data.user.is_banned) applyBan();
+        // Save any notifications fetched here so loadMe() can pick them up
+        if (data.notifications && data.notifications.length) {
+          window.__earlyNotifs = (window.__earlyNotifs || []).concat(data.notifications);
+        }
       }).catch(function () {});
   }
 }());

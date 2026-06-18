@@ -16,12 +16,6 @@ let myOpenOrders = [];
 let orderPollTimer = null;
 let heartbeatTimer = null;
 
-let notifQueue = [];
-let notifShown = [];
-let notifQueueTimer = null;
-let unreadChatOrderIds = new Set();
-let lastSeenMsgIds = {};
-
 const params = new URLSearchParams(window.location.search);
 const refFromUrl = params.get("invite") || params.get("ref");
 
@@ -46,6 +40,11 @@ function escapeHtml(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function uniqueById(arr) {
+  const seen = new Set();
+  return arr.filter(x => { if (seen.has(x.id)) return false; seen.add(x.id); return true; });
 }
 
 function getDeviceId() {
@@ -154,87 +153,80 @@ function initAuth() {
 function showFlash(msg) { setTimeout(() => alert(msg), 50); }
 
 /* ================================================================
-   ADMIN NOTIFICATIONS
+   ADMIN CHAT — localStorage-backed side panel
 ================================================================ */
-function showAdminNotifications(notifs) {
-  if (!notifs || !notifs.length) return;
-
-  let wrap = $("adminNotifWrap");
-  if (!wrap) {
-    wrap = document.createElement("div");
-    wrap.id = "adminNotifWrap";
-    Object.assign(wrap.style, {
-      position: "fixed",
-      top: "72px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      zIndex: "9999",
-      display: "flex",
-      flexDirection: "column",
-      gap: "10px",
-      width: "min(92vw, 500px)",
-      pointerEvents: "none"
-    });
-    document.body.appendChild(wrap);
+function saveAdminMessages(userId, msgs) {
+  const key = `admin_msgs_${userId}`;
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const existingIds = new Set(existing.map(m => m.id));
+  let added = 0;
+  for (const m of (msgs || [])) {
+    if (!existingIds.has(m.id)) { existing.unshift(m); added++; }
   }
+  existing.splice(100); // keep max 100
+  localStorage.setItem(key, JSON.stringify(existing));
+  return { all: existing, added };
+}
 
-  for (const n of notifs) {
-    const banner = document.createElement("div");
-    Object.assign(banner.style, {
-      background: "linear-gradient(135deg, rgba(123,47,247,.28), rgba(0,245,255,.13))",
-      border: "1px solid rgba(0,245,255,.4)",
-      borderRadius: "14px",
-      padding: "14px 16px 12px",
-      color: "#e8e8f0",
-      fontSize: ".9rem",
-      lineHeight: "1.5",
-      pointerEvents: "all",
-      position: "relative",
-      backdropFilter: "blur(14px)",
-      boxShadow: "0 8px 32px rgba(0,0,0,.5)",
-      animation: "notifSlideIn .3s cubic-bezier(.34,1.56,.64,1)"
-    });
+function getAdminMessages(userId) {
+  return JSON.parse(localStorage.getItem(`admin_msgs_${userId}`) || '[]');
+}
 
-    const header = document.createElement("div");
-    Object.assign(header.style, { display: "flex", alignItems: "flex-start", gap: "10px" });
+function getAdminUnseenCount(userId) {
+  const msgs = getAdminMessages(userId);
+  if (!msgs.length) return 0;
+  const seenAt = localStorage.getItem(`admin_msgs_seen_${userId}`);
+  if (!seenAt) return msgs.length;
+  return msgs.filter(m => new Date(m.created_at) > new Date(seenAt)).length;
+}
 
-    const icon = document.createElement("span");
-    icon.textContent = "📬";
-    icon.style.cssText = "font-size:1.2rem;flex-shrink:0;margin-top:1px";
+function markAdminMessagesSeen(userId) {
+  localStorage.setItem(`admin_msgs_seen_${userId}`, new Date().toISOString());
+}
 
-    const body = document.createElement("div");
-    body.style.flex = "1";
-
-    const label = document.createElement("div");
-    label.textContent = "Message from Admin";
-    Object.assign(label.style, { fontSize: ".7rem", color: "#00f5ff", textTransform: "uppercase", letterSpacing: ".1em", fontWeight: "700", marginBottom: "5px" });
-
-    const msg = document.createElement("div");
-    msg.textContent = n.message;
-
-    const time = document.createElement("div");
-    time.textContent = new Date(n.created_at).toLocaleString();
-    Object.assign(time.style, { fontSize: ".72rem", color: "rgba(161,161,194,.6)", marginTop: "5px" });
-
-    body.appendChild(label);
-    body.appendChild(msg);
-    body.appendChild(time);
-
-    const closeBtn = document.createElement("button");
-    closeBtn.textContent = "×";
-    Object.assign(closeBtn.style, { background: "none", border: "none", color: "rgba(161,161,194,.7)", cursor: "pointer", fontSize: "1.3rem", padding: "0", lineHeight: "1", flexShrink: "0" });
-    closeBtn.title = "Dismiss";
-    closeBtn.addEventListener("click", () => banner.remove());
-
-    header.appendChild(icon);
-    header.appendChild(body);
-    header.appendChild(closeBtn);
-    banner.appendChild(header);
-    wrap.appendChild(banner);
-
-    // Auto-dismiss after 60s
-    setTimeout(() => banner.remove(), 60000);
+function updateAdminChatBadge(userId) {
+  const count = getAdminUnseenCount(userId);
+  const msgs = getAdminMessages(userId);
+  const floatWrap = $("adminChatFloat");
+  const badge = $("adminChatBadge");
+  if (!floatWrap || !badge) return;
+  if (msgs.length > 0) {
+    floatWrap.classList.remove("hidden");
+    if (count > 0) {
+      badge.textContent = count > 9 ? "9+" : String(count);
+      badge.classList.remove("hidden");
+      floatWrap.classList.add("has-new");
+    } else {
+      badge.classList.add("hidden");
+      floatWrap.classList.remove("has-new");
+    }
+  } else {
+    floatWrap.classList.add("hidden");
   }
+}
+
+function openAdminChat() {
+  if (!currentUser) return;
+  const msgs = getAdminMessages(currentUser.id);
+  const box = $("adminChatMessages");
+  box.innerHTML = "";
+  if (!msgs.length) {
+    box.appendChild(el("p", { class: "muted", style: "text-align:center;padding:32px 16px" }, "No messages yet."));
+  } else {
+    for (const m of [...msgs].reverse()) {
+      const bubble = el("div", { class: "chat-bubble admin" }, m.message);
+      const time = el("div", { class: "chat-time" }, formatTime(m.created_at));
+      box.appendChild(el("div", { class: "chat-line admin" }, [bubble, time]));
+    }
+    setTimeout(() => { box.scrollTop = box.scrollHeight; }, 0);
+  }
+  $("adminChatModal").classList.remove("hidden");
+  markAdminMessagesSeen(currentUser.id);
+  updateAdminChatBadge(currentUser.id);
+}
+
+function closeAdminChat() {
+  $("adminChatModal").classList.add("hidden");
 }
 
 /* ================================================================
@@ -244,10 +236,32 @@ async function loadMe() {
   const data = await request("me");
   currentUser = data.user;
 
-  // Show any unread admin messages
-  if (data.notifications && data.notifications.length) {
-    showAdminNotifications(data.notifications);
+  // Merge notifications from concurrent inline-script fetch (race condition fix)
+  const earlyNotifs = window.__earlyNotifs || [];
+  window.__earlyNotifs = null;
+  const allNotifs = uniqueById([...(data.notifications || []), ...earlyNotifs]);
+  if (allNotifs.length) {
+    const { added } = saveAdminMessages(currentUser.id, allNotifs);
+    if (added > 0) updateAdminChatBadge(currentUser.id);
   }
+  // Always refresh badge from localStorage (handles page-reload case)
+  updateAdminChatBadge(currentUser.id);
+
+  // Poll for new admin messages every 30s
+  (function notifPoll() {
+    setTimeout(async () => {
+      if (!currentUser) return;
+      try {
+        const d = await request("me");
+        const n = d.notifications || [];
+        if (n.length) {
+          const { added } = saveAdminMessages(currentUser.id, n);
+          if (added > 0) updateAdminChatBadge(currentUser.id);
+        }
+      } catch (_) {}
+      notifPoll();
+    }, 30000);
+  })();
 
   try {
     const t = await request("tiers");
@@ -310,7 +324,6 @@ function renderTierGrid() {
   const starterTiers = CFG.tiers.filter(t => t.payDisabled);
   const mainTiers    = CFG.tiers.filter(t => !t.payDisabled);
 
-  // ---- Starter section (above main grid) ----
   let starterWrap = $("starterTierWrap");
   if (!starterWrap) {
     starterWrap = document.createElement("div");
@@ -319,7 +332,6 @@ function renderTierGrid() {
   }
   starterWrap.innerHTML = "";
 
-  // Remove any previously injected main label to avoid duplicates
   const oldLabel = $("mainTiersLabel");
   if (oldLabel) oldLabel.remove();
 
@@ -360,11 +372,9 @@ function renderTierGrid() {
     starterWrap.appendChild(el("div", { class: "starter-divider" }));
   }
 
-  // ---- Label for main tiers ----
   const mainLabel = el("div", { id: "mainTiersLabel", class: "drawer-section-inline" }, "STANDARD TIERS");
   grid.parentElement.insertBefore(mainLabel, grid);
 
-  // ---- Main tiers ----
   for (const t of mainTiers) {
     const card = el("div", { class: "tier-card", data: { color: t.color, tierId: t.id } });
     const access = hasAccess(t.id);
@@ -872,6 +882,12 @@ function bindStaticUI() {
     btn.addEventListener("click", () => switchPanelSection(btn.dataset.section));
   });
 
+  // Admin chat float + modal
+  const acfBtn = $("adminChatFloatBtn");
+  if (acfBtn) acfBtn.addEventListener("click", openAdminChat);
+  const acClose = $("adminChatClose");
+  if (acClose) acClose.addEventListener("click", closeAdminChat);
+
   $("copyLinkBtn").addEventListener("click", async () => { await copyToClipboard($("refLink").value, $("copyMsg")); });
   $("modalClose").addEventListener("click", closePurchaseModal);
   document.querySelectorAll(".modal-tab").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
@@ -883,7 +899,6 @@ function bindStaticUI() {
   $("cryptoSubmit").addEventListener("click", submitCrypto);
   bindChoiceClose();
 
-  // Share guide modal
   const howToShareBtn = $("howToShareBtn");
   if (howToShareBtn) {
     howToShareBtn.addEventListener("click", () => $("shareGuideModal").classList.remove("hidden"));
