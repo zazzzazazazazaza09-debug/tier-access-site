@@ -202,6 +202,11 @@ function hasAccess(tierId) {
   return cfg ? refs >= cfg.invitesRequired : false;
 }
 
+function switchPanelSection(section) {
+  document.querySelectorAll(".panel-tab").forEach(b => b.classList.toggle("active", b.dataset.section === section));
+  document.querySelectorAll(".panel-section").forEach(p => p.classList.toggle("hidden", p.dataset.section !== section));
+}
+
 function renderTierGrid() {
   const grid = $("tierGrid");
   grid.innerHTML = "";
@@ -218,6 +223,10 @@ function renderTierGrid() {
     grid.parentElement.insertBefore(starterWrap, grid);
   }
   starterWrap.innerHTML = "";
+
+  // Remove any previously injected main label to avoid duplicates
+  const oldLabel = $("mainTiersLabel");
+  if (oldLabel) oldLabel.remove();
 
   if (starterTiers.length) {
     starterWrap.appendChild(el("div", { class: "drawer-section-inline starter-label" }, "🎁 FREE STARTER — INVITE ONLY"));
@@ -257,7 +266,7 @@ function renderTierGrid() {
   }
 
   // ---- Label for main tiers ----
-  const mainLabel = el("div", { class: "drawer-section-inline" }, "STANDARD TIERS");
+  const mainLabel = el("div", { id: "mainTiersLabel", class: "drawer-section-inline" }, "STANDARD TIERS");
   grid.parentElement.insertBefore(mainLabel, grid);
 
   // ---- Main tiers ----
@@ -325,9 +334,7 @@ async function onInviteButton(tier) {
     return;
   }
   if (tier.payDisabled) {
-    // No payment — redirect to the invite tab
-    const invTab = document.querySelector('.panel-tab[data-section="invites"]');
-    if (invTab) invTab.click();
+    switchPanelSection("invites");
     return;
   }
   openPurchaseModal(tier);
@@ -507,9 +514,9 @@ function handleDrawerAction(action) {
   switch (action) {
     case "home": window.scrollTo({ top: 0, behavior: "smooth" }); break;
     case "preview": window.open("https://mega.nz/folder/dyUkiRyD#ooS0qN64DOXkSuli8BXL1A", "_blank", "noopener,noreferrer"); break;
-    case "menu": document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth", block: "start" }); break;
-    case "more-videos": document.getElementById("customPackSection")?.scrollIntoView({ behavior: "smooth" }); break;
-    case "invites": document.querySelector(".referral-card")?.scrollIntoView({ behavior: "smooth" }); break;
+    case "menu": switchPanelSection("custom"); break;
+    case "more-videos": switchPanelSection("custom"); break;
+    case "invites": switchPanelSection("invites"); break;
     case "reviews": alert("Reviews section is coming soon."); break;
     case "support": window.open(CFG.telegramBot, "_blank"); break;
     case "logout": localStorage.removeItem("token"); window.location.reload(); break;
@@ -765,6 +772,11 @@ function initNotifications() {
    STATIC BINDS
 ================================================================ */
 function bindStaticUI() {
+  // Panel tab switching
+  document.querySelectorAll(".panel-tab").forEach(btn => {
+    btn.addEventListener("click", () => switchPanelSection(btn.dataset.section));
+  });
+
   $("copyLinkBtn").addEventListener("click", async () => { await copyToClipboard($("refLink").value, $("copyMsg")); });
   $("modalClose").addEventListener("click", closePurchaseModal);
   document.querySelectorAll(".modal-tab").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
@@ -775,6 +787,13 @@ function bindStaticUI() {
   $("cryptoRefresh").addEventListener("click", () => { renderCryptoTickers(); applyCrypto(activeCrypto); });
   $("cryptoSubmit").addEventListener("click", submitCrypto);
   bindChoiceClose();
+
+  // Share guide modal
+  const howToShareBtn = $("howToShareBtn");
+  if (howToShareBtn) {
+    howToShareBtn.addEventListener("click", () => $("shareGuideModal").classList.remove("hidden"));
+    $("shareGuideClose").addEventListener("click", () => $("shareGuideModal").classList.add("hidden"));
+  }
 }
 
 /* ================================================================
