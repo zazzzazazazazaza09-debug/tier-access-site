@@ -42,6 +42,12 @@ function el(tag, props = {}, children = []) {
   return node;
 }
 
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function getDeviceId() {
   let deviceId = localStorage.getItem("device_id");
   if (!deviceId) {
@@ -148,11 +154,100 @@ function initAuth() {
 function showFlash(msg) { setTimeout(() => alert(msg), 50); }
 
 /* ================================================================
+   ADMIN NOTIFICATIONS
+================================================================ */
+function showAdminNotifications(notifs) {
+  if (!notifs || !notifs.length) return;
+
+  let wrap = $("adminNotifWrap");
+  if (!wrap) {
+    wrap = document.createElement("div");
+    wrap.id = "adminNotifWrap";
+    Object.assign(wrap.style, {
+      position: "fixed",
+      top: "72px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      zIndex: "9999",
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px",
+      width: "min(92vw, 500px)",
+      pointerEvents: "none"
+    });
+    document.body.appendChild(wrap);
+  }
+
+  for (const n of notifs) {
+    const banner = document.createElement("div");
+    Object.assign(banner.style, {
+      background: "linear-gradient(135deg, rgba(123,47,247,.28), rgba(0,245,255,.13))",
+      border: "1px solid rgba(0,245,255,.4)",
+      borderRadius: "14px",
+      padding: "14px 16px 12px",
+      color: "#e8e8f0",
+      fontSize: ".9rem",
+      lineHeight: "1.5",
+      pointerEvents: "all",
+      position: "relative",
+      backdropFilter: "blur(14px)",
+      boxShadow: "0 8px 32px rgba(0,0,0,.5)",
+      animation: "notifSlideIn .3s cubic-bezier(.34,1.56,.64,1)"
+    });
+
+    const header = document.createElement("div");
+    Object.assign(header.style, { display: "flex", alignItems: "flex-start", gap: "10px" });
+
+    const icon = document.createElement("span");
+    icon.textContent = "📬";
+    icon.style.cssText = "font-size:1.2rem;flex-shrink:0;margin-top:1px";
+
+    const body = document.createElement("div");
+    body.style.flex = "1";
+
+    const label = document.createElement("div");
+    label.textContent = "Message from Admin";
+    Object.assign(label.style, { fontSize: ".7rem", color: "#00f5ff", textTransform: "uppercase", letterSpacing: ".1em", fontWeight: "700", marginBottom: "5px" });
+
+    const msg = document.createElement("div");
+    msg.textContent = n.message;
+
+    const time = document.createElement("div");
+    time.textContent = new Date(n.created_at).toLocaleString();
+    Object.assign(time.style, { fontSize: ".72rem", color: "rgba(161,161,194,.6)", marginTop: "5px" });
+
+    body.appendChild(label);
+    body.appendChild(msg);
+    body.appendChild(time);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "×";
+    Object.assign(closeBtn.style, { background: "none", border: "none", color: "rgba(161,161,194,.7)", cursor: "pointer", fontSize: "1.3rem", padding: "0", lineHeight: "1", flexShrink: "0" });
+    closeBtn.title = "Dismiss";
+    closeBtn.addEventListener("click", () => banner.remove());
+
+    header.appendChild(icon);
+    header.appendChild(body);
+    header.appendChild(closeBtn);
+    banner.appendChild(header);
+    wrap.appendChild(banner);
+
+    // Auto-dismiss after 60s
+    setTimeout(() => banner.remove(), 60000);
+  }
+}
+
+/* ================================================================
    PANEL
 ================================================================ */
 async function loadMe() {
   const data = await request("me");
   currentUser = data.user;
+
+  // Show any unread admin messages
+  if (data.notifications && data.notifications.length) {
+    showAdminNotifications(data.notifications);
+  }
 
   try {
     const t = await request("tiers");
