@@ -165,6 +165,21 @@
     .p6-shine { display: none !important; }
     .p7-profile { animation: none !important; }
   }
+
+  /* =================================================================
+     TIER 0.5 — silver/starter tier + subtitle
+     ================================================================= */
+  .tier-card[data-color="silver"] h3 { color: #c8cad8; }
+  .tier-card[data-color="silver"] .feature-list li::before { color: #c8cad8; }
+  .tier-card[data-color="silver"] .tier-size strong { color: #c8cad8; }
+  .tier-card[data-color="silver"] .btn-buy { background: linear-gradient(90deg, #8a8ca8, #6b6d86); }
+  .tier-subtitle {
+    font-size: .8rem;
+    color: #a1a1c2;
+    line-height: 1.45;
+    margin: -6px 0 14px;
+    font-style: italic;
+  }
   </style>
 </head>
 
@@ -300,7 +315,7 @@
         <div id="tierGrid" class="tier-grid"></div>
         <div class="howto-card">
           <h3>How to Purchase</h3>
-          <p class="muted">Click "Buy" on any tier to submit your payment. Your payment will be reviewed within 5–10 minutes. Once confirmed, you'll get immediate access.<br /><br />Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.<br />Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.</p>
+          <p class="muted">Click &ldquo;Buy&rdquo; on any tier to submit your payment. Your payment will be reviewed within 5&ndash;10 minutes. Once confirmed, you'll get immediate access.<br /><br />Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.<br />Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.</p>
         </div>
       </div>
 
