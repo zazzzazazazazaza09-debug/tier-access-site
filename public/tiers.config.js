@@ -1,23 +1,13 @@
 /* =====================================================================
-   SITE CONFIG — single place to edit tier names, prices, links, copy.
-   You can rename tiers, change prices, change referral thresholds and
-   replace placeholder unlock links right here.
-   The same values are used by the admin panel and by the API
-   (see api/_tiers.js — keep both in sync if you change something
-    that the server validates: priceUSD and invitesRequired).
+   SITE CONFIG
    =====================================================================*/
 window.SITE_CONFIG = {
   siteName: "Nonaxion Access",
   siteTagline: "Choose your path: Invite friends or purchase instantly!",
 
-  // Telegram bot kept as a fallback — shown in sidebar (Support) and
-  // on the purchase modal as an alternative.
   telegramBot: "https://t.me/Nonaxionbot",
-
-  // Telegram server/community — floating button on the right side.
   telegramServer: "https://t.me/+ZQDbceeZVUs0ODA8",
 
-  // Crypto deposit addresses (middle-man wallet — edit if needed).
   crypto: {
     BTC:  "bc1qrsppgkupuefkf4n562kp0jvus3uk5zmhhvu9t7",
     LTC:  "LMLaJQA9hgz1igXSeL9uQ5NGyViw1gc5TU",
@@ -25,9 +15,6 @@ window.SITE_CONFIG = {
     SOL:  "5y6XhkYWqoDDVJLXCLAHW7wtEdkV7wvEfJg3XRrtRmhe"
   },
 
-  // Indicative USD → crypto conversion rates. Edit when you need a
-  // refresh — these are only used for display ("≈ X BTC"). The amount
-  // the user actually owes is the USD price of the tier.
   cryptoRates: {
     BTC:  0.00001586,
     ETH:  0.00060430,
@@ -35,9 +22,6 @@ window.SITE_CONFIG = {
     SOL:  0.15260200
   },
 
-  // Gift card platforms shown in the modal.
-  // Clicking a platform opens the store with a "paypal" search.
-  // Add or remove entries here — each needs name, note, and url.
   giftCardPlatforms: [
     { name: "G2A",     note: "Gift Card", url: "https://www.g2a.com/search?query=paypal" },
     { name: "Eneba",   note: "Gift Card", url: "https://www.eneba.com/store/all?text=paypal" },
@@ -45,7 +29,6 @@ window.SITE_CONFIG = {
     { name: "Driffle", note: "Gift Card", url: "https://driffle.com/search?q=paypal" }
   ],
 
-  // ----- CUSTOM PACK (build your own — not a tier) -----
   customPack: {
     title: "Custom Pack",
     subtitle: "Pick a category, choose your size, pay instantly.",
@@ -66,7 +49,6 @@ window.SITE_CONFIG = {
       { id: "1tb",   label: "1 TB",   popular: false, mega: false },
       { id: "5tb",   label: "5 TB",   popular: false, mega: true  }
     ],
-    // priceUSD + originalUSD per category × size (keep in sync with api/_custom.js)
     prices: {
       1: { "25gb":  { price: 12,  original: 18  }, "50gb":  { price: 30,  original: 45  }, "100gb": { price: 58,  original: 85  }, "250gb": { price: 95,  original: 140 }, "500gb": { price: 145, original: 210 }, "1tb":   { price: 185, original: 270 }, "5tb":   { price: 250, original: 350 } },
       2: { "25gb":  { price: 14,  original: 20  }, "50gb":  { price: 34,  original: 50  }, "100gb": { price: 62,  original: 90  }, "250gb": { price: 105, original: 155 }, "500gb": { price: 155, original: 225 }, "1tb":   { price: 200, original: 290 }, "5tb":   { price: 260, original: 370 } },
@@ -77,18 +59,14 @@ window.SITE_CONFIG = {
     }
   },
 
-  // ----- TIERS -----
-  // Edit name, priceUSD, invitesRequired, totalSize, color, features,
-  // and unlockUrl freely.
-  // unlockUrl is what the user gets when they have access (via referrals
-  // OR a purchase approved by an admin).
   tiers: [
     {
       id: 0,
       name: "Tier 0.5",
       subtitle: "For those who don't want to spend money and don't have a lot of people to share their link with.",
-      priceUSD: 5,
+      priceUSD: 0,
       invitesRequired: 2,
+      payDisabled: true,
       totalSize: "10 GB",
       color: "silver",
       features: [
