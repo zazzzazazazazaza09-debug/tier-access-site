@@ -18,9 +18,7 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  if (req.method !== "GET") {
-    return send(res, 405, { error: "Method not allowed" });
-  }
+  if (req.method !== "GET") return send(res, 405, { error: "Method not allowed" });
 
   try {
     const auth = verifyAuth(req);
@@ -34,14 +32,32 @@ module.exports = async function handler(req, res) {
 
     if (!user) return send(res, 404, { error: "User not found" });
 
-    await supabase
-      .from("profiles")
-      .update({ last_seen: new Date().toISOString() })
-      .eq("id", auth.id);
+    await supabase.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", auth.id);
 
-    // NOTE: notifications are now fetched via GET /api/notifications (separate endpoint)
-    // to avoid race conditions with the inline stats script that also calls /api/me.
-    return send(res, 200, { user, notifications: [] });
+    // Notifications only fetched when ?with_notifications=1
+    // This avoids a race condition with the inline stats script that also calls /api/me
+    let notifications = [];
+    if (req.query && req.query.with_notifications === "1") {
+      try {
+        const { data: notifs } = await supabase
+          .from("admin_notifications")
+          .select("id, message, created_at")
+          .eq("user_id", user.id)
+          .is("read_at", null)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (notifs && notifs.length) {
+          notifications = notifs;
+          await supabase
+            .from("admin_notifications")
+            .update({ read_at: new Date().toISOString() })
+            .eq("user_id", user.id)
+            .is("read_at", null);
+        }
+      } catch (_) {}
+    }
+
+    return send(res, 200, { user, notifications });
   } catch (err) {
     return send(res, 401, { error: err.message || "Unauthorized" });
   }

@@ -128,18 +128,12 @@ function saveAdminMessages(userId, msgs) {
   const existing = JSON.parse(localStorage.getItem(key) || '[]');
   const existingIds = new Set(existing.map(m => m.id));
   let added = 0;
-  for (const m of (msgs || [])) {
-    if (!existingIds.has(m.id)) { existing.unshift(m); added++; }
-  }
+  for (const m of (msgs || [])) { if (!existingIds.has(m.id)) { existing.unshift(m); added++; } }
   existing.splice(100);
   localStorage.setItem(key, JSON.stringify(existing));
   return { all: existing, added };
 }
-
-function getAdminMessages(userId) {
-  return JSON.parse(localStorage.getItem(`admin_msgs_${userId}`) || '[]');
-}
-
+function getAdminMessages(userId) { return JSON.parse(localStorage.getItem(`admin_msgs_${userId}`) || '[]'); }
 function getAdminUnseenCount(userId) {
   const msgs = getAdminMessages(userId);
   if (!msgs.length) return 0;
@@ -147,11 +141,7 @@ function getAdminUnseenCount(userId) {
   if (!seenAt) return msgs.length;
   return msgs.filter(m => new Date(m.created_at) > new Date(seenAt)).length;
 }
-
-function markAdminMessagesSeen(userId) {
-  localStorage.setItem(`admin_msgs_seen_${userId}`, new Date().toISOString());
-}
-
+function markAdminMessagesSeen(userId) { localStorage.setItem(`admin_msgs_seen_${userId}`, new Date().toISOString()); }
 function updateAdminChatBadge(userId) {
   const count = getAdminUnseenCount(userId);
   const msgs = getAdminMessages(userId);
@@ -160,27 +150,17 @@ function updateAdminChatBadge(userId) {
   if (!floatWrap || !badge) return;
   if (msgs.length > 0) {
     floatWrap.classList.remove("hidden");
-    if (count > 0) {
-      badge.textContent = count > 9 ? "9+" : String(count);
-      badge.classList.remove("hidden");
-      floatWrap.classList.add("has-new");
-    } else {
-      badge.classList.add("hidden");
-      floatWrap.classList.remove("has-new");
-    }
-  } else {
-    floatWrap.classList.add("hidden");
-  }
+    if (count > 0) { badge.textContent = count > 9 ? "9+" : String(count); badge.classList.remove("hidden"); floatWrap.classList.add("has-new"); }
+    else { badge.classList.add("hidden"); floatWrap.classList.remove("has-new"); }
+  } else { floatWrap.classList.add("hidden"); }
 }
-
 function openAdminChat() {
   if (!currentUser) return;
   const msgs = getAdminMessages(currentUser.id);
   const box = $("adminChatMessages");
   box.innerHTML = "";
-  if (!msgs.length) {
-    box.appendChild(el("p", { class: "muted", style: "text-align:center;padding:32px 16px" }, "No messages yet."));
-  } else {
+  if (!msgs.length) { box.appendChild(el("p", { class: "muted", style: "text-align:center;padding:32px 16px" }, "No messages yet.")); }
+  else {
     for (const m of [...msgs].reverse()) {
       const bubble = el("div", { class: "chat-bubble admin" }, m.message);
       const time = el("div", { class: "chat-time" }, formatTime(m.created_at));
@@ -192,26 +172,21 @@ function openAdminChat() {
   markAdminMessagesSeen(currentUser.id);
   updateAdminChatBadge(currentUser.id);
 }
-
-function closeAdminChat() {
-  $("adminChatModal").classList.add("hidden");
-}
+function closeAdminChat() { $("adminChatModal").classList.add("hidden"); }
 
 /* ================================================================
    PANEL
 ================================================================ */
 async function loadMe() {
-  const data = await request("me");
+  // ?with_notifications=1 fetches+marks-read unread admin messages in one call
+  // The inline stats script calls /api/me WITHOUT this param, so no race condition
+  const data = await request("me?with_notifications=1");
   currentUser = data.user;
 
-  // Fetch notifications via dedicated endpoint (no race with inline /api/me call)
-  try {
-    const nd = await request("notifications");
-    if (nd.notifications && nd.notifications.length) {
-      const { added } = saveAdminMessages(currentUser.id, nd.notifications);
-      if (added > 0) updateAdminChatBadge(currentUser.id);
-    }
-  } catch (_) {}
+  if (data.notifications && data.notifications.length) {
+    const { added } = saveAdminMessages(currentUser.id, data.notifications);
+    if (added > 0) updateAdminChatBadge(currentUser.id);
+  }
   updateAdminChatBadge(currentUser.id);
 
   // Poll for new admin messages every 30s
@@ -219,7 +194,7 @@ async function loadMe() {
     setTimeout(async () => {
       if (!currentUser) return;
       try {
-        const d = await request("notifications");
+        const d = await request("me?with_notifications=1");
         if (d.notifications && d.notifications.length) {
           const { added } = saveAdminMessages(currentUser.id, d.notifications);
           if (added > 0) updateAdminChatBadge(currentUser.id);
@@ -229,49 +204,35 @@ async function loadMe() {
     }, 30000);
   })();
 
-  try {
-    const t = await request("tiers");
-    serverTiers = t.tiers || [];
-  } catch (_) { serverTiers = []; }
+  try { const t = await request("tiers"); serverTiers = t.tiers || []; } catch (_) { serverTiers = []; }
 
   $("entryPage").classList.add("hidden");
   $("panelPage").classList.remove("hidden");
   $("topbarTitle").textContent = `Welcome, ${currentUser.username}`;
 
   if (currentUser.is_admin) {
-    const btn = $("adminLinkBtn");
-    btn.style.display = "";
+    const btn = $("adminLinkBtn"); btn.style.display = "";
     btn.addEventListener("click", () => { window.location.href = "/admin.html"; }, { once: true });
   }
 
   const link = `${window.location.origin}/?invite=${currentUser.referral_code}`;
   $("refLink").value = link;
-
   const count = Number(currentUser.referrals_count || 0);
   $("totalRefs").textContent = count;
-
   const nextTier = CFG.tiers.find(t => count < t.invitesRequired && !hasAccess(t.id));
   const badge = $("nextTierBadge");
   if (nextTier) badge.textContent = `🎯 ${nextTier.invitesRequired - count} more invites to unlock ${nextTier.name}`;
   else badge.textContent = `🎉 All free unlock thresholds reached`;
+  const tg = $("telegramAlt"); if (tg) tg.href = CFG.telegramBot;
 
-  const tg = $("telegramAlt");
-  if (tg) tg.href = CFG.telegramBot;
-
-  renderTierGrid();
-  renderDrawerTiers();
-  initCustomPack();
-  initNotifications();
-  startOrderPoll();
+  renderTierGrid(); renderDrawerTiers(); initCustomPack(); initNotifications(); startOrderPoll();
 }
 
 function hasAccess(tierId) {
   if (currentUser && Array.isArray(currentUser.unlocked_tiers) && currentUser.unlocked_tiers.includes(tierId)) return true;
-  const s = serverTiers.find(x => x.id === tierId);
-  if (s && s.hasAccess) return true;
+  const s = serverTiers.find(x => x.id === tierId); if (s && s.hasAccess) return true;
   const cfg = CFG.tiers.find(t => t.id === tierId);
-  const refs = Number((currentUser && currentUser.referrals_count) || 0);
-  return cfg ? refs >= cfg.invitesRequired : false;
+  return cfg ? Number((currentUser && currentUser.referrals_count) || 0) >= cfg.invitesRequired : false;
 }
 
 function switchPanelSection(section) {
@@ -280,22 +241,14 @@ function switchPanelSection(section) {
 }
 
 function renderTierGrid() {
-  const grid = $("tierGrid");
-  grid.innerHTML = "";
+  const grid = $("tierGrid"); grid.innerHTML = "";
   const refs = Number((currentUser && currentUser.referrals_count) || 0);
   const starterTiers = CFG.tiers.filter(t => t.payDisabled);
-  const mainTiers    = CFG.tiers.filter(t => !t.payDisabled);
-
+  const mainTiers = CFG.tiers.filter(t => !t.payDisabled);
   let starterWrap = $("starterTierWrap");
-  if (!starterWrap) {
-    starterWrap = document.createElement("div");
-    starterWrap.id = "starterTierWrap";
-    grid.parentElement.insertBefore(starterWrap, grid);
-  }
+  if (!starterWrap) { starterWrap = document.createElement("div"); starterWrap.id = "starterTierWrap"; grid.parentElement.insertBefore(starterWrap, grid); }
   starterWrap.innerHTML = "";
-  const oldLabel = $("mainTiersLabel");
-  if (oldLabel) oldLabel.remove();
-
+  const oldLabel = $("mainTiersLabel"); if (oldLabel) oldLabel.remove();
   if (starterTiers.length) {
     starterWrap.appendChild(el("div", { class: "drawer-section-inline starter-label" }, "🎁 FREE STARTER — INVITE ONLY"));
     const sg = el("div", { class: "tier-grid starter-grid" });
@@ -304,72 +257,40 @@ function renderTierGrid() {
       const access = hasAccess(t.id);
       card.appendChild(el("h3", {}, t.name));
       if (t.subtitle) card.appendChild(el("p", { class: "tier-subtitle" }, t.subtitle));
-      card.appendChild(el("div", { class: "tier-badges" }, [
-        el("span", { class: "tier-badge invites" }, `🎯 ${t.invitesRequired} invites only`),
-        el("span", { class: "tier-badge free-badge" }, "🎉 FREE")
-      ]));
-      const ul = el("ul", { class: "feature-list" });
-      for (const f of t.features) ul.appendChild(el("li", {}, f));
-      card.appendChild(ul);
+      card.appendChild(el("div", { class: "tier-badges" }, [el("span", { class: "tier-badge invites" }, `🎯 ${t.invitesRequired} invites only`), el("span", { class: "tier-badge free-badge" }, "🎉 FREE")]));
+      const ul = el("ul", { class: "feature-list" }); for (const f of t.features) ul.appendChild(el("li", {}, f)); card.appendChild(ul);
       card.appendChild(el("div", { class: "tier-size" }, [el("strong", {}, t.totalSize), el("span", {}, "TOTAL SIZE")]));
-      const actions = el("div", { class: "tier-actions" });
       const left = t.invitesRequired - refs;
-      actions.appendChild(el("button", {
-        class: "btn-invites btn-invites-full" + (access ? " unlocked" : ""),
-        type: "button",
-        onclick: () => onInviteButton(t)
-      }, access ? `✅ Open ${t.name}` : left > 0 ? `🔗 ${left} more invite${left > 1 ? "s" : ""} to unlock` : "Claim free access"));
-      card.appendChild(actions);
+      card.appendChild(el("div", { class: "tier-actions" }, [el("button", {
+        class: "btn-invites btn-invites-full" + (access ? " unlocked" : ""), type: "button", onclick: () => onInviteButton(t)
+      }, access ? `✅ Open ${t.name}` : left > 0 ? `🔗 ${left} more invite${left > 1 ? "s" : ""} to unlock` : "Claim free access")]));
       sg.appendChild(card);
     }
-    starterWrap.appendChild(sg);
-    starterWrap.appendChild(el("div", { class: "starter-divider" }));
+    starterWrap.appendChild(sg); starterWrap.appendChild(el("div", { class: "starter-divider" }));
   }
-
   grid.parentElement.insertBefore(el("div", { id: "mainTiersLabel", class: "drawer-section-inline" }, "STANDARD TIERS"), grid);
-
   for (const t of mainTiers) {
     const card = el("div", { class: "tier-card", data: { color: t.color, tierId: t.id } });
     const access = hasAccess(t.id);
     card.appendChild(el("h3", {}, t.name));
     if (t.subtitle) card.appendChild(el("p", { class: "tier-subtitle" }, t.subtitle));
-    card.appendChild(el("div", { class: "tier-badges" }, [
-      el("span", { class: "tier-badge invites" }, `🎯 ${t.invitesRequired} invites`),
-      el("span", { class: "tier-badge price" }, `💳 $${t.priceUSD}`)
-    ]));
-    const ul = el("ul", { class: "feature-list" });
-    for (const f of t.features) ul.appendChild(el("li", {}, f));
-    card.appendChild(ul);
+    card.appendChild(el("div", { class: "tier-badges" }, [el("span", { class: "tier-badge invites" }, `🎯 ${t.invitesRequired} invites`), el("span", { class: "tier-badge price" }, `💳 $${t.priceUSD}`)]));
+    const ul = el("ul", { class: "feature-list" }); for (const f of t.features) ul.appendChild(el("li", {}, f)); card.appendChild(ul);
     card.appendChild(el("div", { class: "tier-size" }, [el("strong", {}, t.totalSize), el("span", {}, "TOTAL SIZE")]));
     const actions = el("div", { class: "tier-actions" });
     actions.appendChild(el("button", { class: "btn-buy", type: "button", onclick: () => openPurchaseModal(t) }, `💳 Buy $${t.priceUSD}`));
-    actions.appendChild(el("button", {
-      class: "btn-invites" + (access ? " unlocked" : ""),
-      type: "button",
-      onclick: () => onInviteButton(t)
-    }, access ? `✅ Open ${t.name}` : `🔒 ${t.invitesRequired - refs > 0 ? (t.invitesRequired - refs) + " more" : "Claim"}`));
-    card.appendChild(actions);
-    grid.appendChild(card);
+    actions.appendChild(el("button", { class: "btn-invites" + (access ? " unlocked" : ""), type: "button", onclick: () => onInviteButton(t) },
+      access ? `✅ Open ${t.name}` : `🔒 ${t.invitesRequired - refs > 0 ? (t.invitesRequired - refs) + " more" : "Claim"}`));
+    card.appendChild(actions); grid.appendChild(card);
   }
 }
 
 function renderDrawerTiers() {
-  const wrap = $("drawerTiers");
-  wrap.innerHTML = "";
+  const wrap = $("drawerTiers"); wrap.innerHTML = "";
   for (const t of CFG.tiers) {
     const access = hasAccess(t.id);
-    wrap.appendChild(el("button", {
-      class: "drawer-item " + (access ? "unlocked" : "locked"),
-      type: "button",
-      onclick: () => {
-        closeDrawer();
-        if (access) openTier(t);
-        else {
-          const card = document.querySelector(`.tier-card[data-tier-id="${t.id}"]`);
-          if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
-          if (!t.payDisabled) openPurchaseModal(t);
-        }
-      }
+    wrap.appendChild(el("button", { class: "drawer-item " + (access ? "unlocked" : "locked"), type: "button",
+      onclick: () => { closeDrawer(); if (access) openTier(t); else { const card = document.querySelector(`.tier-card[data-tier-id="${t.id}"]`); if (card) card.scrollIntoView({ behavior: "smooth", block: "center" }); if (!t.payDisabled) openPurchaseModal(t); } }
     }, t.name + (access ? "  ✅" : "")));
   }
 }
@@ -377,10 +298,7 @@ function renderDrawerTiers() {
 async function onInviteButton(tier) {
   if (hasAccess(tier.id)) return openTier(tier);
   const refs = Number((currentUser && currentUser.referrals_count) || 0);
-  if (refs >= tier.invitesRequired) {
-    if (tier.payDisabled) { await openTier(tier); return; }
-    showChoiceModal(tier); return;
-  }
+  if (refs >= tier.invitesRequired) { if (tier.payDisabled) { await openTier(tier); return; } showChoiceModal(tier); return; }
   if (tier.payDisabled) { switchPanelSection("invites"); return; }
   openPurchaseModal(tier);
 }
@@ -394,9 +312,6 @@ async function openTier(tier) {
   } catch (err) { alert(err.message); }
 }
 
-/* ================================================================
-   CHOICE MODAL
-================================================================ */
 function showChoiceModal(tier) {
   $("choiceTitle").textContent = `${tier.name} ready`;
   $("choiceMsg").textContent = `You have enough invites for ${tier.name}. Claim it for free or pay for instant access anyway.`;
@@ -406,35 +321,26 @@ function showChoiceModal(tier) {
 }
 function bindChoiceClose() { $("choiceClose").addEventListener("click", () => $("choiceModal").classList.add("hidden")); }
 
-/* ================================================================
-   PURCHASE MODAL
-================================================================ */
 function openPurchaseModal(tier) {
   activeTier = tier; activeCrypto = "BTC";
-  $("modalTitle").textContent = `Purchase ${tier.name}`;
-  $("modalMsg").textContent = "";
-  $("purchaseModal").classList.remove("hidden");
-  switchTab("crypto");
+  $("modalTitle").textContent = `Purchase ${tier.name}`; $("modalMsg").textContent = "";
+  $("purchaseModal").classList.remove("hidden"); switchTab("crypto");
   $("gcAmount").innerHTML = `💳 Amount: $${tier.priceUSD}`;
   renderGcPlatforms(); $("gcCode").value = ""; updateGcCount();
   $("cryptoAmountUSD").innerHTML = `💰 Amount: $${tier.priceUSD} USD`;
-  renderCryptoTickers(); applyCrypto(activeCrypto);
-  $("cryptoTxId").value = ""; updateCryptoTxCount();
+  renderCryptoTickers(); applyCrypto(activeCrypto); $("cryptoTxId").value = ""; updateCryptoTxCount();
 }
 function closePurchaseModal() { $("purchaseModal").classList.add("hidden"); activeTier = null; }
 function switchTab(tab) {
   document.querySelectorAll(".modal-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   document.querySelectorAll(".modal-pane").forEach(p => p.classList.toggle("hidden", p.dataset.pane !== tab));
 }
-
 let selectedPlatform = null;
 function renderGcPlatforms() {
   const wrap = $("gcPlatforms"); wrap.innerHTML = ""; selectedPlatform = null;
   for (const p of CFG.giftCardPlatforms) {
     const btn = el("button", { class: "platform-item", type: "button", onclick: () => {
-      selectedPlatform = p.name;
-      document.querySelectorAll(".platform-item").forEach(x => x.classList.remove("selected"));
-      btn.classList.add("selected");
+      selectedPlatform = p.name; document.querySelectorAll(".platform-item").forEach(x => x.classList.remove("selected")); btn.classList.add("selected");
       if (p.url) window.open(p.url, "_blank", "noopener,noreferrer");
     }}, [el("div", {}, [el("strong", {}, p.name), el("small", {}, `$${activeTier.priceUSD} ${p.note}`)]), el("span", { class: "arrow" }, "→")]);
     wrap.appendChild(btn);
@@ -454,7 +360,7 @@ function renderCryptoTickers() {
 function applyCrypto(t) {
   const amount = (activeTier.priceUSD * (CFG.cryptoRates[t] || 0)).toFixed(8);
   $("cryptoAmountCrypto").textContent = amount; $("cryptoAmountTicker").textContent = t;
-  $("cryptoAddrLabel").textContent = `${({BTC:"Bitcoin",ETH:"Ethereum",LTC:"Litecoin",SOL:"Solana"})[t]||t} Address:`;
+  $("cryptoAddrLabel").textContent = `${ ({BTC:"Bitcoin",ETH:"Ethereum",LTC:"Litecoin",SOL:"Solana"})[t]||t } Address:`;
   $("cryptoAddr").value = CFG.crypto[t] || "";
   $("cryptoWarn").innerHTML = `Send exactly <b>${amount} ${t} ($${activeTier.priceUSD} USD)</b>`;
 }
@@ -483,17 +389,11 @@ async function submitCrypto() {
 }
 async function submitPurchase(payload) {
   setModalMsg("Submitting…");
-  try {
-    const data = await request("purchase", { method: "POST", body: JSON.stringify(payload) });
-    setModalMsg(data.message || "Submitted. Waiting for review.", false);
-    setTimeout(() => closePurchaseModal(), 2200);
-  } catch (err) { setModalMsg(err.message, true); }
+  try { const data = await request("purchase", { method: "POST", body: JSON.stringify(payload) }); setModalMsg(data.message || "Submitted. Waiting for review.", false); setTimeout(() => closePurchaseModal(), 2200); }
+  catch (err) { setModalMsg(err.message, true); }
 }
 function setModalMsg(text, error = false) { const m = $("modalMsg"); m.textContent = text; m.className = error ? "msg error" : "msg success"; }
 
-/* ================================================================
-   DRAWER
-================================================================ */
 function openDrawer() { $("drawer").classList.remove("hidden"); $("drawerBackdrop").classList.remove("hidden"); }
 function closeDrawer() { $("drawer").classList.add("hidden"); $("drawerBackdrop").classList.add("hidden"); }
 function bindDrawer() {
@@ -515,9 +415,6 @@ function handleDrawerAction(action) {
   }
 }
 
-/* ================================================================
-   CUSTOM PACK
-================================================================ */
 function getCustomPriceEntry(packId, sizeId) { const cp = CFG.customPack; return cp && cp.prices ? cp.prices[packId]?.[sizeId] || null : null; }
 function updateCustomPriceDisplay() {
   const origEl = $("customPriceOriginal"), curEl = $("customPriceCurrent"), buyBtn = $("customBuyBtn");
@@ -525,14 +422,11 @@ function updateCustomPriceDisplay() {
   const entry = getCustomPriceEntry(selectedCustomPack, selectedCustomSize);
   if (!entry) { origEl.textContent = ""; curEl.textContent = "$—"; buyBtn.disabled = true; return; }
   origEl.textContent = entry.original > entry.price ? `$${entry.original}` : "";
-  curEl.textContent = `$${entry.price}`; buyBtn.disabled = false;
-  buyBtn.textContent = `💳 Buy custom pack · $${entry.price}`;
+  curEl.textContent = `$${entry.price}`; buyBtn.disabled = false; buyBtn.textContent = `💳 Buy custom pack · $${entry.price}`;
 }
 function initCustomPack() {
-  const cp = CFG.customPack;
-  if (!cp || !$("customPackSection")) return;
-  $("customPackTitle").textContent = cp.title || "Custom Pack";
-  $("customPackSub").textContent = cp.subtitle || "";
+  const cp = CFG.customPack; if (!cp || !$("customPackSection")) return;
+  $("customPackTitle").textContent = cp.title || "Custom Pack"; $("customPackSub").textContent = cp.subtitle || "";
   selectedCustomPack = cp.categories[0]?.id || null;
   selectedCustomSize = cp.sizes.find(s => s.popular)?.id || cp.sizes[0]?.id || null;
   renderCustomCategories(); renderCustomSizes(); updateCustomPriceDisplay();
@@ -552,8 +446,7 @@ function initCustomPack() {
   $("chatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendChatMessage(); });
 }
 function renderCustomCategories() {
-  const wrap = $("customCategories"), cp = CFG.customPack; if (!wrap || !cp) return;
-  wrap.innerHTML = "";
+  const wrap = $("customCategories"), cp = CFG.customPack; if (!wrap || !cp) return; wrap.innerHTML = "";
   for (const c of cp.categories) {
     const btn = el("button", { class: "custom-cat-btn" + (selectedCustomPack === c.id ? " active" : ""), type: "button",
       onclick: () => { selectedCustomPack = c.id; renderCustomCategories(); updateCustomPriceDisplay(); }
@@ -563,8 +456,7 @@ function renderCustomCategories() {
   }
 }
 function renderCustomSizes() {
-  const wrap = $("customSizes"), cp = CFG.customPack; if (!wrap || !cp) return;
-  wrap.innerHTML = "";
+  const wrap = $("customSizes"), cp = CFG.customPack; if (!wrap || !cp) return; wrap.innerHTML = "";
   for (const s of cp.sizes) {
     const btn = el("button", { class: "custom-size-btn" + (selectedCustomSize === s.id ? " active" : ""), type: "button",
       onclick: () => { selectedCustomSize = s.id; renderCustomSizes(); updateCustomPriceDisplay(); }
@@ -575,12 +467,8 @@ function renderCustomSizes() {
   }
 }
 
-/* ================================================================
-   CUSTOM ORDER + CHAT
-================================================================ */
 async function openCustomOrderModal() {
-  $("customOrderModal").classList.remove("hidden");
-  $("customOrderMsg").textContent = ""; $("customOrderText").value = "";
+  $("customOrderModal").classList.remove("hidden"); $("customOrderMsg").textContent = ""; $("customOrderText").value = "";
   await loadMyCustomOrders();
 }
 async function submitCustomOrder() {
@@ -589,19 +477,16 @@ async function submitCustomOrder() {
   $("customOrderMsg").textContent = "Sending…";
   try {
     const data = await request("custom-order", { method: "POST", body: JSON.stringify({ message }) });
-    $("customOrderMsg").textContent = data.message || "Sent!";
-    $("customOrderMsg").className = "msg success";
+    $("customOrderMsg").textContent = data.message || "Sent!"; $("customOrderMsg").className = "msg success";
     $("customOrderText").value = "";
     setTimeout(() => { $("customOrderModal").classList.add("hidden"); }, 1200);
     await loadMyCustomOrders(); startOrderPoll();
   } catch (err) { $("customOrderMsg").textContent = err.message; $("customOrderMsg").className = "msg error"; }
 }
 async function loadMyCustomOrders() {
-  const wrap = $("myCustomOrders"); if (!wrap) return;
-  wrap.innerHTML = "<p class='muted'>Loading…</p>";
+  const wrap = $("myCustomOrders"); if (!wrap) return; wrap.innerHTML = "<p class='muted'>Loading…</p>";
   try {
-    const data = await request("custom-orders");
-    const orders = data.orders || [];
+    const data = await request("custom-orders"); const orders = data.orders || [];
     if (!orders.length) { wrap.innerHTML = "<p class='muted'>No conversations yet.</p>"; return; }
     wrap.innerHTML = "";
     for (const o of orders) {
@@ -612,23 +497,17 @@ async function loadMyCustomOrders() {
     }
   } catch (err) { wrap.innerHTML = `<p class='msg error'>${err.message}</p>`; }
 }
-function closeChatModal() {
-  $("chatModal").classList.add("hidden"); activeChatOrderId = null;
-  if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
-}
+function closeChatModal() { $("chatModal").classList.add("hidden"); activeChatOrderId = null; if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; } }
 async function loadChatMessages(silent) {
   if (!activeChatOrderId) return;
   try {
     const data = await request(`custom-messages?order_id=${encodeURIComponent(activeChatOrderId)}`);
-    const box = $("chatMessages");
-    box.innerHTML = "";
+    const box = $("chatMessages"); box.innerHTML = "";
     for (const m of data.messages || []) {
       const bubble = el("div", { class: "chat-bubble " + (m.is_admin ? "admin" : "user") }, m.content);
-      const time = el("div", { class: "chat-time" }, formatTime(m.created_at));
-      box.appendChild(el("div", { class: "chat-line " + (m.is_admin ? "admin" : "user") }, [bubble, time]));
+      box.appendChild(el("div", { class: "chat-line " + (m.is_admin ? "admin" : "user") }, [bubble, el("div", { class: "chat-time" }, formatTime(m.created_at))]));
     }
-    const agreedPrice = data.agreed_price;
-    const payBar = $("chatPayBar"); if (payBar) payBar.remove();
+    const agreedPrice = data.agreed_price; const payBar = $("chatPayBar"); if (payBar) payBar.remove();
     if (agreedPrice && agreedPrice > 0) {
       const bar = el("div", { class: "chat-pay-bar", id: "chatPayBar" }, [
         el("div", { class: "chat-pay-info" }, [el("strong", {}, `Agreed price: $${agreedPrice}`), el("span", { class: "muted" }, "Click below to proceed with payment")]),
@@ -642,23 +521,15 @@ async function loadChatMessages(silent) {
 async function sendChatMessage() {
   if (!activeChatOrderId) return;
   const content = $("chatInput").value.trim(); if (!content) return;
-  try {
-    await request("custom-messages", { method: "POST", body: JSON.stringify({ order_id: activeChatOrderId, content }) });
-    $("chatInput").value = ""; await loadChatMessages();
-  } catch (err) { $("chatMsg").textContent = err.message; $("chatMsg").className = "msg error"; }
+  try { await request("custom-messages", { method: "POST", body: JSON.stringify({ order_id: activeChatOrderId, content }) }); $("chatInput").value = ""; await loadChatMessages(); }
+  catch (err) { $("chatMsg").textContent = err.message; $("chatMsg").className = "msg error"; }
 }
 function formatTime(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-/* ================================================================
-   ORDER POLLING
-================================================================ */
-function startOrderPoll() {
-  if (orderPollTimer) clearInterval(orderPollTimer);
-  pollMyOrders(); orderPollTimer = setInterval(pollMyOrders, 10000);
-}
+function startOrderPoll() { if (orderPollTimer) clearInterval(orderPollTimer); pollMyOrders(); orderPollTimer = setInterval(pollMyOrders, 10000); }
 async function pollMyOrders() {
   if (!currentUser) return;
   try { const data = await request("custom-orders"); myOpenOrders = data.orders || []; renderChatFloat(); } catch (_) {}
@@ -667,9 +538,7 @@ function renderChatFloat() {
   let wrap = $("chatFloatWrap");
   if (!wrap) { wrap = document.createElement("div"); wrap.id = "chatFloatWrap"; document.body.appendChild(wrap); }
   wrap.innerHTML = "";
-  const openOrders = myOpenOrders.filter(o => o.status === "open");
-  if (!openOrders.length) return;
-  for (const o of openOrders) {
+  for (const o of myOpenOrders.filter(o => o.status === "open")) {
     const hasPrice = o.agreed_price && o.agreed_price > 0;
     wrap.appendChild(el("button", { class: "chat-float-btn" + (hasPrice ? " has-price" : ""), type: "button", onclick: () => openChatModal(o.id) }, [
       el("span", { class: "chat-float-icon" }, hasPrice ? "💳" : "💬"),
@@ -679,19 +548,14 @@ function renderChatFloat() {
   }
 }
 async function openChatModal(orderId) {
-  activeChatOrderId = orderId;
-  $("chatModal").classList.remove("hidden");
+  activeChatOrderId = orderId; $("chatModal").classList.remove("hidden");
   $("chatMsg").textContent = ""; $("chatInput").value = "";
-  $("chatTitle").textContent = "Custom order";
-  $("chatSub").textContent = "Reply here — we usually answer within minutes.";
+  $("chatTitle").textContent = "Custom order"; $("chatSub").textContent = "Reply here — we usually answer within minutes.";
   await loadChatMessages();
   if (chatPollTimer) clearInterval(chatPollTimer);
   chatPollTimer = setInterval(() => loadChatMessages(true), 8000);
 }
 
-/* ================================================================
-   FAKE NOTIFICATIONS
-================================================================ */
 const FAKE_NAMES = ["mike92","sarah_k","joshT","emma.w","liam_x","nina_07","alexM","zoey99","carlos_r","mia_b","noah_22","lilyrose","tylerJ","ava_s","ethan_p","chloe_v"];
 const PACK_LABELS = ["Pack 1","Pack 2","Pack 3","Pack 4","Tier 2","Tier 4"];
 const SIZE_LABELS = ["25 GB","50 GB","100 GB","250 GB","500 GB","1 TB"];
@@ -704,29 +568,19 @@ function initNotifications() {
   for (let i = 0; i < 30; i++) {
     const name = randomItem(FAKE_NAMES), type = randomItem(types), mins = Math.floor(Math.random() * 55) + 1;
     let text = "", icon = "💳";
-    if (type === "purchase") { text = `<b>${name}</b> purchased ${randomItem(PACK_LABELS)} · ${randomItem(SIZE_LABELS)}`; icon = "💳"; }
+    if (type === "purchase") { text = `<b>${name}</b> purchased ${randomItem(PACK_LABELS)} · ${randomItem(SIZE_LABELS)}`; }
     else if (type === "invite") { text = `<b>${name}</b> invited ${Math.floor(Math.random() * 8) + 3} friends today`; icon = "👥"; }
     else { text = `<b>${name}</b> started a custom order`; icon = "✏️"; }
-    list.appendChild(el("div", { class: "notif-item" }, [
-      el("span", { class: "notif-icon" }, icon),
-      el("div", { class: "notif-body" }, [el("div", { html: text }), el("small", { class: "muted" }, `${mins} min ago`)])
-    ]));
+    list.appendChild(el("div", { class: "notif-item" }, [el("span", { class: "notif-icon" }, icon), el("div", { class: "notif-body" }, [el("div", { html: text }), el("small", { class: "muted" }, `${mins} min ago`)])]));
   }
   btn.addEventListener("click", (e) => { e.stopPropagation(); panel.classList.toggle("hidden"); });
   document.addEventListener("click", (e) => { if (!$("notifWrap").contains(e.target)) panel.classList.add("hidden"); });
 }
 
-/* ================================================================
-   STATIC BINDS
-================================================================ */
 function bindStaticUI() {
   document.querySelectorAll(".panel-tab").forEach(btn => btn.addEventListener("click", () => switchPanelSection(btn.dataset.section)));
-
-  const acfBtn = $("adminChatFloatBtn");
-  if (acfBtn) acfBtn.addEventListener("click", openAdminChat);
-  const acClose = $("adminChatClose");
-  if (acClose) acClose.addEventListener("click", closeAdminChat);
-
+  const acfBtn = $("adminChatFloatBtn"); if (acfBtn) acfBtn.addEventListener("click", openAdminChat);
+  const acClose = $("adminChatClose"); if (acClose) acClose.addEventListener("click", closeAdminChat);
   $("copyLinkBtn").addEventListener("click", async () => { await copyToClipboard($("refLink").value, $("copyMsg")); });
   $("modalClose").addEventListener("click", closePurchaseModal);
   document.querySelectorAll(".modal-tab").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
@@ -738,15 +592,9 @@ function bindStaticUI() {
   $("cryptoSubmit").addEventListener("click", submitCrypto);
   bindChoiceClose();
   const howToShareBtn = $("howToShareBtn");
-  if (howToShareBtn) {
-    howToShareBtn.addEventListener("click", () => $("shareGuideModal").classList.remove("hidden"));
-    $("shareGuideClose").addEventListener("click", () => $("shareGuideModal").classList.add("hidden"));
-  }
+  if (howToShareBtn) { howToShareBtn.addEventListener("click", () => $("shareGuideModal").classList.remove("hidden")); $("shareGuideClose").addEventListener("click", () => $("shareGuideModal").classList.add("hidden")); }
 }
 
-/* ================================================================
-   STARFIELD
-================================================================ */
 function initBackground() {
   const canvas = $("bgCanvas"); if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -767,8 +615,4 @@ function initBackground() {
 
 function initTelegramFloat() { const link = $("tgServerFloat"); if (link && CFG.telegramServer) link.href = CFG.telegramServer; }
 
-initBackground();
-initTelegramFloat();
-bindDrawer();
-bindStaticUI();
-initAuth();
+initBackground(); initTelegramFloat(); bindDrawer(); bindStaticUI(); initAuth();
