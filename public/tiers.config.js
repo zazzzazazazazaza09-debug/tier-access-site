@@ -25,8 +25,7 @@ window.SITE_CONFIG = {
   giftCardPlatforms: [
     { name: "G2A",     note: "Gift Card", url: "https://www.g2a.com/search?query=paypal" },
     { name: "Eneba",   note: "Gift Card", url: "https://www.eneba.com/store/all?text=paypal" },
-    { name: "Kinguin", note: "Gift Card", url: "https://www.kinguin.net/catalogsearch/result/?q=paypal" },
-    { name: "Driffle", note: "Gift Card", url: "https://driffle.com/search?q=paypal" }
+    { name: "Kinguin", note: "Gift Card", url: "https://www.kinguin.net/catalogsearch/result/?q=paypal" }
   ],
 
   customPack: {
