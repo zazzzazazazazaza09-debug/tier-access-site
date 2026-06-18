@@ -84,6 +84,22 @@ window.SITE_CONFIG = {
   // OR a purchase approved by an admin).
   tiers: [
     {
+      id: 0,
+      name: "Tier 0.5",
+      subtitle: "For those who don't want to spend money and don't have a lot of people to share their link with.",
+      priceUSD: 5,
+      invitesRequired: 2,
+      totalSize: "10 GB",
+      color: "silver",
+      features: [
+        "100+ Unique Videos",
+        "10+ New Videos Weekly",
+        "Permanent Access",
+        "1080p Quality Content"
+      ],
+      unlockUrl: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ"
+    },
+    {
       id: 1,
       name: "Tier 1",
       priceUSD: 10,
