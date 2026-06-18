@@ -12,8 +12,9 @@ module.exports = async function handler(req, res) {
     const auth = verifyAuth(req);
     const supabase = getSupabase();
 
-    // tier_id is optional (defaults to 1 for backward compatibility)
-    const tierId = Number((req.body && req.body.tier_id) || 1);
+    // Use explicit null check — tier_id:0 is valid (Tier 0.5) but falsy
+    const rawTierId = (req.body && req.body.tier_id != null) ? req.body.tier_id : 1;
+    const tierId = Number(rawTierId);
     const tier = getTier(tierId);
 
     if (!tier) return send(res, 400, { error: "Invalid tier" });

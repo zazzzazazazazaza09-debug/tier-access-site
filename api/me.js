@@ -4,21 +4,15 @@ const { send } = require("./_utils");
 
 module.exports = async function handler(req, res) {
   if (req.method === "POST") {
-    // Heartbeat ping, routed here from /api/heartbeat
+    // Heartbeat ping
     try {
       const auth = verifyAuth(req);
       const supabase = getSupabase();
-
       const { error } = await supabase
         .from("profiles")
         .update({ last_seen: new Date().toISOString() })
         .eq("id", auth.id);
-
-      if (error) {
-        return send(res, 200, { ok: true, tracked: false });
-      }
-
-      return send(res, 200, { ok: true, tracked: true });
+      return send(res, 200, { ok: true, tracked: !error });
     } catch (err) {
       return send(res, err.status || 401, { error: err.message || "Unauthorized" });
     }
@@ -38,36 +32,16 @@ module.exports = async function handler(req, res) {
       .eq("id", auth.id)
       .maybeSingle();
 
-    if (!user) {
-      return send(res, 404, { error: "User not found" });
-    }
+    if (!user) return send(res, 404, { error: "User not found" });
 
     await supabase
       .from("profiles")
       .update({ last_seen: new Date().toISOString() })
       .eq("id", auth.id);
 
-    // Fetch unread admin notifications and mark them read
-    let notifications = [];
-    try {
-      const { data: notifs } = await supabase
-        .from("admin_notifications")
-        .select("id, message, created_at")
-        .eq("user_id", user.id)
-        .is("read_at", null)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      if (notifs && notifs.length) {
-        notifications = notifs;
-        await supabase
-          .from("admin_notifications")
-          .update({ read_at: new Date().toISOString() })
-          .eq("user_id", user.id)
-          .is("read_at", null);
-      }
-    } catch (_) {}
-
-    return send(res, 200, { user, notifications });
+    // NOTE: notifications are now fetched via GET /api/notifications (separate endpoint)
+    // to avoid race conditions with the inline stats script that also calls /api/me.
+    return send(res, 200, { user, notifications: [] });
   } catch (err) {
     return send(res, 401, { error: err.message || "Unauthorized" });
   }
