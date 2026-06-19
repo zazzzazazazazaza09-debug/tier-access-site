@@ -74,7 +74,7 @@ window.SITE_CONFIG = {
         "Permanent Access",
         "1080p Quality Content"
       ],
-      unlockUrl: "https://mega.nz/folder/iTpQjJCI#YjByBLvgIlxYZ7v1lBaG_A"
+      unlockUrl: "https://mega.nz/folder/erp1lITI#whFzHKzK4k_2Zy35lUMWEA"
     },
     {
       id: 1,
