@@ -565,16 +565,61 @@ function initNotifications() {
   if (!btn || !panel || !list) return;
   list.innerHTML = "";
   const types = ["purchase","invite","custom"];
+  const items = [];
   for (let i = 0; i < 30; i++) {
     const name = randomItem(FAKE_NAMES), type = randomItem(types), mins = Math.floor(Math.random() * 55) + 1;
     let text = "", icon = "💳";
     if (type === "purchase") { text = `<b>${name}</b> purchased ${randomItem(PACK_LABELS)} · ${randomItem(SIZE_LABELS)}`; }
     else if (type === "invite") { text = `<b>${name}</b> invited ${Math.floor(Math.random() * 8) + 3} friends today`; icon = "👥"; }
     else { text = `<b>${name}</b> started a custom order`; icon = "✏️"; }
-    list.appendChild(el("div", { class: "notif-item" }, [el("span", { class: "notif-icon" }, icon), el("div", { class: "notif-body" }, [el("div", { html: text }), el("small", { class: "muted" }, `${mins} min ago`)])]));
+    const item = el("div", { class: "notif-item" }, [el("span", { class: "notif-icon" }, icon), el("div", { class: "notif-body" }, [el("div", { html: text }), el("small", { class: "muted" }, `${mins} min ago`)])]);
+    if (i < 2) item.classList.add("notif-item-new");
+    list.appendChild(item);
+    items.push(item);
   }
+  // CSS renders .notif-item at opacity:0 by default (entrance animation) and reveals it
+  // via .notif-item-visible — stagger that here so the feed fades/cascades into view.
+  items.forEach((item, i) => { setTimeout(() => item.classList.add("notif-item-visible"), 40 + i * 25); });
   btn.addEventListener("click", (e) => { e.stopPropagation(); panel.classList.toggle("hidden"); });
   document.addEventListener("click", (e) => { if (!$("notifWrap").contains(e.target)) panel.classList.add("hidden"); });
+}
+
+/* ================================================================
+   SHARE GUIDE — populate the platform grid in #sharePlatforms
+================================================================ */
+const SHARE_PLATFORMS = [
+  { id: "x", name: "X (Twitter)", icon: "fa-brands fa-x-twitter", tip: "Post your invite link where your followers will see it.", action: "share",
+    buildUrl: (link) => `https://twitter.com/intent/tweet?text=${encodeURIComponent("Join me on Nonaxion — here's my invite link:")}&url=${encodeURIComponent(link)}` },
+  { id: "telegram", name: "Telegram", icon: "fa-brands fa-telegram", tip: "Share to a chat, group, or channel in one tap.", action: "share",
+    buildUrl: (link) => `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join me on Nonaxion:")}` },
+  { id: "whatsapp", name: "WhatsApp", icon: "fa-brands fa-whatsapp", tip: "Send your link straight to a contact or group.", action: "share",
+    buildUrl: (link) => `https://wa.me/?text=${encodeURIComponent("Join me on Nonaxion: " + link)}` },
+  { id: "facebook", name: "Facebook", icon: "fa-brands fa-facebook", tip: "Post it on your timeline or in a group.", action: "share",
+    buildUrl: (link) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}` },
+  { id: "reddit", name: "Reddit", icon: "fa-brands fa-reddit-alien", tip: "Drop it in a relevant subreddit's self-promo thread.", action: "share",
+    buildUrl: (link) => `https://www.reddit.com/submit?url=${encodeURIComponent(link)}&title=${encodeURIComponent("Join me on Nonaxion")}` },
+  { id: "tumblr", name: "Tumblr", icon: "fa-brands fa-tumblr", tip: "Make a quick post linking your invite.", action: "share",
+    buildUrl: (link) => `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(link)}&caption=${encodeURIComponent("Join me on Nonaxion")}` },
+  { id: "discord", name: "Discord", icon: "fa-brands fa-discord", tip: "Copy the link and paste it in a server or DM.", action: "copy" },
+  { id: "tiktok", name: "TikTok", icon: "fa-brands fa-tiktok", tip: "Copy the link and drop it in your bio.", action: "copy" },
+  { id: "instagram", name: "Instagram", icon: "fa-brands fa-instagram", tip: "Copy the link for your bio or a story sticker.", action: "copy" }
+];
+function renderSharePlatforms() {
+  const wrap = $("sharePlatforms"); if (!wrap) return;
+  wrap.innerHTML = "";
+  const link = $("refLink") ? $("refLink").value : "";
+  for (const p of SHARE_PLATFORMS) {
+    const head = el("div", { class: "share-platform-head" }, [
+      el("span", { class: "share-platform-icon" }, [el("i", { class: p.icon, "aria-hidden": "true" })]),
+      el("strong", {}, p.name)
+    ]);
+    const tip = el("p", { class: "share-platform-tip muted" }, p.tip);
+    const btn = el("button", { class: "main-btn share-action-btn", type: "button", onclick: () => {
+      if (p.action === "share") window.open(p.buildUrl(link), "_blank", "noopener,noreferrer");
+      else copyToClipboard(link, $("shareGuideMsg"));
+    } }, p.action === "share" ? "Share" : "Copy link");
+    wrap.appendChild(el("div", { class: "share-platform", data: { platform: p.id } }, [head, tip, btn]));
+  }
 }
 
 function bindStaticUI() {
@@ -592,7 +637,10 @@ function bindStaticUI() {
   $("cryptoSubmit").addEventListener("click", submitCrypto);
   bindChoiceClose();
   const howToShareBtn = $("howToShareBtn");
-  if (howToShareBtn) { howToShareBtn.addEventListener("click", () => $("shareGuideModal").classList.remove("hidden")); $("shareGuideClose").addEventListener("click", () => $("shareGuideModal").classList.add("hidden")); }
+  if (howToShareBtn) {
+    howToShareBtn.addEventListener("click", () => { renderSharePlatforms(); $("shareGuideModal").classList.remove("hidden"); });
+    $("shareGuideClose").addEventListener("click", () => $("shareGuideModal").classList.add("hidden"));
+  }
 }
 
 function initBackground() {
