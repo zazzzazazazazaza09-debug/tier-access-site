@@ -1,9 +1,9 @@
 const TIERS = [
-  { id: 0, name: "Tier 0.5", priceUSD: 0, invitesRequired: 2,   unlockUrl: "https://mega.nz/folder/czpSVZqK#KG0i_AijYpzdT355D-ch8g" },
-  { id: 1, name: "Tier 1",   priceUSD: 10, invitesRequired: 15,  unlockUrl: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ" },
-  { id: 2, name: "Tier 2",   priceUSD: 20, invitesRequired: 30,  unlockUrl: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A" },
+  { id: 0, name: "Tier 0.5", priceUSD: 0, invitesRequired: 2,   unlockUrl: "https://mega.nz/folder/wvg2xY7K#u5y2xgnJuid2YuSjRzYPEg" },
+  { id: 1, name: "Tier 1",   priceUSD: 10, invitesRequired: 15,  unlockUrl: "https://mega.nz/folder/PUtj3DIb#n_wQW4wD8njQSdfXVQouPQ" },
+  { id: 2, name: "Tier 2",   priceUSD: 20, invitesRequired: 30,  unlockUrl: "https://mega.nz/folder/X9BWiLoJ#Dtu36r2Bgsn8nGtyJYvfPQ" },
   { id: 3, name: "Tier 3",   priceUSD: 40, invitesRequired: 50,  unlockUrl: "https://mega.nz/folder/UUs33JwL#A-QboeebPQp-2kGr-6zWsw" },
-  { id: 4, name: "Tier 4",   priceUSD: 80, invitesRequired: 100, unlockUrl: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ" },
+  { id: 4, name: "Tier 4",   priceUSD: 80, invitesRequired: 100, unlockUrl: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A" },
   { id: 5, name: "Tier 5",   priceUSD: 120, invitesRequired: 180, unlockUrl: "https://mega.nz/folder/ycURWbQa#1nB1asXinsTSWe_JWDoQYQ" },
   { id: 6, name: "Tier 6",   priceUSD: 200, invitesRequired: 350, unlockUrl: "https://mega.nz/folder/AysgBQYC#80bBtBc7yCN7vV_ThXuuZg" }
 ];
