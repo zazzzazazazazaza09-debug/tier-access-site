@@ -406,7 +406,7 @@ function handleDrawerAction(action) {
   closeDrawer();
   switch (action) {
     case "home": window.scrollTo({ top: 0, behavior: "smooth" }); break;
-    case "preview": window.open("https://mega.nz/folder/p2QHTLBL#ljSORugbT4oHL6EYh6WJKw", "_blank", "noopener,noreferrer"); break;
+    case "preview": window.open("https://mega.nz/folder/DzpX0LaK#oNRH_UOngK6IYqlpYTWkkQ", "_blank", "noopener,noreferrer"); break;
     case "menu": case "more-videos": switchPanelSection("custom"); break;
     case "invites": switchPanelSection("invites"); break;
     case "reviews": alert("Reviews section is coming soon."); break;
