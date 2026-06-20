@@ -101,7 +101,7 @@ window.SITE_CONFIG = {
       features: [
         "5,800+ Unique Videos",
         "120+ New Videos Weekly",
-        "Young :)",
+        "",
         "Permanent/Instant Access",
         "Exclusive Content"
       ],
@@ -117,7 +117,7 @@ window.SITE_CONFIG = {
       features: [
         "11,192+ Unique Videos",
         "168+ New Videos Weekly",
-        "Young :)",
+        "",
         "Permanent/Instant Access",
         "Rare Collections",
         "Priority Updates"
@@ -134,7 +134,7 @@ window.SITE_CONFIG = {
       features: [
         "18,500+ Unique Videos",
         "250+ New Videos Weekly",
-        "Young :)",
+        "",
         "Permanent/Instant Access",
         "Exclusive Archives",
         "VIP Early Access",
@@ -152,7 +152,7 @@ window.SITE_CONFIG = {
       features: [
         "28,000+ Unique Videos",
         "350+ New Videos Weekly",
-        "Young :)",
+        "",
         "Permanent/Instant Access",
         "Ultimate Collections",
         "VIP Support",
@@ -171,7 +171,7 @@ window.SITE_CONFIG = {
       features: [
         "45,000+ Unique Videos",
         "500+ New Videos Weekly",
-        "Young :)",
+        "",
         "Permanent/Instant Access",
         "Complete Vault Access",
         "VIP Priority Support",
