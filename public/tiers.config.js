@@ -66,13 +66,13 @@ window.SITE_CONFIG = {
       priceUSD: 0,
       invitesRequired: 2,
       payDisabled: true,
-      totalSize: "10 GB",
+      totalSize: "1",
       color: "silver",
       features: [
-        "100+ Unique Videos",
-        "10+ New Videos Weekly",
-        "Permanent Access",
-        "1080p Quality Content"
+        "a",
+        "a",
+        "a",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/erp1lITI#whFzHKzK4k_2Zy35lUMWEA"
     },
@@ -81,13 +81,13 @@ window.SITE_CONFIG = {
       name: "Tier 1",
       priceUSD: 10,
       invitesRequired: 15,
-      totalSize: "60 GB",
+      totalSize: "1",
       color: "blue",
       features: [
-        "2,500+ Unique Videos",
-        "50+ New Videos Weekly",
-        "Permanent Access",
-        "HD Quality Content"
+        "a",
+        "a",
+        "a",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ"
     },
@@ -96,14 +96,14 @@ window.SITE_CONFIG = {
       name: "Tier 2",
       priceUSD: 20,
       invitesRequired: 30,
-      totalSize: "150 GB",
+      totalSize: "1",
       color: "purple",
       features: [
-        "5,800+ Unique Videos",
-        "120+ New Videos Weekly",
+        "a",
+        "a",
         "",
-        "Permanent/Instant Access",
-        "Exclusive Content"
+        "a",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/qpAlFSiC#4A_h0goqIMV0UYPqIpBE1A"
     },
@@ -112,15 +112,15 @@ window.SITE_CONFIG = {
       name: "Tier 3",
       priceUSD: 40,
       invitesRequired: 50,
-      totalSize: "300 GB",
+      totalSize: "1",
       color: "pink",
       features: [
-        "11,192+ Unique Videos",
-        "168+ New Videos Weekly",
+        "a",
+        "a",
         "",
-        "Permanent/Instant Access",
-        "Rare Collections",
-        "Priority Updates"
+        "a",
+        "a",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/UUs33JwL#A-QboeebPQp-2kGr-6zWsw"
     },
@@ -129,16 +129,16 @@ window.SITE_CONFIG = {
       name: "Tier 4",
       priceUSD: 80,
       invitesRequired: 100,
-      totalSize: "500 GB",
+      totalSize: "1",
       color: "cyan",
       features: [
-        "18,500+ Unique Videos",
-        "250+ New Videos Weekly",
+        "a",
+        "a",
         "",
-        "Permanent/Instant Access",
-        "Exclusive Archives",
-        "VIP Early Access",
-        "Special Editions"
+        "a",
+        "a",
+        "a",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/kVsVFTpA#Wgc9TG0K0qFP_edSUMfIoQ"
     },
@@ -147,17 +147,17 @@ window.SITE_CONFIG = {
       name: "Tier 5",
       priceUSD: 180,
       invitesRequired: 180,
-      totalSize: "800 GB",
+      totalSize: "2",
       color: "green",
       features: [
-        "28,000+ Unique Videos",
-        "350+ New Videos Weekly",
+        "a",
+        "a",
         "",
-        "Permanent/Instant Access",
-        "Ultimate Collections",
-        "VIP Support",
-        "Lifetime Updates",
-        "All Previous Tiers"
+        "Pa",
+        "Ua",
+        "a",
+        "as",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/ycURWbQa#1nB1asXinsTSWe_JWDoQYQ"
     },
@@ -166,17 +166,17 @@ window.SITE_CONFIG = {
       name: "Tier 6",
       priceUSD: 350,
       invitesRequired: 350,
-      totalSize: "1.2 TB",
+      totalSize: "4",
       color: "red",
       features: [
-        "45,000+ Unique Videos",
-        "500+ New Videos Weekly",
+        "a",
+        "a",
         "",
-        "Permanent/Instant Access",
-        "Complete Vault Access",
-        "VIP Priority Support",
-        "Lifetime Updates",
-        "All Tiers Included"
+        "a",
+        "a",
+        "a",
+        "a",
+        "a"
       ],
       unlockUrl: "https://mega.nz/folder/AysgBQYC#80bBtBc7yCN7vV_ThXuuZg"
     }
