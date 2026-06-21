@@ -1,5 +1,4 @@
 const TIERS = [
-  { id: 0, name: "Tier 0.5", priceUSD: 0, invitesRequired: 4,   unlockUrl: "https://mega.nz/folder/AysgBQYC#80bBtBc7yCN7vV_ThXuuZg" },
   { id: 1, name: "Tier 1",   priceUSD: 10, invitesRequired: 15,  unlockUrl: "https://mega.nz/folder/PUtj3DIb#n_wQW4wD8njQSdfXVQouPQ" },
   { id: 2, name: "Tier 2",   priceUSD: 20, invitesRequired: 30,  unlockUrl: "https://mega.nz/folder/X9BWiLoJ#Dtu36r2Bgsn8nGtyJYvfPQ" },
   { id: 3, name: "Tier 3",   priceUSD: 40, invitesRequired: 50,  unlockUrl: "https://mega.nz/folder/UUs33JwL#A-QboeebPQp-2kGr-6zWsw" },
