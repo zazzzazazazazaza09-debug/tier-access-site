@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nonaxion Access</title>
+  <link rel="stylesheet" href="/style.css?v=14" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+  /* =================================================================
+     PHASE 6 — 3D effects, holo, glow
+     ================================================================= */
+  .main-btn:hover, .ghost-btn:hover, .btn-buy:hover, .btn-invites:hover,
+  .tier-card:hover, .icon-btn:hover, .tab:hover, .modal-tab:hover,
+  .panel-tab:hover, .pill:hover, .pill-mini:hover {
+    transform: perspective(500px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) translateY(-5px) translateZ(10px);
+    transition: transform .05s linear;
+  }
+  .main-btn:active, .ghost-btn:active, .btn-buy:active, .btn-invites:active,
+  .tier-card:active, .icon-btn:active, .tab:active, .modal-tab:active,
+  .panel-tab:active, .pill:active, .pill-mini:active {
+    transform: perspective(500px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg)) scale(.96) translateZ(0);
+    transition: transform .05s linear;
+  }
+  .p6-shine {
+    position: absolute; inset: 0; border-radius: inherit;
+    pointer-events: none; z-index: 9; opacity: 0;
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 35%, transparent 60%);
+    transition: opacity .2s;
+  }
+  .tier-card:hover .p6-shine, .entry-card:hover .p6-shine,
+  .referral-card:hover .p6-shine, .howto-card:hover .p6-shine,
+  .modal-card:hover .p6-shine { opacity: 1; }
+  @keyframes holo-shift {
+    0%   { box-shadow: 0 24px 64px rgba(123,47,247,.5),  0 0 0 1px rgba(123,47,247,.45); }
+    33%  { box-shadow: 0 24px 64px rgba(0,245,255,.45),  0 0 0 1px rgba(0,245,255,.45); }
+    66%  { box-shadow: 0 24px 64px rgba(255,95,179,.45), 0 0 0 1px rgba(255,95,179,.45); }
+    100% { box-shadow: 0 24px 64px rgba(123,47,247,.5),  0 0 0 1px rgba(123,47,247,.45); }
+  }
+  .tier-card:hover { animation: holo-shift 3s linear infinite; }
+  .tier-card { transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease; }
+  @keyframes title-glow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(123,47,247,.5)) drop-shadow(0 0 28px rgba(0,245,255,.12)); }
+    50%       { filter: drop-shadow(0 0 22px rgba(123,47,247,.85)) drop-shadow(0 0 48px rgba(0,245,255,.28)); }
+  }
+  .hero-title { animation: title-glow 3s ease-in-out infinite; }
+  @keyframes tab-neon {
+    0%, 100% { box-shadow: 0 0 22px rgba(0,245,255,.18); }
+    50%       { box-shadow: 0 0 38px rgba(0,245,255,.45), 0 0 14px rgba(123,47,247,.32); }
+  }
+  .panel-tab.active { animation: tab-neon 2.5s ease-in-out infinite; }
+  .modal-card { backdrop-filter: blur(32px) saturate(1.6); }
+  .main-btn, .ghost-btn { box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.06) inset; }
+
+  /* =================================================================
+     PHASE 7 — Dashboard redesign
+     ================================================================= */
+  @media (max-width: 600px) { #tgServerFloat { display: none !important; } }
+  .hero { display: none !important; }
+
+  #banBanner {
+    display: none;
+    background: linear-gradient(135deg, rgba(180,0,0,.18) 0%, rgba(255,80,80,.08) 100%);
+    border: 1px solid rgba(255,80,80,.35); border-radius: 14px;
+    padding: 14px 18px; margin: 0 0 16px; color: #ff8a9e;
+  }
+  #banBanner .ban-code { font-size: 1.1rem; font-weight: 800; letter-spacing: .04em; margin-bottom: 5px; }
+  #banBanner .ban-msg  { font-size: .8rem; color: rgba(255,138,158,.78); line-height: 1.5; }
+
+  @keyframes profile-border-glow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(123,47,247,.22), 0 12px 40px rgba(0,0,0,.35); }
+    50%       { box-shadow: 0 0 0 1px rgba(0,245,255,.32), 0 12px 40px rgba(0,0,0,.35); }
+  }
+  .p7-profile {
+    display: flex; align-items: center; gap: 16px; padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(123,47,247,.1) 0%, rgba(0,245,255,.05) 100%);
+    border: 1px solid rgba(255,255,255,.1); border-radius: 20px; margin: 0 0 14px;
+    backdrop-filter: blur(14px); position: relative; overflow: hidden;
+    animation: profile-border-glow 4s ease-in-out infinite; transition: background .25s;
+  }
+  .p7-profile::before {
+    content: ''; position: absolute; top: -30px; right: -20px; width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(0,245,255,.07) 0%, transparent 70%); pointer-events: none;
+  }
+  .p7-profile:hover { background: linear-gradient(135deg, rgba(123,47,247,.14) 0%, rgba(0,245,255,.08) 100%); }
+  .p7-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #7b2ff7 0%, #00f5ff 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.55rem; font-weight: 800; color: #fff; text-transform: uppercase;
+    flex-shrink: 0; box-shadow: 0 0 24px rgba(123,47,247,.6), 0 0 8px rgba(0,245,255,.25); letter-spacing: 0;
+  }
+  .p7-profile-info { flex: 1; min-width: 0; }
+  .p7-greeting { font-size: 0.67rem; color: rgba(161,161,194,.65); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
+  .p7-username {
+    font-size: 1.28rem; font-weight: 800;
+    background: linear-gradient(90deg, #ffffff 20%, #00f5ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+  }
+  .p7-since { font-size: 0.63rem; color: rgba(161,161,194,.48); margin-top: 3px; letter-spacing: 0.02em; }
+  .p7-profile .hero-sub {
+    font-size: 0.77rem; color: rgba(161,161,194,.72); margin-top: 5px; line-height: 1.45;
+    -webkit-text-fill-color: unset; background: none; white-space: normal;
+  }
+  .p7-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 22px; }
+  .p7-stat-card {
+    background: linear-gradient(135deg, rgba(123,47,247,.08) 0%, rgba(0,245,255,.04) 100%);
+    border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px 10px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    backdrop-filter: blur(10px); transition: border-color .25s, background .25s, transform .18s;
+    position: relative; overflow: hidden;
+  }
+  .p7-stat-card::before {
+    content: ''; position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    width: 64px; height: 64px;
+    background: radial-gradient(circle, rgba(0,245,255,.12) 0%, transparent 70%); pointer-events: none;
+  }
+  .p7-stat-card:hover { border-color: rgba(0,245,255,.28); background: linear-gradient(135deg, rgba(123,47,247,.13) 0%, rgba(0,245,255,.08) 100%); transform: translateY(-2px); }
+  .p7-val {
+    font-size: 1.4rem; font-weight: 800;
+    background: linear-gradient(135deg, #00f5ff 0%, #7b2ff7 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    letter-spacing: -0.02em; line-height: 1;
+  }
+  .p7-lbl { font-size: 0.6rem; color: var(--muted, #a1a1c2); text-transform: uppercase; letter-spacing: 0.07em; text-align: center; white-space: nowrap; }
+  .ref-count { background: linear-gradient(135deg, #00f5ff 0%, #7b2ff7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .p7-divider { height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(0,245,255,.15) 35%, rgba(123,47,247,.18) 65%, transparent 100%); margin: 0 0 20px; border: none; }
+  @media (max-width: 480px) {
+    .p7-profile { padding: 14px 15px; gap: 12px; } .p7-avatar { width: 46px; height: 46px; font-size: 1.25rem; }
+    .p7-username { font-size: 1.1rem; } .p7-stats { gap: 8px; margin: 0 0 18px; }
+    .p7-stat-card { padding: 11px 8px 9px; border-radius: 11px; } .p7-val { font-size: 1.15rem; } .p7-lbl { font-size: 0.56rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-title, .panel-tab.active, .p7-profile { animation: none !important; }
+    .hero-title { filter: none; }
+    .tier-card:hover { animation: none !important; }
+    .p6-shine { display: none !important; }
+  }
+
+  /* =================================================================
+     TIER 0.5 — silver/starter + subtitle
+     ================================================================= */
+  .tier-card[data-color="silver"] h3 { color: #c8cad8; }
+  .tier-card[data-color="silver"] .feature-list li::before { color: #c8cad8; }
+  .tier-card[data-color="silver"] .tier-size strong { color: #c8cad8; }
+
+  #starterTierWrap { margin-bottom: 4px; }
+  .starter-label { margin-bottom: 14px !important; color: #b0f0c0 !important; }
+
+  .starter-grid {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 460px) !important;
+    justify-content: center !important;
+    margin-bottom: 6px !important;
+  }
+
+  .starter-card {
+    border-style: dashed !important;
+    border-color: rgba(176,240,192,.35) !important;
+    background: linear-gradient(160deg, rgba(0,255,156,.06) 0%, rgba(20,22,45,.75) 100%) !important;
+  }
+  .starter-card h3 { color: #b0f0c0 !important; }
+  .starter-card .feature-list li::before { color: #b0f0c0 !important; }
+  .starter-card .tier-size strong { color: #b0f0c0 !important; }
+
+  .btn-invites-full {
+    width: 100% !important;
+    background: linear-gradient(90deg, rgba(0,255,156,.18), rgba(0,180,110,.22)) !important;
+    border: 1px solid rgba(0,255,156,.35) !important;
+    color: #7dffbf !important;
+    font-weight: 900 !important;
+    font-size: .95rem !important;
+  }
+  .btn-invites-full.unlocked {
+    background: rgba(0,255,156,.2) !important;
+    border-color: rgba(0,255,156,.5) !important;
+  }
+
+  .tier-badge.free-badge { color: #7dffbf; border-color: rgba(0,255,156,.35); background: rgba(0,255,156,.12); }
+
+  .starter-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+    margin: 20px 0 28px;
+  }
+
+  .tier-subtitle {
+    font-size: .8rem; color: #a1a1c2;
+    line-height: 1.45; margin: -6px 0 14px;
+    font-style: italic;
+  }
+
+  /* =================================================================
+     ADMIN CHAT FLOAT BUTTON
+     ================================================================= */
+  #adminChatFloat {
+    position: fixed;
+    bottom: 90px;
+    right: 18px;
+    z-index: 1001;
+  }
+  #adminChatFloat.hidden { display: none !important; }
+  #adminChatFloatBtn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7b2ff7 0%, #00b4d8 100%);
+    border: 1px solid rgba(0,245,255,.35);
+    color: #fff; font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(123,47,247,.55);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  }
+  #adminChatFloatBtn:hover { transform: scale(1.12); box-shadow: 0 6px 28px rgba(123,47,247,.75); }
+  #adminChatFloat.has-new #adminChatFloatBtn {
+    animation: admin-float-pulse 2s ease-in-out infinite;
+  }
+  @keyframes admin-float-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(123,47,247,.55), 0 0 0 0 rgba(0,245,255,.5); }
+    50%       { box-shadow: 0 4px 20px rgba(123,47,247,.8),  0 0 0 8px rgba(0,245,255,.0); }
+  }
+  #adminChatBadge {
+    position: absolute; top: -3px; right: -3px;
+    background: #ff4060; color: #fff;
+    font-size: .62rem; font-weight: 800;
+    min-width: 18px; height: 18px;
+    border-radius: 9px; padding: 0 4px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #0a0a1e;
+    line-height: 1;
+  }
+  #adminChatBadge.hidden { display: none !important; }
+
+  /* =================================================================
+     TIER CONTENT MODAL — video player + ZIP download
+     ================================================================= */
+  .tier-content-card { max-width: 860px !important; width: 95vw !important; }
+  .tier-content-actions {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 0 14px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 18px;
+  }
+  .tier-content-videos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .video-card {
+    background: rgba(20,22,45,.7);
+    border: 1px solid rgba(120,130,220,.18);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color .2s, transform .18s;
+  }
+  .video-card:hover { border-color: rgba(0,245,255,.35); transform: translateY(-2px); }
+  .video-embed-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #000;
+  }
+  .video-embed-wrap iframe,
+  .video-embed-wrap video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+  .video-card-info {
+    padding: 10px 12px 12px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .video-card-title {
+    font-size: .85rem; font-weight: 700;
+    color: #e8e8f0; line-height: 1.3;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .video-dl-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .78rem; padding: 5px 10px; text-decoration: none;
+    color: #00f5ff !important; border-color: rgba(0,245,255,.3) !important;
+    border-radius: 7px; border: 1px solid rgba(0,245,255,.3);
+    background: rgba(0,245,255,.06); transition: background .15s;
+    align-self: flex-start;
+  }
+  .video-dl-btn:hover { background: rgba(0,245,255,.14); }
+  @media (max-width: 600px) {
+    .tier-content-videos { grid-template-columns: 1fr; }
+    .tier-content-card { width: 100vw !important; border-radius: 18px 18px 0 0 !important; }
+  }
+  </style>
+</head>
+
+<body>
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+<a id="tgServerFloat" class="tg-float" href="https://t.me/+ZQDbceeZVUs0ODA8" target="_blank" rel="noopener noreferrer" title="Join our Telegram server">
+  <span class="tg-float-pulse" aria-hidden="true"></span>
+  <span class="tg-float-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M9.78 15.28l-.28-4.05 8.9-8.03a.5.5 0 0 1 .8.38l-1.52 7.18-5.9 4.52zM9.78 15.28l-2.9 2.7a.5.5 0 0 1-.82-.35l.5-3.35 3.22.99z"/></svg>
+  </span>
+  <span class="tg-float-label">Join Server</span>
+</a>
+
+<!-- Admin chat float button (shown when there are admin messages) -->
+<div id="adminChatFloat" class="hidden">
+  <button type="button" id="adminChatFloatBtn" title="Messages from admin">
+    📬
+    <span id="adminChatBadge" class="hidden">0</span>
+  </button>
+</div>
+
+<main class="app">
+  <section id="entryPage" class="entry-page">
+    <div class="entry-card">
+      <div class="badge">PRIVATE ACCESS SYSTEM</div>
+      <div class="top-pills">
+        <div class="pill green">🔒 Secured</div>
+        <div class="pill blue" id="userCountPill">👥 2.1k users</div>
+      </div>
+      <h1>Create your account</h1>
+      <p class="sub">Sign up to unlock tiers via referrals or instant payment.</p>
+      <div class="auth-tabs" role="tablist" aria-label="Choose access mode">
+        <button id="signupTab" class="tab active" type="button">Sign up</button>
+        <button id="loginTab" class="tab" type="button">Login</button>
+      </div>
+      <div id="refNotice" class="notice hidden"></div>
+      <form id="entryForm">
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username" placeholder="minimum 3 letters" maxlength="24" />
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="new-password" placeholder="your password" maxlength="60" />
+        <div id="captchaBlock" class="captcha-block">
+          <label for="captchaAnswer">Anti-bot — solve this calculation</label>
+          <div class="captcha-row">
+            <div id="captchaQuestion" class="captcha"></div>
+            <input id="captchaAnswer" inputmode="numeric" placeholder="answer" />
+          </div>
+        </div>
+        <input id="website" class="honeypot" tabindex="-1" autocomplete="off" />
+        <button id="submitBtn" class="main-btn" type="submit">Create account</button>
+      </form>
+      <div id="entryMsg" class="msg" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="panelPage" class="panel-page hidden">
+    <header class="topbar">
+      <button id="drawerOpen" class="icon-btn" type="button" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-center">
+        <div class="topbar-title" id="topbarTitle">Nonaxion Access</div>
+        <div class="topbar-pills">
+          <span class="pill-mini green">🔒 Secured</span>
+          <span class="pill-mini blue" id="userCountPillMini">👥 2.1k users</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="notif-wrap" id="notifWrap">
+          <button id="notifBtn" class="icon-btn notif-btn" type="button" aria-label="Notifications" title="Activity">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            <span class="notif-dot" id="notifDot" aria-hidden="true"></span>
+          </button>
+          <div id="notifPanel" class="notif-panel hidden" role="dialog" aria-label="Notifications">
+            <div class="notif-head">Recent activity</div>
+            <div id="notifList" class="notif-list"></div>
+          </div>
+        </div>
+        <button class="icon-btn icon-btn-ghost" type="button" id="adminLinkBtn" title="Admin panel" style="display:none">ADMIN</button>
+      </div>
+    </header>
+
+    <aside id="drawer" class="drawer hidden" aria-hidden="true">
+      <div class="drawer-head">
+        <button id="drawerClose" class="drawer-close" type="button" aria-label="Close">×</button>
+      </div>
+      <nav class="drawer-nav">
+        <button class="drawer-item" type="button" data-action="home">Home</button>
+        <button class="drawer-item" type="button" data-action="menu">Custom Packs</button>
+        <button class="drawer-item" type="button" data-action="preview">Preview</button>
+        <button class="drawer-item" type="button" data-action="more-videos">Get More Videos</button>
+        <button class="drawer-item" type="button" data-action="invites">Earn With Invites</button>
+        <button class="drawer-item" type="button" data-action="reviews">Reviews</button>
+        <div class="drawer-section">TIERS</div>
+        <div id="drawerTiers"></div>
+        <button class="drawer-item drawer-support" type="button" data-action="support"><span class="dot"></span> Support</button>
+        <button class="drawer-item drawer-logout" type="button" data-action="logout">Logout</button>
+      </nav>
+    </aside>
+    <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+
+    <section class="panel-main">
+      <div class="hero" aria-hidden="true">
+        <h1 class="hero-title">Instant Access</h1>
+        <p class="hero-sub" id="heroSub"></p>
+      </div>
+
+      <div id="banBanner">
+        <div class="ban-code">⚠️ Error 293</div>
+        <div class="ban-msg">Your access has been restricted due to suspected automated activity.<br />You can still browse tiers and purchase custom packs.</div>
+      </div>
+
+      <div class="p7-profile" id="p7Profile">
+        <div class="p7-avatar" id="p7Avatar">N</div>
+        <div class="p7-profile-info">
+          <div class="p7-greeting">Welcome back 👋</div>
+          <div class="p7-username" id="p7Username">Loading…</div>
+          <div class="p7-since" id="p7Since"></div>
+          <p class="hero-sub" id="p7HeroSub" style="font-size:.77rem;color:rgba(161,161,194,.72);margin-top:5px;line-height:1.45"></p>
+        </div>
+      </div>
+
+      <div class="p7-stats">
+        <div class="p7-stat-card"><span class="p7-val" id="p7Users">—</span><span class="p7-lbl">👥 Community</span></div>
+        <div class="p7-stat-card"><span class="p7-val" id="p7Invites">—</span><span class="p7-lbl">🔗 My Invites</span></div>
+        <div class="p7-stat-card"><span class="p7-val" id="p7Tiers">—</span><span class="p7-lbl">🏆 Tiers</span></div>
+      </div>
+
+      <hr class="p7-divider" />
+
+      <nav class="panel-tabs" role="tablist" aria-label="Sections">
+        <button class="panel-tab active" type="button" data-section="tiers">🎯 Tiers</button>
+        <button class="panel-tab" type="button" data-section="invites">🎁 Get Free</button>
+        <button class="panel-tab" type="button" data-section="custom">🛠️ Custom Pack</button>
+      </nav>
+
+      <div class="panel-section" data-section="tiers">
+        <!-- starterTierWrap injected by JS above tierGrid -->
+        <div id="tierGrid" class="tier-grid"></div>
+        <div class="howto-card">
+          <h3>How to Purchase</h3>
+          <p class="muted">Click &ldquo;Buy&rdquo; on any tier to submit your payment. Your payment will be reviewed within 5&ndash;10 minutes. Once confirmed, you'll get immediate access.<br /><br />Payment methods: Crypto (BTC / ETH / LTC / SOL), Gift Cards.<br />Prefer Telegram? <a id="telegramAlt" href="#" target="_blank" rel="noreferrer">Pay via the bot</a>.</p>
+        </div>
+      </div>
+
+      <div class="panel-section hidden" data-section="invites">
+        <div class="referral-card">
+          <div class="referral-left">
+            <h3>Free Access with Referrals</h3>
+            <p class="muted">Share your link to earn invites and unlock tiers for free</p>
+            <div id="nextTierBadge" class="invite-badge"></div>
+            <div class="link-box">
+              <input id="refLink" readonly />
+              <button type="button" id="copyLinkBtn">Copy Link</button>
+            </div>
+            <div id="copyMsg" class="copy-msg" aria-live="polite"></div>
+            <button type="button" id="howToShareBtn" class="share-guide-btn">
+              <span class="share-guide-icon"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i></span>
+              <span class="share-guide-text">How to share &amp; get more invites</span>
+              <span class="share-guide-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+          <div class="referral-right">
+            <div class="ref-count" id="totalRefs">0</div>
+            <div class="ref-label">TOTAL INVITES</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section hidden" data-section="custom">
+        <div id="customPackSection" class="custom-pack-section">
+          <div class="custom-pack-header">
+            <div>
+              <span class="custom-pack-badge">BUILD YOUR OWN</span>
+              <h2 id="customPackTitle">Custom Pack</h2>
+              <p class="muted" id="customPackSub">Pick a category, choose your size, pay instantly.</p>
+            </div>
+            <div class="custom-price-display" id="customPriceDisplay">
+              <span class="price-original" id="customPriceOriginal"></span>
+              <span class="price-current" id="customPriceCurrent">$—</span>
+            </div>
+          </div>
+          <div class="custom-step"><h4>1 · Choose category</h4><div id="customCategories" class="custom-categories"></div></div>
+          <div class="custom-step"><h4>2 · Choose size</h4><div id="customSizes" class="custom-sizes"></div></div>
+          <div class="custom-actions">
+            <button type="button" class="main-btn custom-buy-btn" id="customBuyBtn" disabled>💳 Buy custom pack</button>
+            <button type="button" class="ghost-btn" id="customRequestBtn">✏️ Custom order (write what you want)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Purchase modal -->
+    <div id="purchaseModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <header class="modal-head">
+          <div><h2 id="modalTitle">Purchase Tier 1</h2><p class="muted">Complete your payment to unlock instant access</p></div>
+          <button class="modal-close" type="button" id="modalClose" aria-label="Close">×</button>
+        </header>
+        <div class="modal-tabs">
+          <button class="modal-tab active" type="button" data-tab="giftcard">🎁 Gift Card</button>
+          <button class="modal-tab" type="button" data-tab="crypto">₿ Crypto</button>
+        </div>
+        <div class="modal-pane" data-pane="giftcard">
+          <div class="info-box"><strong id="gcAmount">💳 Amount: $10</strong><p>Purchase a gift card and send us the code. We'll activate your tier instantly!</p></div>
+          <h4>Choose a platform to buy <span class="muted" style="font-weight:400;font-size:.85rem">(opens store with PayPal search)</span>:</h4>
+          <div id="gcPlatforms" class="platform-list"></div>
+          <div class="info-box light">
+            <strong>📝 Enter Your Gift Card Code</strong>
+            <input id="gcCode" placeholder="Enter 14+ character gift card code" maxlength="200" />
+            <small id="gcCharCount" class="muted">• 0/14 characters minimum</small>
+          </div>
+          <button class="main-btn" type="button" id="gcSubmit">Submit gift card</button>
+        </div>
+        <div class="modal-pane hidden" data-pane="crypto">
+          <div class="info-box">
+            <strong id="cryptoAmountUSD">💰 Amount: $10 USD</strong>
+            <div class="crypto-eq">≈ <span id="cryptoAmountCrypto">0.00015859</span> <span id="cryptoAmountTicker">BTC</span></div>
+            <p>Send the exact amount shown above to the address below.</p>
+          </div>
+          <div class="crypto-row"><h4>Select cryptocurrency:</h4><button class="ghost-mini" type="button" id="cryptoRefresh">🔄 Refresh</button></div>
+          <div id="cryptoTickers" class="crypto-tickers"></div>
+          <label id="cryptoAddrLabel">Bitcoin Address:</label>
+          <div class="addr-row">
+            <input id="cryptoAddr" readonly />
+            <button class="copy-btn" type="button" id="cryptoCopy" title="Copy">📋</button>
+          </div>
+          <div class="info-box light">
+            <strong>📝 Enter Transaction ID <span class="hint" title="Paste the txid you got from your wallet after sending">?</span></strong>
+            <input id="cryptoTxId" placeholder="Paste your transaction ID here" maxlength="200" />
+            <small id="cryptoTxCount" class="muted">• 0 characters</small>
+          </div>
+          <div class="warn-box"><strong>⚠ Important:</strong><span id="cryptoWarn">Send exactly <b>0.00015859 BTC ($10 USD)</b></span></div>
+          <button class="main-btn" type="button" id="cryptoSubmit">Submit transaction</button>
+        </div>
+        <div id="modalMsg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- Custom order modal -->
+    <div id="customOrderModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <header class="modal-head">
+          <div><h2>Custom order</h2><p class="muted">Describe exactly what you want — we'll reply on the site.</p></div>
+          <button class="modal-close" type="button" id="customOrderClose" aria-label="Close">×</button>
+        </header>
+        <textarea id="customOrderText" rows="5" placeholder="Example: I want Pack 3 with specific content, 500 GB, delivered via Mega…" maxlength="2000"></textarea>
+        <button class="main-btn" type="button" id="customOrderSubmit">Send request</button>
+        <div id="customOrderMsg" class="msg" aria-live="polite"></div>
+        <div class="custom-orders-list-wrap"><h4>Your conversations</h4><div id="myCustomOrders" class="custom-orders-list"></div></div>
+      </div>
+    </div>
+
+    <!-- Custom order chat modal -->
+    <div id="chatModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card chat-modal-card">
+        <header class="modal-head">
+          <div><h2 id="chatTitle">Conversation</h2><p class="muted" id="chatSub">Chat with support</p></div>
+          <button class="modal-close" type="button" id="chatClose" aria-label="Close">×</button>
+        </header>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="Type your message…" maxlength="2000" />
+          <button type="button" class="main-btn chat-send-btn" id="chatSend">Send</button>
+        </div>
+        <div id="chatMsg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- Admin messages chat modal -->
+    <div id="adminChatModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card chat-modal-card">
+        <header class="modal-head">
+          <div>
+            <h2>📬 Messages from Admin</h2>
+            <p class="muted">Official messages from the Nonaxion team</p>
+          </div>
+          <button class="modal-close" type="button" id="adminChatClose" aria-label="Close">×</button>
+        </header>
+        <div id="adminChatMessages" class="chat-messages"></div>
+      </div>
+    </div>
+
+    <!-- Choice modal -->
+    <div id="choiceModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card small">
+        <header class="modal-head">
+          <h2 id="choiceTitle">Tier 1 ready</h2>
+          <button class="modal-close" type="button" id="choiceClose">×</button>
+        </header>
+        <p class="muted" id="choiceMsg">You have enough invites for this tier. Claim it for free or pay for instant access.</p>
+        <button class="main-btn" type="button" id="choiceClaim">Claim free access</button>
+        <button class="ghost-btn" type="button" id="choicePay">Pay to unlock now</button>
+      </div>
+    </div>
+
+    <!-- Tier content modal -->
+    <div id="tierContentModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card tier-content-card">
+        <header class="modal-head">
+          <div>
+            <h2 id="tierContentTitle">Content</h2>
+            <p class="muted" id="tierContentSub">Your exclusive content</p>
+          </div>
+          <button class="modal-close" type="button" id="tierContentClose" aria-label="Close">×</button>
+        </header>
+        <div class="tier-content-actions">
+          <button class="main-btn" type="button" id="downloadAllZipBtn">⬇️ Download all as ZIP</button>
+        </div>
+        <div id="tierContentVideos" class="tier-content-videos"></div>
+        <div id="tierContentMsg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- Share guide modal -->
+    <div id="shareGuideModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <header class="modal-head">
+          <div><h2>How to share</h2><p class="muted">Tap a platform to share your invite link — more shares, more invites!</p></div>
+          <button class="modal-close" type="button" id="shareGuideClose" aria-label="Close">×</button>
+        </header>
+        <div id="sharePlatforms" class="share-platforms"></div>
+        <div id="shareGuideMsg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="welcomeOverlay" class="welcome-overlay hidden" role="dialog" aria-modal="true" aria-label="Welcome">
+  <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+  <div class="welcome-card">
+    <div class="welcome-icon" aria-hidden="true"><i class="fa-solid fa-check"></i></div>
+    <div class="welcome-badge">ACCOUNT CREATED</div>
+    <h2 class="welcome-title">Welcome, <span id="welcomeUsername">there</span>!</h2>
+    <p class="welcome-sub" id="welcomeSub">Your account is ready. Share your link to earn free invites or unlock tiers instantly.</p>
+    <button id="welcomeContinue" class="main-btn welcome-continue" type="button">Let's go 🚀</button>
+  </div>
+</div>
+
+<script src="/tiers.config.js?v=14"></script>
+<script src="/app.js?v=14"></script>
+
+<script>
+(function () {
+  var CARD_SEL = '.tier-card, .entry-card, .referral-card, .howto-card, .modal-card';
+  function ensureShine(el) {
+    if (el.querySelector('.p6-shine')) return;
+    if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+    var s = document.createElement('div'); s.className = 'p6-shine'; el.appendChild(s);
+  }
+  document.addEventListener('mousemove', function (e) {
+    var t = e.target;
+    while (t && t !== document.body) {
+      if (t.matches && t.matches(CARD_SEL)) {
+        var r = t.getBoundingClientRect();
+        t.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(0) + '%');
+        t.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(0) + '%');
+        ensureShine(t); return;
+      }
+      t = t.parentElement;
+    }
+  }, { passive: true });
+  var obs = new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      m.addedNodes.forEach(function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.matches && n.matches(CARD_SEL)) ensureShine(n);
+        if (n.querySelectorAll) n.querySelectorAll(CARD_SEL).forEach(ensureShine);
+      });
+    });
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+  function init() { document.querySelectorAll(CARD_SEL).forEach(ensureShine); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+}());
+
+(function () {
+  if (window.innerWidth > 600) return;
+  function inject() {
+    if (document.getElementById('tgMiniBtn')) return;
+    var orig = document.getElementById('tgServerFloat');
+    if (orig) orig.style.setProperty('display', 'none', 'important');
+    var a = document.createElement('a');
+    a.id = 'tgMiniBtn'; a.href = 'https://t.me/+ZQDbceeZVUs0ODA8';
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="flex-shrink:0;display:block"><path d="M9.78 15.28l-.28-4.05 8.9-8.03a.5.5 0 0 1 .8.38l-1.52 7.18-5.9 4.52zM9.78 15.28l-2.9 2.7a.5.5 0 0 1-.82-.35l.5-3.35 3.22.99z"/></svg>Join Server';
+    var s = a.style;
+    s.position = 'fixed'; s.right = '12px'; s.bottom = '16px'; s.zIndex = '99999';
+    s.display = 'inline-flex'; s.alignItems = 'center'; s.gap = '5px';
+    s.padding = '6px 11px 6px 8px';
+    s.background = 'linear-gradient(135deg,#0088cc,#00a8e8)';
+    s.color = '#fff'; s.textDecoration = 'none'; s.borderRadius = '100px';
+    s.fontSize = '11px'; s.fontWeight = '600'; s.lineHeight = '1';
+    s.whiteSpace = 'nowrap'; s.opacity = '0.8';
+    s.boxShadow = '0 2px 10px rgba(0,0,0,.45)';
+    s.border = 'none'; s.outline = 'none';
+    document.body.appendChild(a);
+  }
+  if (document.readyState === 'complete') { inject(); } else { window.addEventListener('load', inject); }
+}());
+
+(function () {
+  var token = localStorage.getItem('token') || '';
+  function fmtNum(n) { n = Number(n) || 0; if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k'; return String(n); }
+  function setVal(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+  function fmtSince(iso) { if (!iso) return ''; try { return 'Member since ' + new Date(iso).toLocaleDateString('en', { month: 'short', year: 'numeric' }); } catch (_) { return ''; } }
+  function applyBan() {
+    var banner = document.getElementById('banBanner'); if (banner) banner.style.display = 'block';
+    var reqBtn = document.getElementById('customRequestBtn'); if (reqBtn) reqBtn.style.display = 'none';
+  }
+  if (token) {
+    try {
+      var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload && payload.username) { setVal('p7Username', payload.username); setVal('p7Avatar', payload.username.charAt(0).toUpperCase()); }
+    } catch (_) {}
+  }
+  var heroSub = document.getElementById('heroSub'), p7HeroSub = document.getElementById('p7HeroSub');
+  if (heroSub && p7HeroSub) {
+    var mirrorObs = new MutationObserver(function () { p7HeroSub.textContent = heroSub.textContent; });
+    mirrorObs.observe(heroSub, { childList: true, characterData: true, subtree: true });
+  }
+  fetch('/api/stats').then(function (r) { return r.json(); }).then(function (data) { setVal('p7Users', fmtNum(data.users)); }).catch(function () {});
+  if (token) {
+    fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.user) return;
+        setVal('p7Invites', fmtNum(data.user.referrals_count));
+        setVal('p7Tiers', (data.user.unlocked_tiers || []).length);
+        setVal('p7Since', fmtSince(data.user.created_at));
+        if (data.user.username) { setVal('p7Username', data.user.username); setVal('p7Avatar', data.user.username.charAt(0).toUpperCase()); }
+        if (data.user.is_banned) applyBan();
+        // Save any notifications fetched here so loadMe() can pick them up
+        if (data.notifications && data.notifications.length) {
+          window.__earlyNotifs = (window.__earlyNotifs || []).concat(data.notifications);
+        }
+      }).catch(function () {});
+  }
+}());
+</script>
+</body>
+</html>
